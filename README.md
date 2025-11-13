@@ -95,12 +95,12 @@ cd learning-data-engineering
 
 ```
 learning-data-engineering/
-├── Complete Containerized Environment
-├── 12 Detailed Sprint Guides
-├── Production-Ready Projects
-├── Example Data Pipeline (Datamart Intelligence Platform)
-├── Comprehensive Documentation
-└── Interview Preparation Materials
+├── 🐳 Complete Containerized Environment
+├── 📚 12 Detailed Sprint Guides
+├── 🛠️ Production-Ready Projects
+├── 📊 Example Data Pipeline (Datamart Intelligence Platform)
+├── 📖 Comprehensive Documentation
+└── 🎯 Interview Preparation Materials
 ```
 
 ### 🎯 Featured Project: Datamart Intelligence Platform
