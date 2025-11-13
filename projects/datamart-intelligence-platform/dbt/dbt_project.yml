@@ -1,0 +1,5 @@
+name: 'datamart'
+version: '1.0.0'
+profile: 'datamart'
+model-paths: ["models"]
+target-path: "target"

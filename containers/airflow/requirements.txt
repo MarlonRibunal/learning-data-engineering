@@ -1,0 +1,8 @@
+apache-airflow==2.7.0
+pandas==2.0.3
+google-cloud-bigquery==3.12.0
+dbt-core==1.5.0
+dbt-bigquery==1.5.0
+streamlit==1.24.0
+psycopg2-binary==2.9.7
+python-dotenv==1.0.0
