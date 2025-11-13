@@ -1,6 +1,3 @@
-## README.md
-
-```markdown
 # 🚀 Learning Data Engineering
 
 <div align="center">
@@ -31,13 +28,13 @@
 
 ## 🚀 One-Command Setup
 
-> **Windows Users:** Use Git Bash • **Mac/Linux Users:** Use Terminal
+**Windows Users:** Use Git Bash  
+**Mac/Linux Users:** Use Terminal
 
 ```bash
 git clone https://github.com/marlonribunal/learning-data-engineering.git
 cd learning-data-engineering
 ./bootstrap.sh
-```
 
 **✨ That's it!** Your complete data engineering environment automatically builds and will be ready at:
 
