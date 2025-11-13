@@ -246,4 +246,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 *Join us in building the world's best data engineering learning platform!*
 
 </div>
-```
