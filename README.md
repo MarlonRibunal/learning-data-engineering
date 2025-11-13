@@ -1,3 +1,6 @@
+## README.md (Full Copy-Pasteable Version)
+
+```markdown
 # 🚀 Learning Data Engineering
 
 <div align="center">
@@ -34,6 +37,7 @@
 git clone https://github.com/marlonribunal/learning-data-engineering.git
 cd learning-data-engineering
 ./bootstrap.sh
+```
 
 **✨ That's it!** Your complete data engineering environment automatically builds and will be ready at:
 
@@ -240,4 +244,18 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 *Join us in building the world's best data engineering learning platform!*
 
 </div>
+```
+
+## How to Update Your README:
+
+1. **Copy the entire content above**
+2. **In VS Code**, open your `README.md` file
+3. **Select all content** (Ctrl+A) and **paste** the new content (Ctrl+V)
+4. **Save the file** (Ctrl+S)
+5. **Push to GitHub:**
+
+```bash
+git add README.md
+git commit -m "Update README with complete copy-pasteable content and contributor call-to-action"
+git push origin main
 ```
