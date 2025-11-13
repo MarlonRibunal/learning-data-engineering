@@ -1,8 +1,3 @@
-## README.md
-
-```markdown
-# 🚀 Learning Data Engineering
-
 # 🚀 Learning Data Engineering
 
 <div align="center">
@@ -33,8 +28,7 @@
 
 ## 🚀 One-Command Setup
 
-**Windows Users:** Use Git Bash  
-**Mac/Linux Users:** Use Terminal
+> **Windows Users:** Use Git Bash • **Mac/Linux Users:** Use Terminal
 
 ```bash
 git clone https://github.com/marlonribunal/learning-data-engineering.git
