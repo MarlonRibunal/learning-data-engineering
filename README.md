@@ -1,8 +1,3 @@
-Here's the fully copy-pasteable version without cutting off:
-
-## README.md (Full Copy-Pasteable Version)
-
-```markdown
 # 🚀 Learning Data Engineering
 
 <div align="center">
@@ -39,7 +34,6 @@ Here's the fully copy-pasteable version without cutting off:
 git clone https://github.com/marlonribunal/learning-data-engineering.git
 cd learning-data-engineering
 ./bootstrap.sh
-```
 
 **✨ That's it!** Your complete data engineering environment automatically builds and will be ready at:
 
