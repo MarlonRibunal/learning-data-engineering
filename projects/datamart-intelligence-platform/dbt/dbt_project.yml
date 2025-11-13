@@ -1,5 +1,32 @@
 name: 'datamart'
 version: '1.0.0'
+config-version: 2
+
 profile: 'datamart'
+
 model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
 target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  datamart:
+    # Default configurations
+    +materialized: view
+    
+    staging:
+      +schema: staging
+      +materialized: view
+      +tags: ["staging"]
+      
+    marts:
+      +schema: analytics
+      +materialized: table
+      +tags: ["marts"]
