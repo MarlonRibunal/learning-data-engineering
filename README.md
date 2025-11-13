@@ -1,4 +1,4 @@
-## README.md (Full Copy-Pasteable Version)
+## README.md
 
 ```markdown
 # 🚀 Learning Data Engineering
