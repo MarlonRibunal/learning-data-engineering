@@ -10,10 +10,10 @@
 **A complete, containerized data engineering learning platform**  
 *Master modern data engineering in 6 months • Zero local installations • Production-ready projects*
 
-[**Quick Start**](#-one-command-setup) • 
-[**Learning Path**](#-learning-path) • 
-[**Tech Stack**](#-tech-stack) • 
-[**Contribute**](#-join-the-community)
+[**Quick Start**](#one-command-setup) • 
+[**Learning Path**](#learning-path) • 
+[**Tech Stack**](#tech-stack) • 
+[**Contribute**](#join-the-community)
 
 </div>
 
