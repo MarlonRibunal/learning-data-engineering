@@ -17,11 +17,13 @@
 
 </div>
 
+
 ## Welcome to Your Data Engineering Journey!
 
 **Tired of piecing together scattered tutorials and wrestling with complex local setups?** You've found the solution.
 
 This isn't just another tutorial repository—it's a **complete, production-ready learning environment** that mirrors real-world data engineering workflows. Whether you're transitioning into data engineering, leveling up your skills, or building your portfolio, this platform provides everything you need in one place.
+
 
 ### Why This Platform Exists
 
@@ -33,14 +35,18 @@ Data engineering is one of the fastest-growing fields in tech, but learning it e
 
 We've built the platform we wish existed when we started our data engineering journeys.
 
+
 ## What Makes This Different?
 
 | Traditional Learning | This Platform |
 |---------------------|---------------|
-| ❌ Scattered tutorials | ✅ **Structured 6-month blueprint** |
-| ❌ Local installations | ✅ **100% containerized** |
-| ❌ Theoretical concepts | ✅ **Real portfolio projects** |
-| ❌ Solo learning | ✅ **Community-driven** |
+| Scattered tutorials | **Structured 6-month blueprint** |
+| Local installations | **100% containerized** |
+| Theoretical concepts | **Real portfolio projects** |
+| Solo learning | **Community-driven** |
+| Hello-world examples | **Production-grade code** |
+| Static content | **Active development** |
+
 
 ## One-Command Setup
 
@@ -61,7 +67,11 @@ cd learning-data-engineering
 | **PGAdmin** | http://localhost:8081 | `admin@datamart.com` / `admin` |
 | **Redpanda Console** | http://localhost:8082 | - |
 
+
 ## Complete Learning Path
+
+**Learning Cadence: By Sprint**  
+*Each sprint represents 2 weeks of focused learning, following agile methodology used in professional data teams. This structured approach ensures steady progress while building real portfolio projects.*
 
 ### Phase 1: Foundations (Months 1-2)
 **Project: E-Commerce Data Pipeline**
@@ -90,6 +100,9 @@ cd learning-data-engineering
 | **8** | Real-time Analytics | Spark Streaming, Stateful Processing |
 | **9** | Unified Dashboards | Streamlit, Real-time Visualization |
 | **10-12** | Portfolio & Career | Interviews, System Design, Job Search |
+
+*For detailed daily breakdowns, weekly goals, and specific learning objectives for each sprint, see the [Complete Learning Blueprint](docs/blueprint.md).*
+
 
 ## Tech Stack
 
