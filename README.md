@@ -11,7 +11,7 @@
 *Master modern data engineering in 6 months • Zero local installations • Production-ready projects*
 
 [**Quick Start**](#one-command-setup) • 
-[**Learning Path**](#learning-path) • 
+[**Learning Path**](#complete-learning-path) • 
 [**Tech Stack**](#tech-stack) • 
 [**Contribute**](#join-the-community)
 
@@ -151,7 +151,7 @@ docker-compose exec airflow-webserver bash
 docker-compose exec dbt-service dbt run
 ```
 
-## 👥 Join the Community!
+## Join the Community!
 
 ### Call for Contributors
 
