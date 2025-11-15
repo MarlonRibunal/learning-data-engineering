@@ -63,7 +63,7 @@ cd learning-data-engineering
 
 ## Complete Learning Path
 
-### 🎓 Phase 1: Foundations (Months 1-2)
+### Phase 1: Foundations (Months 1-2)
 **Project: E-Commerce Data Pipeline**
 
 | Sprint | Focus | Skills |
