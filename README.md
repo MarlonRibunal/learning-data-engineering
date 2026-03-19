@@ -268,8 +268,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ### **Ready to master data engineering?**
 **Star this repo if you find it helpful!**
 
-** [Get Started](#-one-command-setup) • [Contribute](#-join-the-community) • [Learn More](docs/blueprint.md)**
+** [Get Started](#one-command-setup) • [Contribute](#join-the-community) • [Learn More](docs/blueprint.md)**
 
 *Join us in building the world's best data engineering learning platform!*
 
-</div> ```
+</div>
