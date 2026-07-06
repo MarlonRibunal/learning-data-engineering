@@ -1,0 +1,6 @@
+# Grader + runner dependencies (host-run, not in a container).
+# Install into a local venv:  pip install -r platform/requirements.txt
+pyyaml>=6.0
+psycopg2-binary>=2.9.7   # only needed for sql_assert / stack-backed checks
+streamlit>=1.28          # the local lesson-runner web app
+pytest>=7.4              # grader self-tests

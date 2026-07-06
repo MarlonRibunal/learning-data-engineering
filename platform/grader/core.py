@@ -1,0 +1,89 @@
+"""Grader core: orchestration.
+
+    check(sprint, task) -> Result
+
+Loads the task spec, dispatches each check via the registry, aggregates into a
+Result, and records progress. ``start`` copies a task's scaffold into the
+learner's submission path so they edit a stub, not the shipped solution.
+"""
+
+from __future__ import annotations
+
+import shutil
+from pathlib import Path
+
+from . import checks as _checks  # noqa: F401 - registers built-in check types
+from . import progress
+from .context import Context, Database, PostgresDatabase
+from .registry import build_check
+from .result import Result
+from .spec import SpecError, load_spec
+
+DEFAULT_TASKS_ROOT = "projects/datamart-intelligence-platform/tasks"
+
+
+def default_tasks_root(repo_root: Path) -> Path:
+    return repo_root / DEFAULT_TASKS_ROOT
+
+
+def run_check(
+    sprint: str,
+    task: str,
+    repo_root: Path,
+    *,
+    tasks_root: Path | None = None,
+    db: Database | None = None,
+    record_progress: bool = True,
+) -> Result:
+    tasks_root = tasks_root or default_tasks_root(repo_root)
+    spec = load_spec(sprint, task, tasks_root)
+    submission_path = repo_root / spec.submission_path
+    db = db if db is not None else PostgresDatabase()
+    ctx = Context(
+        repo_root=repo_root,
+        task_dir=spec.task_dir,
+        submission_path=submission_path,
+        db=db,
+    )
+
+    results = []
+    for check_spec in spec.checks:
+        try:
+            check = build_check(check_spec)
+        except KeyError as exc:
+            # A broken task spec is an authoring error, not a learner failure.
+            raise SpecError(str(exc)) from exc
+        results.append(check.run(ctx))
+
+    result = Result(sprint=sprint, task=task, checks=results)
+    if record_progress:
+        progress.record(repo_root, sprint, task, result.status.value)
+    return result
+
+
+def start(
+    sprint: str,
+    task: str,
+    repo_root: Path,
+    *,
+    tasks_root: Path | None = None,
+    overwrite: bool = False,
+) -> Path:
+    """Copy a task's scaffold into its submission path so the learner can edit it."""
+    tasks_root = tasks_root or default_tasks_root(repo_root)
+    spec = load_spec(sprint, task, tasks_root)
+    if not spec.scaffold:
+        raise SpecError(f"task {sprint}/{task} has no 'scaffold' to start from")
+
+    src = spec.task_dir / spec.scaffold
+    if not src.is_file():
+        raise SpecError(f"scaffold file not found: {src}")
+
+    dst = repo_root / spec.submission_path
+    if dst.exists() and not overwrite:
+        raise FileExistsError(
+            f"{dst} already exists — pass overwrite to reset it to the scaffold"
+        )
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(src, dst)
+    return dst
