@@ -3,27 +3,9 @@ order: 1
 submission_path: submissions/sql-fundamentals/select_columns.sql
 scaffold: scaffold/select_columns.sql
 solution: solution/select_columns.sql
-
 checks:
   - type: file_exists
     name: submission exists and is non-empty
-  - type: file_contains
-    name: uses SELECT
-    pattern: "(?is)select\\b"
-    hint: "start with SELECT"
-  - type: file_contains
-    name: selects order_id
-    pattern: "(?is)\\border_id\\b"
-    hint: "include the order_id column"
-  - type: file_contains
-    name: selects status
-    pattern: "(?is)\\bstatus\\b"
-    hint: "include the status column"
-  - type: file_contains
-    name: selects total_amount
-    pattern: "(?is)\\btotal_amount\\b"
-    hint: "include the total_amount column"
-  - type: file_contains
-    name: reads from the orders table
-    pattern: "(?is)from\\s+orders\\b"
-    hint: "SELECT ... FROM orders (name the columns, don't use SELECT *)"
+  - type: sql_result
+    name: returns the correct rows
+    ordered: false

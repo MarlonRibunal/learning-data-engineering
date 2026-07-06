@@ -3,31 +3,9 @@ order: 4
 submission_path: submissions/sql-fundamentals/top_customers.sql
 scaffold: scaffold/top_customers.sql
 solution: solution/top_customers.sql
-
 checks:
   - type: file_exists
     name: submission exists and is non-empty
-  - type: file_contains
-    name: joins to the customers table
-    pattern: "(?is)\\bjoin\\b.*\\bcustomers\\b|\\bcustomers\\b.*\\bjoin\\b"
-    hint: "JOIN customers so you can show customer_name"
-  - type: file_contains
-    name: shows customer_name
-    pattern: "(?is)\\bcustomer_name\\b"
-    hint: "select customer_name from the customers table"
-  - type: file_contains
-    name: totals spend with SUM
-    pattern: "(?is)sum\\s*\\("
-    hint: "SUM(total_amount) to total each customer's spend"
-  - type: file_contains
-    name: groups by customer
-    pattern: "(?is)group\\s+by\\s+.*customer"
-    hint: "GROUP BY customer_name"
-  - type: file_contains
-    name: orders highest first
-    pattern: "(?is)order\\s+by\\s+.*desc"
-    hint: "ORDER BY the total DESC so the biggest spender is first"
-  - type: file_contains
-    name: limits to 3
-    pattern: "(?is)limit\\s+3\\b"
-    hint: "LIMIT 3 to keep only the top three"
+  - type: sql_result
+    name: returns the correct rows
+    ordered: true

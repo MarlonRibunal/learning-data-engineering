@@ -6,19 +6,6 @@ solution: solution/repeat_customers.sql
 checks:
   - type: file_exists
     name: submission exists and is non-empty
-  - type: file_contains
-    name: reads from the orders table
-    pattern: "(?is)from\\s+orders\\b"
-    hint: "SELECT ... FROM orders"
-  - type: file_contains
-    name: counts rows per group
-    pattern: "(?is)count\\s*\\("
-    hint: "COUNT(*) counts orders per customer"
-  - type: file_contains
-    name: groups by customer
-    pattern: "(?is)group\\s+by\\s+.*customer"
-    hint: "GROUP BY customer_id"
-  - type: file_contains
-    name: filters groups with HAVING
-    pattern: "(?is)having\\s+.*count"
-    hint: "WHERE filters rows; HAVING filters GROUPS — HAVING COUNT(*) > 1"
+  - type: sql_result
+    name: returns the correct rows
+    ordered: false

@@ -32,18 +32,18 @@ class QueryResult:
         return [dict(zip(self.columns, row)) for row in self.rows]
 
 
-def run_sql(repo_root: Path, sql: str, *, seed_file: str = DEFAULT_SEED,
-            limit: int = ROW_LIMIT) -> QueryResult:
+def run_sql(repo_root: Path, sql: str, *, seed: bool = True,
+            seed_file: str = DEFAULT_SEED, limit: int = ROW_LIMIT) -> QueryResult:
     """Execute read-only SQL against the seeded warehouse. Raises InfraError if the
     stack is unreachable; a bad query comes back as QueryResult.error (not an raise)."""
+    if not sql or not sql.strip():
+        return QueryResult(error="write a query first")
+
     try:
         import psycopg2
         from psycopg2 import Error as PgError
     except ImportError as exc:  # pragma: no cover
         raise InfraError("psycopg2 is not installed") from exc
-
-    if not sql or not sql.strip():
-        return QueryResult(error="write a query first")
 
     try:
         conn = psycopg2.connect(**_dsn_from_env())
@@ -53,7 +53,7 @@ def run_sql(repo_root: Path, sql: str, *, seed_file: str = DEFAULT_SEED,
     try:
         # Reseed the raw tables (write) so the playground is deterministic.
         seed_path = repo_root / seed_file
-        if seed_path.is_file():
+        if seed and seed_path.is_file():
             conn.autocommit = True
             with conn.cursor() as cur:
                 cur.execute(seed_path.read_text())
