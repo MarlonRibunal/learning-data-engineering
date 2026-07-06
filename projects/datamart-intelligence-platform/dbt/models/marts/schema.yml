@@ -1,0 +1,15 @@
+version: 2
+
+models:
+  - name: revenue_by_status
+    description: "Total revenue per order status (sprint-2-dbt exercise)."
+    columns:
+      - name: status
+        description: "Order status — one row each."
+        tests:
+          - not_null
+          - unique
+      - name: revenue
+        description: "Total revenue for the status."
+        tests:
+          - not_null

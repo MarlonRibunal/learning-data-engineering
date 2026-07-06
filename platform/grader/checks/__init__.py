@@ -3,4 +3,9 @@
 New check kinds are added by creating a module here and importing it below.
 """
 
-from . import file_check, sql_check  # noqa: F401  (import for side effects)
+from . import (  # noqa: F401  (import for side effects: registers check types)
+    airflow_check,
+    dbt_check,
+    file_check,
+    sql_check,
+)

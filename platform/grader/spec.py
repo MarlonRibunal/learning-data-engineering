@@ -35,6 +35,7 @@ class TaskSpec:
     checks: list[dict] = field(default_factory=list)
     scaffold: str | None = None
     solution: str | None = None
+    reseed: str | None = None  # SQL file (repo-root relative) to load before checks
 
 
 def load_spec(sprint: str, task: str, tasks_root: Path) -> TaskSpec:
@@ -70,4 +71,5 @@ def load_spec(sprint: str, task: str, tasks_root: Path) -> TaskSpec:
         checks=checks,
         scaffold=raw.get("scaffold"),
         solution=raw.get("solution"),
+        reseed=raw.get("reseed"),
     )

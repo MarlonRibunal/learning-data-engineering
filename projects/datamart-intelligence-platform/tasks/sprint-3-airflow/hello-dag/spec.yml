@@ -1,0 +1,14 @@
+title: Make the hello_grader Airflow DAG succeed
+submission_path: projects/datamart-intelligence-platform/dags/hello_grader.py
+scaffold: scaffold/hello_grader.py
+solution: solution/hello_grader.py
+
+# Real-infra check: the grader unpauses + triggers the DAG in the airflow
+# container and polls it to completion. Needs the stack up.
+checks:
+  - type: airflow
+    name: hello_grader DAG runs successfully
+    dag_id: hello_grader
+    hint: >
+      The DAG's task is raising instead of finishing. Make `run` return normally
+      (no exception) so the DAG run ends in state 'success'.

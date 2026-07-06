@@ -14,9 +14,16 @@ from pathlib import Path
 
 from . import checks as _checks  # noqa: F401 - registers built-in check types
 from . import progress
-from .context import Context, Database, PostgresDatabase
+from .context import (
+    CommandRunner,
+    Context,
+    Database,
+    InfraError,
+    LocalRunner,
+    PostgresDatabase,
+)
 from .registry import build_check
-from .result import Result
+from .result import CheckResult, Result, Status
 from .spec import SpecError, load_spec
 
 DEFAULT_TASKS_ROOT = "projects/datamart-intelligence-platform/tasks"
@@ -33,18 +40,35 @@ def run_check(
     *,
     tasks_root: Path | None = None,
     db: Database | None = None,
+    runner: CommandRunner | None = None,
     record_progress: bool = True,
 ) -> Result:
     tasks_root = tasks_root or default_tasks_root(repo_root)
     spec = load_spec(sprint, task, tasks_root)
     submission_path = repo_root / spec.submission_path
     db = db if db is not None else PostgresDatabase()
+    runner = runner if runner is not None else LocalRunner(repo_root)
     ctx = Context(
         repo_root=repo_root,
         task_dir=spec.task_dir,
         submission_path=submission_path,
         db=db,
+        runner=runner,
     )
+
+    # Reseed source data first so real-infra checks are deterministic
+    # (reseed-before / assert-after). File-only tasks omit `reseed` and never
+    # touch the DB. A reseed failure is infra, not a learner failure.
+    if spec.reseed:
+        reseed_file = _resolve_reseed(spec.reseed, spec.task_dir, repo_root)
+        try:
+            db.execute_script(reseed_file.read_text())
+        except InfraError as exc:
+            result = Result(sprint, task,
+                            [CheckResult("reseed source data", Status.ERROR, str(exc))])
+            if record_progress:
+                progress.record(repo_root, sprint, task, result.status.value)
+            return result
 
     results = []
     for check_spec in spec.checks:
@@ -59,6 +83,17 @@ def run_check(
     if record_progress:
         progress.record(repo_root, sprint, task, result.status.value)
     return result
+
+
+def _resolve_reseed(reseed: str, task_dir: Path, repo_root: Path) -> Path:
+    """A reseed path may be given relative to the task dir or the repo root."""
+    candidate = task_dir / reseed
+    if candidate.is_file():
+        return candidate
+    root_candidate = repo_root / reseed
+    if root_candidate.is_file():
+        return root_candidate
+    raise SpecError(f"reseed file not found: {reseed}")
 
 
 def start(

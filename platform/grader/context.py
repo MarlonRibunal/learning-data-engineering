@@ -28,6 +28,54 @@ class Database(Protocol):
         """Run a read query and return rows. Raise InfraError if unreachable."""
         ...
 
+    def execute_script(self, sql: str) -> None:
+        """Run one or more statements (DDL/DML) and commit. Raise InfraError on failure."""
+        ...
+
+
+@dataclass
+class RunResult:
+    returncode: int
+    stdout: str = ""
+    stderr: str = ""
+
+    @property
+    def ok(self) -> bool:
+        return self.returncode == 0
+
+    @property
+    def output(self) -> str:
+        return f"{self.stdout}\n{self.stderr}".strip()
+
+
+class CommandRunner(Protocol):
+    def run(self, args: list[str], timeout: float | None = None) -> RunResult:
+        """Run a subprocess. Raise InfraError if the command cannot start or times out."""
+        ...
+
+
+class LocalRunner:
+    """Runs commands on the host (e.g. `docker compose exec ...`)."""
+
+    def __init__(self, cwd: Path):
+        self.cwd = cwd
+
+    def run(self, args: list[str], timeout: float | None = None) -> RunResult:
+        import subprocess
+
+        try:
+            proc = subprocess.run(
+                args, cwd=str(self.cwd),
+                capture_output=True, text=True, timeout=timeout,
+            )
+        except FileNotFoundError as exc:
+            raise InfraError(f"command not found: {args[0]} ({exc})") from exc
+        except subprocess.TimeoutExpired as exc:
+            raise InfraError(
+                f"command timed out after {timeout}s: {' '.join(args)}"
+            ) from exc
+        return RunResult(proc.returncode, proc.stdout or "", proc.stderr or "")
+
 
 @dataclass
 class Context:
@@ -35,6 +83,7 @@ class Context:
     task_dir: Path
     submission_path: Path
     db: Database
+    runner: CommandRunner | None = None
 
 
 class PostgresDatabase:
@@ -75,6 +124,16 @@ class PostgresDatabase:
             # and should be handled by the check, but we cannot tell them apart
             # reliably here, so surface as InfraError and let the check decide.
             raise InfraError(f"query failed: {exc}") from exc
+
+    def execute_script(self, sql: str) -> None:
+        conn = self._connect()
+        try:
+            with conn.cursor() as cur:
+                cur.execute(sql)
+            conn.commit()
+        except Exception as exc:  # noqa: BLE001
+            conn.rollback()
+            raise InfraError(f"script failed: {exc}") from exc
 
 
 def _dsn_from_env() -> dict:
