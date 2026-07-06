@@ -3,6 +3,7 @@
 <div align="center">
 
 ![GitHub](https://img.shields.io/github/license/marlonribunal/learning-data-engineering)
+![Grader CI](https://github.com/MarlonRibunal/learning-data-engineering/actions/workflows/grader.yml/badge.svg)
 ![GitHub last commit](https://img.shields.io/github/last-commit/marlonribunal/learning-data-engineering)
 ![Docker](https://img.shields.io/badge/Docker-Containerized-blue)
 ![Platform](https://img.shields.io/badge/Platform-Mac%20%7C%20Linux%20%7C%20Windows-green)
