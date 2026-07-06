@@ -40,6 +40,7 @@ _SPRINT_LABELS = {
     "data-quality": "Data Quality",
     "sprint-2-dbt": "Sprint 2 · dbt",
     "sprint-3-airflow": "Sprint 3 · Airflow",
+    "serving": "Serving / BI",
     "capstone": "Capstone",
 }
 
@@ -101,7 +102,8 @@ _JOURNEY = [
     ("sprint-2-dbt", "Transform"),
     ("data-quality", "Validate"),
     ("sprint-3-airflow", "Orchestrate"),
-    ("capstone", "Serve"),
+    ("serving", "Serve"),
+    ("capstone", "Capstone"),
 ]
 
 # Tables to sample in a task's lesson pane, by sprint (spec `preview` overrides).
