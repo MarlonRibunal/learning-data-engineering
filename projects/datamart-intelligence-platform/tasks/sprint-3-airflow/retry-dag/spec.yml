@@ -1,0 +1,14 @@
+title: Add retries to a task
+order: 4
+submission_path: projects/datamart-intelligence-platform/dags/retry_pipeline.py
+scaffold: scaffold/retry_pipeline.py
+solution: solution/retry_pipeline.py
+
+checks:
+  - type: airflow
+    name: the retry DAG runs successfully
+    dag_id: retry_pipeline
+  - type: file_contains
+    name: configures retries (>= 1)
+    pattern: "(?is)retries\\s*=\\s*[1-9]"
+    hint: "PythonOperator(..., retries=2)"

@@ -1,0 +1,14 @@
+title: Run tasks in parallel (fan-out)
+order: 5
+submission_path: projects/datamart-intelligence-platform/dags/parallel_pipeline.py
+scaffold: scaffold/parallel_pipeline.py
+solution: solution/parallel_pipeline.py
+
+checks:
+  - type: airflow
+    name: the parallel DAG runs successfully
+    dag_id: parallel_pipeline
+  - type: file_contains
+    name: fans out with a list dependency
+    pattern: "(?is)>>\\s*\\["
+    hint: "start_task >> [left_task, right_task]"
