@@ -38,6 +38,7 @@ class TaskSpec:
     reseed: str | None = None  # SQL file (repo-root relative) to load before checks
     proof: dict | None = None  # portfolio-artifact config, emitted on pass
     order: int = 100  # position within its sprint (lower = earlier)
+    preview: list[str] | None = None  # tables to sample in the lesson pane
 
 
 def load_spec(sprint: str, task: str, tasks_root: Path) -> TaskSpec:
@@ -76,4 +77,5 @@ def load_spec(sprint: str, task: str, tasks_root: Path) -> TaskSpec:
         reseed=raw.get("reseed"),
         proof=raw.get("proof"),
         order=int(raw.get("order", 100)),
+        preview=raw.get("preview"),
     )
