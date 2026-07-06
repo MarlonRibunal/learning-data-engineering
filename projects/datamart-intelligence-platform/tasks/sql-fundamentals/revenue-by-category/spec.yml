@@ -1,4 +1,5 @@
 title: Revenue by product category
+order: 3
 # Where the learner's work lives, relative to the repo root. `check start` copies
 # the scaffold here; `check` grades whatever the learner leaves here.
 submission_path: submissions/sql-fundamentals/revenue_by_category.sql

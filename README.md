@@ -90,9 +90,9 @@ Prefer the terminal?
 ```bash
 ./platform.sh setup                          # venv + dependencies (one time)
 ./platform.sh up                             # bring the stack up
-./scripts/check.sh list                      # see every task and your progress
-./scripts/check.sh start sql-fundamentals revenue-by-category   # scaffold a task
-./scripts/check.sh check sql-fundamentals revenue-by-category   # grade it
+./scripts/check.sh status                    # progress dashboard + your next task
+./scripts/check.sh start sql-fundamentals select-columns   # scaffold the first task
+./scripts/check.sh check sql-fundamentals select-columns   # grade it
 ./platform.sh down                           # stop the stack when you're done
 ```
 

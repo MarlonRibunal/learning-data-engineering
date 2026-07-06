@@ -42,8 +42,22 @@ def discover_tasks(repo_root: Path, tasks_root: Path | None = None) -> list[tupl
     root = tasks_root or default_tasks_root(repo_root)
     if not root.is_dir():
         return []
-    pairs = [(p.parent.parent.name, p.parent.name) for p in root.glob("*/*/spec.yml")]
-    return sorted(pairs, key=lambda st: (_sprint_rank(st[0]), st[0], st[1]))
+    triples = []
+    for spec_file in root.glob("*/*/spec.yml"):
+        sprint, task = spec_file.parent.parent.name, spec_file.parent.name
+        triples.append((sprint, task, _read_order(spec_file)))
+    triples.sort(key=lambda x: (_sprint_rank(x[0]), x[0], x[2], x[1]))
+    return [(sprint, task) for sprint, task, _ in triples]
+
+
+def _read_order(spec_file: Path) -> int:
+    """Read just the task's `order` for sorting (default 100). Never raises."""
+    try:
+        import yaml
+        data = yaml.safe_load(spec_file.read_text()) or {}
+        return int(data.get("order", 100))
+    except Exception:  # noqa: BLE001 - a broken spec shouldn't break discovery
+        return 100
 
 
 # Curriculum order: fundamentals first, numbered sprints next, capstone last.

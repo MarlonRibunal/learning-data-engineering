@@ -231,6 +231,14 @@ def _render_task(sprint, task, progress) -> None:
             start(sprint, task, REPO_ROOT, overwrite=True)
             st.rerun()
 
+    if spec.solution:
+        solution_file = spec.task_dir / spec.solution
+        if solution_file.is_file():
+            with st.expander("😩 Stuck? Reveal a worked solution"):
+                st.caption("Try it yourself first — the struggle is where the learning "
+                           "happens. But a worked example beats staying stuck.")
+                st.code(solution_file.read_text(), language=lang)
+
 
 def _render_result(result) -> None:
     for check in result.checks:
