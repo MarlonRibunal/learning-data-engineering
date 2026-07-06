@@ -111,7 +111,7 @@ def main() -> None:
                 st.success("Saved.")
             if c2.button("✅ Check my work", type="primary"):
                 submission.write_text(edited)  # grade what's on screen
-                result = run_check(sprint, task, REPO_ROOT)
+                result = run_check(sprint, task, REPO_ROOT, make_proof=True)
                 _render_result(result)
 
 
@@ -125,6 +125,13 @@ def _render_result(result) -> None:
     if result.status is Status.PASS:
         st.success("PASS — nice work.")
         st.balloons()
+        if result.proof_dir is not None:
+            rel = result.proof_dir.relative_to(REPO_ROOT)
+            st.info(f"🎉 Portfolio artifact written to `{rel}` — commit it to your "
+                    f"GitHub to show what you built.")
+            chart = result.proof_dir / "chart.png"
+            if chart.is_file():
+                st.image(str(chart))
     elif result.status is Status.ERROR:
         st.warning("Could not run — the stack looks unavailable (not your work). "
                    "Start it with `docker compose up -d` and try again.")

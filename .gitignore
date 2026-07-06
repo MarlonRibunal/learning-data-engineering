@@ -11,5 +11,6 @@ __pycache__/
 # (inline comments are not supported in .gitignore — keep patterns on their own line)
 .progress.json
 submissions/
+portfolio/
 .venv/
 .pytest_cache/

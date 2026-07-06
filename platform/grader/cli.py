@@ -45,7 +45,7 @@ def _resolve_repo_root(explicit: str | None) -> Path:
 def _cmd_check(args) -> int:
     repo_root = _resolve_repo_root(args.repo_root)
     try:
-        result = run_check(args.sprint, args.task, repo_root)
+        result = run_check(args.sprint, args.task, repo_root, make_proof=True)
     except SpecError as exc:
         print(f"{_RED}task error:{_RESET} {exc}", file=sys.stderr)
         return 2
@@ -60,6 +60,10 @@ def _cmd_check(args) -> int:
 
     if result.status is Status.PASS:
         print(f"{_GREEN}PASS{_RESET} — nice work.")
+        if result.proof_dir is not None:
+            rel = result.proof_dir.relative_to(repo_root)
+            print(f"{_GREEN}🎉 Portfolio artifact written to {rel}{_RESET} — "
+                  f"commit it to your GitHub to show what you built.")
         return 0
     if result.status is Status.ERROR:
         print(f"{_YELLOW}COULD NOT RUN{_RESET} — infrastructure is unavailable, "

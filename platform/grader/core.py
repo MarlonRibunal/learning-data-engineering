@@ -42,6 +42,7 @@ def run_check(
     db: Database | None = None,
     runner: CommandRunner | None = None,
     record_progress: bool = True,
+    make_proof: bool = False,
 ) -> Result:
     tasks_root = tasks_root or default_tasks_root(repo_root)
     spec = load_spec(sprint, task, tasks_root)
@@ -80,6 +81,13 @@ def run_check(
         results.append(check.run(ctx))
 
     result = Result(sprint=sprint, task=task, checks=results)
+
+    # On a passing task that defines a `proof`, emit the portfolio artifact —
+    # the shareable "I actually built this" moment.
+    if make_proof and result.passed and spec.proof:
+        from . import proof as _proof  # local import avoids a module cycle
+        result.proof_dir = _proof.generate_proof(sprint, task, spec, result, ctx, repo_root)
+
     if record_progress:
         progress.record(repo_root, sprint, task, result.status.value)
     return result

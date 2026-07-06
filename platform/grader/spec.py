@@ -36,6 +36,7 @@ class TaskSpec:
     scaffold: str | None = None
     solution: str | None = None
     reseed: str | None = None  # SQL file (repo-root relative) to load before checks
+    proof: dict | None = None  # portfolio-artifact config, emitted on pass
 
 
 def load_spec(sprint: str, task: str, tasks_root: Path) -> TaskSpec:
@@ -72,4 +73,5 @@ def load_spec(sprint: str, task: str, tasks_root: Path) -> TaskSpec:
         scaffold=raw.get("scaffold"),
         solution=raw.get("solution"),
         reseed=raw.get("reseed"),
+        proof=raw.get("proof"),
     )

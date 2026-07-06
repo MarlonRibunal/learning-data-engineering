@@ -16,6 +16,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
+from pathlib import Path
 
 
 class Status(str, Enum):
@@ -40,6 +41,7 @@ class Result:
     sprint: str
     task: str
     checks: list[CheckResult] = field(default_factory=list)
+    proof_dir: Path | None = None  # set when a portfolio artifact was generated
 
     @property
     def status(self) -> Status:
