@@ -1,0 +1,64 @@
+name: grader
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch: {}
+
+jobs:
+  unit:
+    name: grader unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install test deps
+        run: pip install pyyaml pytest
+      - name: Run grader unit tests
+        working-directory: platform
+        run: python -m pytest -q
+
+  e2e:
+    name: dbt end-to-end smoke
+    runs-on: ubuntu-latest
+    # Heavy (boots the stack). Runs on demand or when a PR is labelled `e2e`.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      contains(github.event.pull_request.labels.*.name, 'e2e')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install grader deps
+        run: pip install pyyaml psycopg2-binary
+      - name: Boot Postgres + dbt
+        run: docker compose up -d --build postgres dbt-service
+      - name: Wait for Postgres
+        run: |
+          for _ in $(seq 1 60); do
+            if docker compose exec -T postgres pg_isready -U airflow; then exit 0; fi
+            sleep 2
+          done
+          echo "Postgres did not become ready" >&2
+          docker compose logs postgres
+          exit 1
+      - name: Solution must PASS
+        run: |
+          cp projects/datamart-intelligence-platform/tasks/sprint-2-dbt/revenue-by-status/solution/revenue_by_status.sql \
+             projects/datamart-intelligence-platform/dbt/models/marts/revenue_by_status.sql
+          PYTHONPATH=platform python -m grader.cli --repo-root "$PWD" check sprint-2-dbt revenue-by-status
+      - name: Scaffold stub must FAIL
+        run: |
+          git checkout -- projects/datamart-intelligence-platform/dbt/models/marts/revenue_by_status.sql
+          if PYTHONPATH=platform python -m grader.cli --repo-root "$PWD" check sprint-2-dbt revenue-by-status; then
+            echo "BUG: the scaffold stub passed the grader" >&2
+            exit 1
+          fi
+          echo "scaffold correctly failed"
+      - name: Stack logs on failure
+        if: failure()
+        run: docker compose logs --tail 80
