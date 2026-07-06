@@ -1,0 +1,20 @@
+title: Load products into the warehouse
+order: 1
+submission_path: submissions/ingestion/load_products.sql
+scaffold: scaffold/load_products.sql
+solution: solution/load_products.sql
+reseed: projects/datamart-intelligence-platform/seeds/ingestion_seed.sql
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: sql_ingest
+    name: loads one clean row per product
+    asserts:
+      - query: "SELECT COUNT(*)::int FROM raw.products"
+        equals: 3
+        hint: "one row per SKU — the feed has a duplicate SKU1"
+      - query: "SELECT COUNT(DISTINCT sku)::int FROM raw.products"
+        equals: 3
+      - query: "SELECT ROUND(price * 100)::int FROM raw.products WHERE sku = 'SKU1'"
+        equals: 1199
+        hint: "keep the LATEST SKU1 (Widget Pro, 11.99) by loaded_at"

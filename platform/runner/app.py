@@ -36,6 +36,7 @@ HOME = ("__home__", None)
 _REAL_INFRA_CHECKS = {"sql_assert", "dbt_test", "airflow"}
 _SPRINT_LABELS = {
     "sql-fundamentals": "SQL Fundamentals",
+    "ingestion": "Ingestion",
     "sprint-2-dbt": "Sprint 2 · dbt",
     "sprint-3-airflow": "Sprint 3 · Airflow",
     "capstone": "Capstone",

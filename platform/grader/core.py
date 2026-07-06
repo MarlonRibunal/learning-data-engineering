@@ -60,8 +60,8 @@ def _read_order(spec_file: Path) -> int:
         return 100
 
 
-# Curriculum order: fundamentals first, numbered sprints next, capstone last.
-_SPRINT_ORDER = ["sql-fundamentals", "sprint-2-dbt", "sprint-3-airflow"]
+# Curriculum order: fundamentals, then the lifecycle sprints, capstone last.
+_SPRINT_ORDER = ["sql-fundamentals", "ingestion", "sprint-2-dbt", "sprint-3-airflow"]
 
 
 def _sprint_rank(sprint: str) -> tuple[int, int]:

@@ -1,0 +1,18 @@
+title: Make the load idempotent (upsert)
+order: 2
+submission_path: submissions/ingestion/upsert_products.sql
+scaffold: scaffold/upsert_products.sql
+solution: solution/upsert_products.sql
+reseed: projects/datamart-intelligence-platform/seeds/ingestion_seed.sql
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: sql_ingest
+    name: safe to run twice (idempotent)
+    runs: 2
+    asserts:
+      - query: "SELECT COUNT(*)::int FROM raw.products"
+        equals: 3
+        hint: "after two runs there should still be 3 rows, not 6"
+      - query: "SELECT name FROM raw.products WHERE sku = 'SKU1'"
+        equals: "Widget Pro"
