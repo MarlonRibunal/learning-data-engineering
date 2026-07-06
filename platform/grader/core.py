@@ -33,6 +33,31 @@ def default_tasks_root(repo_root: Path) -> Path:
     return repo_root / DEFAULT_TASKS_ROOT
 
 
+def discover_tasks(repo_root: Path, tasks_root: Path | None = None) -> list[tuple[str, str]]:
+    """Return (sprint, task) pairs discovered from spec.yml files, sprint-ordered.
+
+    Shared by the CLI (`check list`) and the Streamlit runner so both show the
+    same task list in the same order.
+    """
+    root = tasks_root or default_tasks_root(repo_root)
+    if not root.is_dir():
+        return []
+    pairs = [(p.parent.parent.name, p.parent.name) for p in root.glob("*/*/spec.yml")]
+    return sorted(pairs, key=lambda st: (_sprint_rank(st[0]), st[0], st[1]))
+
+
+# Curriculum order: fundamentals first, numbered sprints next, capstone last.
+_SPRINT_ORDER = ["sql-fundamentals", "sprint-2-dbt", "sprint-3-airflow"]
+
+
+def _sprint_rank(sprint: str) -> tuple[int, int]:
+    if sprint in _SPRINT_ORDER:
+        return (0, _SPRINT_ORDER.index(sprint))
+    if sprint == "capstone":
+        return (2, 0)
+    return (1, 0)  # unknown sprints sit between the known ones and the capstone
+
+
 def run_check(
     sprint: str,
     task: str,
