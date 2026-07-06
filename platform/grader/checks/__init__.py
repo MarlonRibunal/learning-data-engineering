@@ -5,6 +5,7 @@ New check kinds are added by creating a module here and importing it below.
 
 from . import (  # noqa: F401  (import for side effects: registers check types)
     airflow_check,
+    data_test,
     dbt_check,
     file_check,
     sql_check,
