@@ -1,0 +1,24 @@
+title: Label order size (CASE)
+order: 6
+submission_path: submissions/sql-fundamentals/label_order_size.sql
+scaffold: scaffold/label_order_size.sql
+solution: solution/label_order_size.sql
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: file_contains
+    name: reads from the orders table
+    pattern: "(?is)from\\s+orders\\b"
+    hint: "SELECT ... FROM orders"
+  - type: file_contains
+    name: uses a CASE expression
+    pattern: "(?is)case\\s+when"
+    hint: "CASE WHEN <condition> THEN ... ELSE ... END"
+  - type: file_contains
+    name: closes the CASE with END
+    pattern: "(?is)\\bend\\b"
+    hint: "every CASE must finish with END"
+  - type: file_contains
+    name: tests the amount threshold
+    pattern: "(?is)total_amount\\s*(>=|>)\\s*100"
+    hint: "large when total_amount >= 100"
