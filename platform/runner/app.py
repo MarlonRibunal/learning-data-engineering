@@ -24,7 +24,7 @@ if str(_PLATFORM_DIR) not in sys.path:
 
 import streamlit as st  # noqa: E402
 
-from grader import Status, discover_tasks, run_check, start  # noqa: E402
+from grader import Status, discover_tasks, next_task, run_check, start  # noqa: E402
 from grader.core import default_tasks_root  # noqa: E402
 from grader.progress import load as load_progress  # noqa: E402
 from grader.spec import SpecError, TaskSpec, load_spec  # noqa: E402
@@ -135,8 +135,7 @@ def _render_home(tasks, progress, done) -> None:
     )
     st.progress(done / len(tasks), text=f"{done} of {len(tasks)} tasks passed")
 
-    nxt = next(((s, t) for s, t in tasks
-                if progress.get(s, {}).get(t, {}).get("status") != "pass"), None)
+    nxt = next_task(REPO_ROOT)
     if nxt:
         if st.button(f"▶ Continue: {_sprint_label(nxt[0])} · {nxt[1]}", type="primary"):
             st.session_state.sel = nxt

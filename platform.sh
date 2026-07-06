@@ -7,6 +7,7 @@
 #   ./platform.sh up         just bring the Docker stack up (and wait for it)
 #   ./platform.sh runner     just open the web app (assumes setup already ran)
 #   ./platform.sh list       list tasks and your progress
+#   ./platform.sh status     progress dashboard + your next task
 #   ./platform.sh down       stop the Docker stack   (add -v to wipe data)
 #
 set -euo pipefail
@@ -56,12 +57,14 @@ case "${1:-start}" in
   setup)  setup ;;
   up)     stack_up ;;
   runner) setup; runner ;;
-  list)   setup; PYTHONPATH="$ROOT/platform" "$VENV/bin/python" -m grader.cli --repo-root "$ROOT" list ;;
+  list|status)
+    setup
+    PYTHONPATH="$ROOT/platform" "$VENV/bin/python" -m grader.cli --repo-root "$ROOT" "$1" ;;
   down)   shift; docker compose down "$@" ;;
   start|"")
     setup
     stack_up
     runner
     ;;
-  *) die "usage: ./platform.sh [start|setup|up|runner|list|down]" ;;
+  *) die "usage: ./platform.sh [start|setup|up|runner|list|status|down]" ;;
 esac

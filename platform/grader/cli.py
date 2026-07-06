@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 from . import progress
-from .core import discover_tasks, run_check, start
+from .core import discover_tasks, next_task, run_check, start
 from .result import Status
 from .spec import SpecError
 
@@ -65,6 +65,11 @@ def _cmd_check(args) -> int:
             rel = result.proof_dir.relative_to(repo_root)
             print(f"{_GREEN}🎉 Portfolio artifact written to {rel}{_RESET} — "
                   f"commit it to your GitHub to show what you built.")
+        nxt = next_task(repo_root)
+        if nxt is None:
+            print(f"{_GREEN}That was the last one — every task passed. 🎉{_RESET}")
+        elif nxt != (args.sprint, args.task):
+            print(f"{_DIM}Next up:{_RESET} check start {nxt[0]} {nxt[1]}")
         return 0
     if result.status is Status.ERROR:
         print(f"{_YELLOW}COULD NOT RUN{_RESET} — infrastructure is unavailable, "
@@ -114,6 +119,50 @@ def _cmd_list(args) -> int:
     return 0
 
 
+def _cmd_status(args) -> int:
+    repo_root = _resolve_repo_root(args.repo_root)
+    tasks = discover_tasks(repo_root)
+    if not tasks:
+        print("No tasks found.")
+        return 0
+    prog = progress.load(repo_root)
+
+    # Per-sprint counts, preserving curriculum order.
+    order: list[str] = []
+    counts: dict[str, list[int]] = {}
+    for sprint, task in tasks:
+        if sprint not in counts:
+            counts[sprint] = [0, 0]
+            order.append(sprint)
+        counts[sprint][1] += 1
+        if prog.get(sprint, {}).get(task, {}).get("status") == "pass":
+            counts[sprint][0] += 1
+
+    total_pass = sum(c[0] for c in counts.values())
+    total = len(tasks)
+    bar = _bar(total_pass, total)
+    print(f"Progress: {_GREEN}{total_pass}/{total}{_RESET} passed  {bar}\n")
+
+    width = max(len(s) for s in order)
+    for sprint in order:
+        done, n = counts[sprint]
+        mark = f"{_GREEN}✓{_RESET}" if done == n else f"{_DIM}·{_RESET}"
+        print(f"  {sprint.ljust(width)}   {done}/{n}  {mark}")
+
+    nxt = next_task(repo_root)
+    print()
+    if nxt is None:
+        print(f"{_GREEN}All tasks passed 🎉{_RESET}")
+    else:
+        print(f"Next: {nxt[0]}/{nxt[1]}   →   check start {nxt[0]} {nxt[1]}")
+    return 0
+
+
+def _bar(done: int, total: int, width: int = 20) -> str:
+    filled = round(width * done / total) if total else 0
+    return f"{_GREEN}{'█' * filled}{_RESET}{_DIM}{'░' * (width - filled)}{_RESET}"
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="check", description="Learn-by-doing grader")
     parser.add_argument("--repo-root", help="repo root (default: auto-detect)")
@@ -133,6 +182,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_list = sub.add_parser("list", help="list all tasks and your progress")
     p_list.set_defaults(func=_cmd_list)
+
+    p_status = sub.add_parser("status", help="progress dashboard + your next task")
+    p_status.set_defaults(func=_cmd_status)
     return parser
 
 
