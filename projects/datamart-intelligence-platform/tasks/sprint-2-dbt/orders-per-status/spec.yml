@@ -1,0 +1,19 @@
+title: Count orders per status
+order: 1
+submission_path: projects/datamart-intelligence-platform/dbt/models/marts/orders_per_status.sql
+scaffold: scaffold/orders_per_status.sql
+solution: solution/orders_per_status.sql
+reseed: projects/datamart-intelligence-platform/seeds/raw_seed.sql
+checks:
+  - type: dbt_test
+    name: orders_per_status builds and passes its tests
+    select: orders_per_status
+  - type: sql_assert
+    name: one row per status
+    query: "SELECT COUNT(*)::int FROM analytics_analytics.orders_per_status"
+    equals: 3
+  - type: sql_assert
+    name: counts all five orders
+    query: "SELECT SUM(order_count)::int FROM analytics_analytics.orders_per_status"
+    equals: 5
+    hint: "COUNT(*) per status; the seed has 5 orders total"

@@ -13,3 +13,19 @@ models:
         description: "Total revenue for the status."
         tests:
           - not_null
+
+  - name: orders_per_status
+    description: "Number of orders per status (sprint-2-dbt exercise)."
+    columns:
+      - name: status
+        tests: [not_null, unique]
+      - name: order_count
+        tests: [not_null]
+
+  - name: avg_order_value
+    description: "Average order value per status (sprint-2-dbt exercise)."
+    columns:
+      - name: status
+        tests: [not_null, unique]
+      - name: avg_amount
+        tests: [not_null]
