@@ -1,4 +1,5 @@
 title: Make the hello_grader Airflow DAG succeed
+order: 1
 submission_path: projects/datamart-intelligence-platform/dags/hello_grader.py
 scaffold: scaffold/hello_grader.py
 solution: solution/hello_grader.py
