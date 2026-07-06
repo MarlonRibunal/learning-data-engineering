@@ -3,15 +3,17 @@
 Run it from the repo root:
 
     streamlit run platform/runner/app.py
+    # or: ./platform.sh runner
 
-It is a thin shell over the grader: the sidebar lists tasks and progress, the
-main pane shows the lesson + an in-browser editor, and "Check my work" calls the
-same ``run_check`` the CLI uses. Runs on the host so it can reach the stack; no
-hosting, no login.
+A thin shell over the grader: the sidebar groups tasks by sprint with live state,
+the main pane shows the lesson + an in-browser editor, and "Check my work" calls
+the same ``run_check`` the CLI uses. Runs on the host so it can reach the stack;
+no hosting, no login.
 """
 
 from __future__ import annotations
 
+import socket
 import sys
 from pathlib import Path
 
@@ -25,15 +27,72 @@ import streamlit as st  # noqa: E402
 from grader import Status, discover_tasks, run_check, start  # noqa: E402
 from grader.core import default_tasks_root  # noqa: E402
 from grader.progress import load as load_progress  # noqa: E402
-from grader.spec import SpecError, load_spec  # noqa: E402
+from grader.spec import SpecError, TaskSpec, load_spec  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+HOME = ("__home__", None)
 
-_STATUS_ICON = {"pass": "✅", "fail": "❌", "error": "⚠️"}
+_REAL_INFRA_CHECKS = {"sql_assert", "dbt_test", "airflow"}
+_SPRINT_LABELS = {
+    "sql-fundamentals": "SQL Fundamentals",
+    "sprint-2-dbt": "Sprint 2 · dbt",
+    "sprint-3-airflow": "Sprint 3 · Airflow",
+    "capstone": "Capstone",
+}
 
 
+# ---------- small helpers ----------
+def _sprint_label(sprint: str) -> str:
+    return _SPRINT_LABELS.get(sprint, sprint.replace("-", " ").title())
+
+
+def _language_for(path: str) -> str:
+    if path.endswith(".sql"):
+        return "sql"
+    if path.endswith(".py"):
+        return "python"
+    return "text"
+
+
+def _needs_stack(spec: TaskSpec) -> bool:
+    if spec.reseed:
+        return True
+    return any(c.get("type") in _REAL_INFRA_CHECKS for c in spec.checks)
+
+
+def _stack_up() -> bool:
+    """Cheap best-effort check: is Postgres reachable on localhost:5432?"""
+    try:
+        with socket.create_connection(("127.0.0.1", 5432), timeout=0.3):
+            return True
+    except OSError:
+        return False
+
+
+def _task_state(sprint: str, task: str, progress: dict) -> str:
+    """One of: pass, fail, error, in-progress, new."""
+    status = progress.get(sprint, {}).get(task, {}).get("status")
+    if status in ("pass", "fail", "error"):
+        return status
+    try:
+        spec = load_spec(sprint, task, default_tasks_root(REPO_ROOT))
+        if (REPO_ROOT / spec.submission_path).exists():
+            return "in-progress"
+    except SpecError:
+        pass
+    return "new"
+
+
+_STATE_ICON = {"pass": "✅", "fail": "❌", "error": "⚠️",
+               "in-progress": "✏️", "new": "⬜"}
+
+
+# ---------- main ----------
 def main() -> None:
     st.set_page_config(page_title="Learn Data Engineering", page_icon="🧪", layout="wide")
+    if "sel" not in st.session_state:
+        st.session_state.sel = HOME
+
     tasks = discover_tasks(REPO_ROOT)
     progress = load_progress(REPO_ROOT)
 
@@ -44,19 +103,62 @@ def main() -> None:
         st.write("Add a task under `projects/datamart-intelligence-platform/tasks/`.")
         return
 
-    labels = []
+    done = sum(1 for s, t in tasks if progress.get(s, {}).get(t, {}).get("status") == "pass")
+    st.sidebar.progress(done / len(tasks), text=f"{done}/{len(tasks)} tasks passed")
+
+    if st.sidebar.button("🏠 Home", use_container_width=True):
+        st.session_state.sel = HOME
+
+    current_sprint = None
     for sprint, task in tasks:
-        status = progress.get(sprint, {}).get(task, {}).get("status")
-        labels.append(f"{_STATUS_ICON.get(status, '⬜')} {sprint} / {task}")
+        if sprint != current_sprint:
+            st.sidebar.markdown(f"**{_sprint_label(sprint)}**")
+            current_sprint = sprint
+        icon = _STATE_ICON[_task_state(sprint, task, progress)]
+        if st.sidebar.button(f"{icon}  {task}", key=f"nav-{sprint}-{task}",
+                             use_container_width=True):
+            st.session_state.sel = (sprint, task)
 
-    choice = st.sidebar.radio("Tasks", options=range(len(tasks)),
-                              format_func=lambda i: labels[i])
-    sprint, task = tasks[choice]
+    sel_sprint, sel_task = st.session_state.sel
+    if sel_sprint == HOME[0]:
+        _render_home(tasks, progress, done)
+    else:
+        _render_task(sel_sprint, sel_task, progress)
 
-    done = sum(1 for s, t in tasks
-               if progress.get(s, {}).get(t, {}).get("status") == "pass")
-    st.sidebar.caption(f"{done}/{len(tasks)} tasks passed")
 
+def _render_home(tasks, progress, done) -> None:
+    st.title("🧪 Learn data engineering by doing")
+    st.markdown(
+        "Write real SQL, dbt, and Airflow. The platform grades your work against the "
+        "**real stack** — not a simulation. Finish the capstone and you get a shareable "
+        "portfolio artifact to put on your GitHub."
+    )
+    st.progress(done / len(tasks), text=f"{done} of {len(tasks)} tasks passed")
+
+    nxt = next(((s, t) for s, t in tasks
+                if progress.get(s, {}).get(t, {}).get("status") != "pass"), None)
+    if nxt:
+        if st.button(f"▶ Continue: {_sprint_label(nxt[0])} · {nxt[1]}", type="primary"):
+            st.session_state.sel = nxt
+            st.rerun()
+    else:
+        st.success("🎉 You've passed every task. Nice work!")
+
+    if not _stack_up():
+        st.warning("The data stack looks **down**. Real-infra tasks need it — start with "
+                   "`./platform.sh up` (or `docker compose up -d`).")
+
+    st.divider()
+    current_sprint = None
+    for sprint, task in tasks:
+        if sprint != current_sprint:
+            st.subheader(_sprint_label(sprint))
+            current_sprint = sprint
+        icon = _STATE_ICON[_task_state(sprint, task, progress)]
+        st.markdown(f"{icon}  {task}")
+
+
+def _render_task(sprint, task, progress) -> None:
     try:
         spec = load_spec(sprint, task, default_tasks_root(REPO_ROOT))
     except SpecError as exc:
@@ -64,10 +166,14 @@ def main() -> None:
         return
 
     st.title(spec.title)
-    st.caption(f"{sprint} / {task}")
+    st.caption(f"{_sprint_label(sprint)} · {task}")
+
+    if _needs_stack(spec) and not _stack_up():
+        st.warning("The data stack looks **down**, so checks will report *could not run* "
+                   "(not a wrong answer). Start it: `./platform.sh up`.")
 
     submission = REPO_ROOT / spec.submission_path
-
+    lang = _language_for(spec.submission_path)
     col_lesson, col_work = st.columns([1, 1])
 
     with col_lesson:
@@ -76,30 +182,37 @@ def main() -> None:
         if lesson_file.is_file():
             st.markdown(lesson_file.read_text())
         elif spec.scaffold:
-            st.markdown("Read the instructions in the scaffold, then write your solution.")
-            st.code((spec.task_dir / spec.scaffold).read_text(), language="sql")
+            st.markdown("Read the scaffold, then write your solution.")
+            st.code((spec.task_dir / spec.scaffold).read_text(), language=lang)
         else:
             st.info("No lesson text for this task yet.")
 
     with col_work:
         st.subheader("Your work")
         if not submission.exists():
-            st.info(f"Not started. Copy the scaffold into `{spec.submission_path}`.")
-            if st.button("Start this task"):
+            st.info("Not started yet.")
+            if spec.scaffold and st.button("▶ Start this task", type="primary"):
                 start(sprint, task, REPO_ROOT, overwrite=False)
                 st.rerun()
-        else:
-            current = submission.read_text()
-            edited = st.text_area("Edit and save your submission", value=current,
-                                  height=260, key=f"editor-{sprint}-{task}")
-            c1, c2 = st.columns(2)
-            if c1.button("💾 Save"):
-                submission.write_text(edited)
-                st.success("Saved.")
-            if c2.button("✅ Check my work", type="primary"):
-                submission.write_text(edited)  # grade what's on screen
-                result = run_check(sprint, task, REPO_ROOT, make_proof=True)
-                _render_result(result)
+            return
+
+        current = submission.read_text()
+        edited = st.text_area("Edit your submission", value=current, height=240,
+                              key=f"editor-{sprint}-{task}")
+        with st.expander("Preview (syntax-highlighted)"):
+            st.code(edited, language=lang)
+
+        c1, c2, c3 = st.columns(3)
+        if c1.button("💾 Save"):
+            submission.write_text(edited)
+            st.toast("Saved.")
+        if c2.button("✅ Check my work", type="primary"):
+            submission.write_text(edited)
+            result = run_check(sprint, task, REPO_ROOT, make_proof=True)
+            _render_result(result)
+        if spec.scaffold and c3.button("↺ Reset to scaffold"):
+            start(sprint, task, REPO_ROOT, overwrite=True)
+            st.rerun()
 
 
 def _render_result(result) -> None:
@@ -121,9 +234,12 @@ def _render_result(result) -> None:
                 st.image(str(chart))
     elif result.status is Status.ERROR:
         st.warning("Could not run — the stack looks unavailable (not your work). "
-                   "Start it with `docker compose up -d` and try again.")
+                   "Start it with `./platform.sh up` and try again.")
     else:
         st.error("Not yet — fix the items above and check again.")
+
+
+_STATUS_ICON = {"pass": "✅", "fail": "❌", "error": "⚠️"}
 
 
 if __name__ == "__main__":
