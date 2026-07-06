@@ -16,3 +16,15 @@ checks:
     hint: >
       Your model must return one row per status with total revenue.
       Read from source('raw','orders') and SUM(total_amount) grouped by status.
+  # Correctness, not just structure: a stub that returns a fake row passes the
+  # not_null/unique tests, so we also assert the numbers are right.
+  - type: sql_assert
+    name: one row per distinct status
+    query: "SELECT COUNT(*)::int FROM analytics_analytics.revenue_by_status"
+    equals: 3
+    hint: "expected 3 rows (shipped, pending, cancelled) — GROUP BY status"
+  - type: sql_assert
+    name: total revenue is correct
+    query: "SELECT ROUND(SUM(revenue))::int FROM analytics_analytics.revenue_by_status"
+    equals: 986
+    hint: "revenue should be SUM(total_amount); the totals across statuses sum to 985.75"

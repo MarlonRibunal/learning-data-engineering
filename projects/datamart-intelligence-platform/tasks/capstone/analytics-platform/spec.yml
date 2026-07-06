@@ -11,6 +11,14 @@ checks:
   - type: dbt_test
     name: warehouse model builds and passes its tests
     select: revenue_by_status
+  - type: sql_assert
+    name: warehouse has one row per status
+    query: "SELECT COUNT(*)::int FROM analytics_analytics.revenue_by_status"
+    equals: 3
+  - type: sql_assert
+    name: warehouse revenue is correct
+    query: "SELECT ROUND(SUM(revenue))::int FROM analytics_analytics.revenue_by_status"
+    equals: 986
   - type: airflow
     name: orchestration DAG runs successfully
     dag_id: hello_grader

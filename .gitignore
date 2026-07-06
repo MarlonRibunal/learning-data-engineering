@@ -14,3 +14,9 @@ submissions/
 portfolio/
 .venv/
 .pytest_cache/
+
+# dbt-generated
+projects/**/dbt/target/
+projects/**/dbt/logs/
+projects/**/dbt/dbt_packages/
+config/.user.yml
