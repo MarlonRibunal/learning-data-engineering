@@ -1,4 +1,5 @@
 title: Build the revenue_by_status dbt model
+order: 2
 submission_path: projects/datamart-intelligence-platform/dbt/models/marts/revenue_by_status.sql
 scaffold: scaffold/revenue_by_status.sql
 solution: solution/revenue_by_status.sql
