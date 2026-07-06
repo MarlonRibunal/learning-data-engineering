@@ -281,6 +281,7 @@ We're building the most comprehensive open-source data engineering learning plat
 
 ## Learning Resources
 
+- [**The Data Engineering Lifecycle**](docs/data-engineering-lifecycle.md) - How the platform maps to the framework from *Fundamentals of Data Engineering* (Reis & Housley)
 - [**Full Learning Blueprint**](docs/blueprint.md) - Complete 6-month roadmap
 - [**Sprint-by-Sprint Guides**](docs/sprint-guides/) - Detailed weekly plans
 - [**Tool Cheatsheets**](docs/cheatsheets/) - Quick references
