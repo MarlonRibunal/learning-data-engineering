@@ -1,0 +1,14 @@
+title: Put the DAG on a schedule
+order: 3
+submission_path: projects/datamart-intelligence-platform/dags/scheduled_report.py
+scaffold: scaffold/scheduled_report.py
+solution: solution/scheduled_report.py
+
+checks:
+  - type: airflow
+    name: the scheduled DAG runs successfully
+    dag_id: scheduled_report
+  - type: file_contains
+    name: sets a real schedule (not None)
+    pattern: "(?is)schedule_interval\\s*=\\s*['\"]"
+    hint: "schedule_interval=\"@daily\" — a preset or cron string, not None"

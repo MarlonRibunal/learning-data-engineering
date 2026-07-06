@@ -1,0 +1,14 @@
+title: Chain two tasks with a dependency
+order: 2
+submission_path: projects/datamart-intelligence-platform/dags/two_step.py
+scaffold: scaffold/two_step.py
+solution: solution/two_step.py
+
+checks:
+  - type: airflow
+    name: the two-step DAG runs successfully
+    dag_id: two_step_pipeline
+  - type: file_contains
+    name: wires the task dependency (>>)
+    pattern: "(?is)\\w+\\s*>>\\s*\\w+"
+    hint: "set the run order with: extract_task >> load_task"
