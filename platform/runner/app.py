@@ -219,6 +219,11 @@ def _render_task(sprint, task, progress) -> None:
         with st.expander("Preview (syntax-highlighted)"):
             st.code(edited, language=lang)
 
+        # Live SQL playground: run plain SQL (not dbt/jinja models) and see the rows.
+        if lang == "sql" and "{{" not in edited:
+            if st.button("▶ Run query", help="Run it against the warehouse and see the rows"):
+                _run_playground(edited)
+
         c1, c2, c3 = st.columns(3)
         if c1.button("💾 Save"):
             submission.write_text(edited)
@@ -238,6 +243,36 @@ def _render_task(sprint, task, progress) -> None:
                 st.caption("Try it yourself first — the struggle is where the learning "
                            "happens. But a worked example beats staying stuck.")
                 st.code(solution_file.read_text(), language=lang)
+
+
+def _run_playground(sql: str) -> None:
+    from decimal import Decimal
+
+    from grader.context import InfraError
+    from grader.playground import run_sql
+
+    try:
+        res = run_sql(REPO_ROOT, sql)
+    except InfraError as exc:
+        st.warning(f"Can't run — the stack looks down ({exc}). Start it: `./platform.sh up`.")
+        return
+    if res.error:
+        st.error(res.error)
+        return
+    if not res.rows:
+        st.info("Query ran successfully — 0 rows returned.")
+        return
+
+    def _cell(v):
+        if isinstance(v, Decimal):
+            return float(v)
+        if isinstance(v, (int, float, str, type(None))):
+            return v
+        return str(v)
+
+    records = [{c: _cell(v) for c, v in zip(res.columns, row)} for row in res.rows]
+    st.dataframe(records, use_container_width=True)
+    st.caption(f"{len(res.rows)} row(s)" + (" (truncated)" if res.truncated else ""))
 
 
 def _render_result(result) -> None:
