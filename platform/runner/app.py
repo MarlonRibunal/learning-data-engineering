@@ -22,7 +22,7 @@ if str(_PLATFORM_DIR) not in sys.path:
 
 import streamlit as st  # noqa: E402
 
-from grader import Status, run_check, start  # noqa: E402
+from grader import Status, discover_tasks, run_check, start  # noqa: E402
 from grader.core import default_tasks_root  # noqa: E402
 from grader.progress import load as load_progress  # noqa: E402
 from grader.spec import SpecError, load_spec  # noqa: E402
@@ -32,22 +32,9 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 _STATUS_ICON = {"pass": "✅", "fail": "❌", "error": "⚠️"}
 
 
-def discover_tasks() -> list[tuple[str, str]]:
-    """Return (sprint, task) pairs by scanning for spec.yml files."""
-    root = default_tasks_root(REPO_ROOT)
-    if not root.is_dir():
-        return []
-    found = []
-    for spec_file in sorted(root.glob("*/*/spec.yml")):
-        sprint = spec_file.parent.parent.name
-        task = spec_file.parent.name
-        found.append((sprint, task))
-    return found
-
-
 def main() -> None:
     st.set_page_config(page_title="Learn Data Engineering", page_icon="🧪", layout="wide")
-    tasks = discover_tasks()
+    tasks = discover_tasks(REPO_ROOT)
     progress = load_progress(REPO_ROOT)
 
     st.sidebar.title("🧪 Learn by doing")

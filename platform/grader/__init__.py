@@ -11,8 +11,11 @@ Streamlit lesson-runner — the UI is a thin shell over ``run_check``.
 
 from __future__ import annotations
 
-from .core import run_check, start
+from .core import discover_tasks, run_check, start
 from .result import CheckResult, Result, Status
 from .spec import SpecError
 
-__all__ = ["run_check", "start", "Result", "CheckResult", "Status", "SpecError"]
+__all__ = [
+    "run_check", "start", "discover_tasks",
+    "Result", "CheckResult", "Status", "SpecError",
+]

@@ -68,6 +68,40 @@ cd learning-data-engineering
 | **Redpanda Console** | http://localhost:8082 | - |
 
 
+## Start Here — Learn by Doing (60 seconds)
+
+`./bootstrap.sh` above just starts the raw infrastructure. To actually **learn by
+doing** — get real exercises that the platform grades against the live stack — use
+the learning platform:
+
+```bash
+./platform.sh
+```
+
+One command: it creates a Python virtualenv, installs the platform, brings the data
+stack up (waits until it's ready), and opens the interactive lesson-runner at
+**http://localhost:8501**. Pick a task, write real SQL / dbt / Airflow, and hit
+**Check my work** — the grader runs your work against the real Postgres, dbt, and
+Airflow, not a simulation. Finish the capstone and it hands you a shareable
+**portfolio artifact** to commit to your own GitHub.
+
+Prefer the terminal?
+
+```bash
+./platform.sh setup                          # venv + dependencies (one time)
+./platform.sh up                             # bring the stack up
+./scripts/check.sh list                      # see every task and your progress
+./scripts/check.sh start sql-fundamentals revenue-by-category   # scaffold a task
+./scripts/check.sh check sql-fundamentals revenue-by-category   # grade it
+./platform.sh down                           # stop the stack when you're done
+```
+
+How grading works: the committed file for each task is an incomplete **scaffold** —
+you edit it, and the grader checks correctness (not just that it runs). A task is
+`pass` only when your work is actually right. A `?? / could not run` result means the
+stack is down (start it with `./platform.sh up`), never that your answer was wrong.
+
+
 ## Complete Learning Path
 
 **Learning Cadence: By Sprint**  
