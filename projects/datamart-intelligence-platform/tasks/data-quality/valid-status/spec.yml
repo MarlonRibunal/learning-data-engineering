@@ -1,0 +1,13 @@
+title: "Test: only valid statuses"
+order: 2
+submission_path: submissions/data-quality/valid_status.sql
+scaffold: scaffold/valid_status.sql
+solution: solution/valid_status.sql
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: data_test
+    name: catches the bad rows, ignores the good
+    clean_seed: projects/datamart-intelligence-platform/seeds/raw_seed.sql
+    dirty_seed: projects/datamart-intelligence-platform/seeds/dq/dirty_status.sql
+    hint: "return orders whose status is outside the allowed set"
