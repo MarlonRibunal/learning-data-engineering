@@ -93,6 +93,91 @@ def _task_state(sprint: str, task: str, progress: dict) -> str:
 _STATE_ICON = {"pass": "✅", "fail": "❌", "error": "⚠️",
                "in-progress": "✏️", "new": "⬜"}
 
+# The curriculum as the data-engineering lifecycle: (sprint, lifecycle role).
+_JOURNEY = [
+    ("sql-fundamentals", "Query"),
+    ("ingestion", "Ingestion"),
+    ("sprint-2-dbt", "Transform"),
+    ("sprint-3-airflow", "Orchestrate"),
+    ("capstone", "Serve"),
+]
+
+# Tables to sample in a task's lesson pane, by sprint (spec `preview` overrides).
+_SPRINT_PREVIEW = {
+    "sql-fundamentals": ["orders", "customers"],
+    "ingestion": ["landing.products_raw", "raw.products"],
+}
+
+
+def _sprint_counts(tasks, progress) -> dict[str, list[int]]:
+    counts: dict[str, list[int]] = {}
+    for sprint, task in tasks:
+        c = counts.setdefault(sprint, [0, 0])
+        c[1] += 1
+        if progress.get(sprint, {}).get(task, {}).get("status") == "pass":
+            c[0] += 1
+    return counts
+
+
+def _journey_dot(tasks, progress) -> str:
+    """A Graphviz journey map: sprints as lifecycle stages, coloured by progress."""
+    counts = _sprint_counts(tasks, progress)
+    lines = [
+        "digraph {",
+        '  rankdir=LR; bgcolor="transparent";',
+        '  node [shape=box style="rounded,filled" fontname="Helvetica" fontsize=11];',
+        '  edge [color="#9e9e9e"];',
+    ]
+    prev = None
+    for sprint, role in _JOURNEY:
+        if sprint not in counts:
+            continue
+        done, total = counts[sprint]
+        if total and done == total:
+            fill, font = "#2e7d32", "white"      # complete
+        elif done:
+            fill, font = "#f9a825", "black"       # in progress
+        else:
+            fill, font = "#eeeeee", "#555555"     # not started
+        node = sprint.replace("-", "_")
+        label = f"{role}\\n{_sprint_label(sprint)}\\n{done}/{total}"
+        lines.append(f'  {node} [label="{label}" fillcolor="{fill}" fontcolor="{font}"];')
+        if prev:
+            lines.append(f"  {prev} -> {node};")
+        prev = node
+    lines.append("}")
+    return "\n".join(lines)
+
+
+def _to_records(res) -> list[dict]:
+    from decimal import Decimal
+
+    def cell(v):
+        if isinstance(v, Decimal):
+            return float(v)
+        if isinstance(v, (int, float, str, type(None))):
+            return v
+        return str(v)
+
+    return [{c: cell(v) for c, v in zip(res.columns, row)} for row in res.rows]
+
+
+def _preview_tables(sprint: str, spec) -> list[str]:
+    return spec.preview or _SPRINT_PREVIEW.get(sprint, [])
+
+
+def _safe_preview(table: str, seed: bool):
+    from grader.context import InfraError
+    from grader.playground import run_sql
+
+    try:
+        res = run_sql(REPO_ROOT, f"SELECT * FROM {table} LIMIT 5", seed=seed)
+    except InfraError:
+        return None
+    if res.error or not res.rows:
+        return None
+    return _to_records(res)
+
 
 # ---------- main ----------
 def main() -> None:
@@ -141,6 +226,9 @@ def _render_home(tasks, progress, done) -> None:
         "portfolio artifact to put on your GitHub."
     )
     st.progress(done / len(tasks), text=f"{done} of {len(tasks)} tasks passed")
+
+    st.caption("Your journey through the data engineering lifecycle:")
+    st.graphviz_chart(_journey_dot(tasks, progress), use_container_width=True)
 
     nxt = next_task(REPO_ROOT)
     if nxt:
@@ -205,6 +293,17 @@ def _render_task(sprint, task, progress) -> None:
         else:
             st.info("No lesson text for this task yet.")
 
+        preview = _preview_tables(sprint, spec)
+        if preview and _stack_up():
+            with st.expander("📋 Peek at the data"):
+                for i, table in enumerate(preview):
+                    st.caption(f"`{table}`")
+                    records = _safe_preview(table, seed=(i == 0))
+                    if records:
+                        st.dataframe(records, use_container_width=True)
+                    else:
+                        st.caption("_(empty or unavailable)_")
+
     with col_work:
         st.subheader("Your work")
         if not submission.exists():
@@ -247,8 +346,6 @@ def _render_task(sprint, task, progress) -> None:
 
 
 def _run_playground(sql: str) -> None:
-    from decimal import Decimal
-
     from grader.context import InfraError
     from grader.playground import run_sql
 
@@ -263,16 +360,7 @@ def _run_playground(sql: str) -> None:
     if not res.rows:
         st.info("Query ran successfully — 0 rows returned.")
         return
-
-    def _cell(v):
-        if isinstance(v, Decimal):
-            return float(v)
-        if isinstance(v, (int, float, str, type(None))):
-            return v
-        return str(v)
-
-    records = [{c: _cell(v) for c, v in zip(res.columns, row)} for row in res.rows]
-    st.dataframe(records, use_container_width=True)
+    st.dataframe(_to_records(res), use_container_width=True)
     st.caption(f"{len(res.rows)} row(s)" + (" (truncated)" if res.truncated else ""))
 
 
