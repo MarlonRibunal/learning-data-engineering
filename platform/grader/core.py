@@ -103,6 +103,7 @@ def run_check(
         submission_path=submission_path,
         db=db,
         runner=runner,
+        solution_path=(spec.task_dir / spec.solution) if spec.solution else None,
     )
 
     # Reseed source data first so real-infra checks are deterministic

@@ -6,19 +6,6 @@ solution: solution/rank_customers.sql
 checks:
   - type: file_exists
     name: submission exists and is non-empty
-  - type: file_contains
-    name: reads from the orders table
-    pattern: "(?is)from\\s+orders\\b"
-    hint: "SELECT ... FROM orders"
-  - type: file_contains
-    name: totals each customer's spend
-    pattern: "(?is)sum\\s*\\("
-    hint: "SUM(total_amount) per customer"
-  - type: file_contains
-    name: uses a window function
-    pattern: "(?is)(rank|row_number|dense_rank)\\s*\\(\\s*\\)\\s*over"
-    hint: "RANK() OVER (ORDER BY ...) ranks without collapsing rows"
-  - type: file_contains
-    name: ranks by spend, highest first
-    pattern: "(?is)over\\s*\\(\\s*order\\s+by\\b.*desc"
-    hint: "OVER (ORDER BY SUM(total_amount) DESC)"
+  - type: sql_result
+    name: returns the correct rows
+    ordered: true

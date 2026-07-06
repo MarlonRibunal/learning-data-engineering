@@ -6,19 +6,6 @@ solution: solution/above_average_orders.sql
 checks:
   - type: file_exists
     name: submission exists and is non-empty
-  - type: file_contains
-    name: reads from the orders table
-    pattern: "(?is)from\\s+orders\\b"
-    hint: "SELECT ... FROM orders"
-  - type: file_contains
-    name: filters with WHERE
-    pattern: "(?is)\\bwhere\\b"
-    hint: "keep only the above-average rows with WHERE"
-  - type: file_contains
-    name: uses a subquery
-    pattern: "(?is)\\(\\s*select\\b"
-    hint: "a query inside parentheses: (SELECT AVG(total_amount) FROM orders)"
-  - type: file_contains
-    name: computes the average
-    pattern: "(?is)avg\\s*\\("
-    hint: "AVG(total_amount) gives the average to compare against"
+  - type: sql_result
+    name: returns the correct rows
+    ordered: false

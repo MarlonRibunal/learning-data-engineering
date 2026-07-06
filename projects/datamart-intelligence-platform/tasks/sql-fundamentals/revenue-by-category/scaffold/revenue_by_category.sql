@@ -1,15 +1,9 @@
--- Task: Revenue by product category
+-- Task: revenue by product category
 --
--- Write a query that returns one row per product category with the total
--- revenue for that category, ordered from highest revenue to lowest.
+-- Return one row per product category with the total revenue for that category,
+-- ordered from highest revenue to lowest.
 --
--- The orders table has (at least): order_id, category, amount
---
--- Expected shape:
---   category    | revenue
---   ------------+--------
---   Electronics | 5000
---   ...
+-- The orders table has: order_id, customer_id, order_date, total_amount, status, category
 --
 -- TODO: replace this stub with your query.
 SELECT 1;

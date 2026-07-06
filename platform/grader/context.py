@@ -84,6 +84,7 @@ class Context:
     submission_path: Path
     db: Database
     runner: CommandRunner | None = None
+    solution_path: Path | None = None  # reference solution, for result-diff checks
 
 
 class PostgresDatabase:
