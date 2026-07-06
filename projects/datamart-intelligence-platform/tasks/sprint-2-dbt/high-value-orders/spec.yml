@@ -1,0 +1,15 @@
+title: Filter to high-value orders
+order: 4
+submission_path: projects/datamart-intelligence-platform/dbt/models/marts/high_value_orders.sql
+scaffold: scaffold/high_value_orders.sql
+solution: solution/high_value_orders.sql
+reseed: projects/datamart-intelligence-platform/seeds/raw_seed.sql
+checks:
+  - type: dbt_test
+    name: high_value_orders builds and passes its tests
+    select: high_value_orders
+  - type: sql_assert
+    name: keeps only the orders over 100
+    query: "SELECT COUNT(*)::int FROM analytics_analytics.high_value_orders"
+    equals: 3
+    hint: "WHERE total_amount > 100 keeps 3 of the 5 seeded orders"

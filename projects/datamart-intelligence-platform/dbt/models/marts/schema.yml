@@ -29,3 +29,17 @@ models:
         tests: [not_null, unique]
       - name: avg_amount
         tests: [not_null]
+
+  - name: high_value_orders
+    description: "Orders worth more than 100 (sprint-2-dbt exercise)."
+    columns:
+      - name: order_id
+        tests: [not_null, unique]
+
+  - name: revenue_by_customer
+    description: "Total revenue per customer (sprint-2-dbt exercise)."
+    columns:
+      - name: customer_name
+        tests: [not_null, unique]
+      - name: revenue
+        tests: [not_null]
