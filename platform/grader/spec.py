@@ -37,6 +37,7 @@ class TaskSpec:
     solution: str | None = None
     reseed: str | None = None  # SQL file (repo-root relative) to load before checks
     proof: dict | None = None  # portfolio-artifact config, emitted on pass
+    order: int = 100  # position within its sprint (lower = earlier)
 
 
 def load_spec(sprint: str, task: str, tasks_root: Path) -> TaskSpec:
@@ -74,4 +75,5 @@ def load_spec(sprint: str, task: str, tasks_root: Path) -> TaskSpec:
         solution=raw.get("solution"),
         reseed=raw.get("reseed"),
         proof=raw.get("proof"),
+        order=int(raw.get("order", 100)),
     )
