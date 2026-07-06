@@ -1,0 +1,18 @@
+# dbt profiles for local grading. The dbt project (dbt_project.yml) sets
+# `profile: 'datamart'`, so this file defines that profile against the local
+# Postgres. Mounted into dbt-service at /usr/app/config (DBT_PROFILES_DIR).
+#
+# Zero cloud credentials: everything targets the Postgres container, so tasks
+# are gradeable with just `docker compose up`.
+datamart:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: "{{ env_var('POSTGRES_HOST', 'postgres') }}"
+      port: "{{ env_var('POSTGRES_PORT', '5432') | as_number }}"
+      user: "{{ env_var('POSTGRES_USER', 'airflow') }}"
+      password: "{{ env_var('POSTGRES_PASSWORD', 'airflow') }}"
+      dbname: "{{ env_var('POSTGRES_DB', 'datamart') }}"
+      schema: analytics
+      threads: 4

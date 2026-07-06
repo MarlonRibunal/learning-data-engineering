@@ -1,4 +1,20 @@
-version: '3.8'
+x-airflow-common: &airflow-common
+  build:
+    context: ./containers/airflow
+    dockerfile: Dockerfile
+  environment: &airflow-env
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/datamart
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+  volumes:
+    - ./projects/datamart-intelligence-platform/dags:/opt/airflow/dags
+    - ./projects/datamart-intelligence-platform/scripts:/opt/airflow/scripts
+    - ./config:/opt/airflow/config
+  depends_on:
+    postgres:
+      condition: service_healthy
+
 services:
   postgres:
     image: postgres:13
@@ -8,18 +24,127 @@ services:
       POSTGRES_DB: datamart
     ports: ["5432:5432"]
     volumes: [postgres_data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ---- Airflow: init runs once, then webserver + scheduler ----
+  airflow-init:
+    <<: *airflow-common
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - >
+        airflow db init &&
+        airflow users create --username admin --password admin
+        --firstname Admin --lastname User --role Admin
+        --email admin@example.com || true
+    restart: "no"
 
   airflow-webserver:
-    build: 
-      context: ./containers/airflow
-      dockerfile: Dockerfile
-    environment:
-      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
-      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/datamart
+    <<: *airflow-common
+    command: airflow webserver
     ports: ["8080:8080"]
-    command: >
-      bash -c "airflow db init && 
-               airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com || true &&
-               airflow webserver"
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  airflow-scheduler:
+    <<: *airflow-common
+    command: airflow scheduler
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+
+  # ---- dbt: long-running container for `docker-compose exec dbt-service dbt run` ----
+  dbt-service:
+    build:
+      context: ./containers/dbt
+      dockerfile: Dockerfile
+    volumes:
+      - ./projects/datamart-intelligence-platform/dbt:/usr/app/dbt
+      - ./config:/usr/app/config
+    environment:
+      DBT_PROFILES_DIR: /usr/app/config
+    command: ["tail", "-f", "/dev/null"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ---- Streamlit dashboard ----
+  streamlit:
+    build:
+      context: ./containers/streamlit
+      dockerfile: Dockerfile
+    volumes:
+      - ./projects/datamart-intelligence-platform/streamlit:/app
+      - ./config:/app/config
+    ports: ["8501:8501"]
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ---- PGAdmin: Postgres UI ----
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@datamart.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports: ["8081:80"]
+    volumes: [pgadmin_data:/var/lib/pgadmin]
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ---- Redpanda: Kafka-compatible streaming broker ----
+  redpanda:
+    image: redpandadata/redpanda:v23.2.14
+    command:
+      - redpanda
+      - start
+      - --smp=1
+      - --memory=1G
+      - --overprovisioned
+      - --node-id=0
+      - --kafka-addr=PLAINTEXT://0.0.0.0:29092,OUTSIDE://0.0.0.0:9092
+      - --advertise-kafka-addr=PLAINTEXT://redpanda:29092,OUTSIDE://localhost:9092
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    volumes: [redpanda_data:/var/lib/redpanda/data]
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health | grep -q 'Healthy:.*true'"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  # ---- Redpanda Console: streaming UI ----
+  redpanda-console:
+    image: redpandadata/console:v2.3.1
+    environment:
+      KAFKA_BROKERS: redpanda:29092
+    ports: ["8082:8080"]
+    restart: unless-stopped
+    depends_on:
+      - redpanda
+
 volumes:
   postgres_data:
+  pgadmin_data:
+  redpanda_data:

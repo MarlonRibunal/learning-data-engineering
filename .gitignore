@@ -6,3 +6,17 @@ data/
 __pycache__/
 *.pyc
 .DS_Store
+
+# Learn-by-doing platform
+# (inline comments are not supported in .gitignore — keep patterns on their own line)
+.progress.json
+submissions/
+portfolio/
+.venv/
+.pytest_cache/
+
+# dbt-generated
+projects/**/dbt/target/
+projects/**/dbt/logs/
+projects/**/dbt/dbt_packages/
+config/.user.yml

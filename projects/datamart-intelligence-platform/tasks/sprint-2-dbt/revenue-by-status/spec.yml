@@ -1,0 +1,30 @@
+title: Build the revenue_by_status dbt model
+submission_path: projects/datamart-intelligence-platform/dbt/models/marts/revenue_by_status.sql
+scaffold: scaffold/revenue_by_status.sql
+solution: solution/revenue_by_status.sql
+
+# Reseed the raw source tables before grading so the run is deterministic
+# (reseed-before / assert-after). Path is relative to the repo root.
+reseed: projects/datamart-intelligence-platform/seeds/raw_seed.sql
+
+# Real-infra check: `dbt build` runs the model AND its schema tests in the
+# dbt-service container. Needs the stack up (`docker compose up -d`).
+checks:
+  - type: dbt_test
+    name: revenue_by_status builds and passes its tests
+    select: revenue_by_status
+    hint: >
+      Your model must return one row per status with total revenue.
+      Read from source('raw','orders') and SUM(total_amount) grouped by status.
+  # Correctness, not just structure: a stub that returns a fake row passes the
+  # not_null/unique tests, so we also assert the numbers are right.
+  - type: sql_assert
+    name: one row per distinct status
+    query: "SELECT COUNT(*)::int FROM analytics_analytics.revenue_by_status"
+    equals: 3
+    hint: "expected 3 rows (shipped, pending, cancelled) — GROUP BY status"
+  - type: sql_assert
+    name: total revenue is correct
+    query: "SELECT ROUND(SUM(revenue))::int FROM analytics_analytics.revenue_by_status"
+    equals: 986
+    hint: "revenue should be SUM(total_amount); the totals across statuses sum to 985.75"

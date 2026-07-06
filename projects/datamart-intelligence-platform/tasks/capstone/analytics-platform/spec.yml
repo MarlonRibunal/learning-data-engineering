@@ -1,0 +1,40 @@
+title: "Capstone: the DataMart analytics platform"
+# Reference deliverable (built across sprint-2-dbt and sprint-3-airflow).
+submission_path: projects/datamart-intelligence-platform/dbt/models/marts/revenue_by_status.sql
+
+# Reseed the raw source so the whole pipeline grades deterministically.
+reseed: projects/datamart-intelligence-platform/seeds/raw_seed.sql
+
+# Composite: the capstone verifies the whole chain together — the dbt mart builds
+# and passes its data-quality tests, and the orchestration DAG runs green.
+checks:
+  - type: dbt_test
+    name: warehouse model builds and passes its tests
+    select: revenue_by_status
+  - type: sql_assert
+    name: warehouse has one row per status
+    query: "SELECT COUNT(*)::int FROM analytics_analytics.revenue_by_status"
+    equals: 3
+  - type: sql_assert
+    name: warehouse revenue is correct
+    query: "SELECT ROUND(SUM(revenue))::int FROM analytics_analytics.revenue_by_status"
+    equals: 986
+  - type: airflow
+    name: orchestration DAG runs successfully
+    dag_id: hello_grader
+
+# On pass, emit a portfolio artifact the learner commits to their own GitHub.
+proof:
+  title: "DataMart Analytics Platform"
+  summary: >
+    An end-to-end batch warehouse: raw orders are transformed into a tested dbt
+    mart and orchestrated by Airflow. Every step is verified against the real
+    stack — not a simulation.
+  pipeline: |
+    raw.orders  ──dbt build+test──▶  analytics.revenue_by_status  ──Airflow──▶  dashboard
+  chart:
+    # Best-effort: renders from the learner's real result if the stack is up.
+    # Schema is dbt's default for a marts model; adjust after the first live run.
+    query: "SELECT status, revenue FROM analytics_analytics.revenue_by_status ORDER BY revenue DESC"
+    title: "Revenue by status"
+    ylabel: "Revenue"
