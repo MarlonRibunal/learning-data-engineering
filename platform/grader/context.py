@@ -23,6 +23,14 @@ class InfraError(RuntimeError):
     """
 
 
+class QueryError(RuntimeError):
+    """Raised when the learner's own SQL is invalid (syntax, constraint, etc).
+
+    Distinct from InfraError: this IS the learner's fault, so checks report it
+    as Status.FAIL with the database's message, not ERROR.
+    """
+
+
 class Database(Protocol):
     def query(self, sql: str, params: tuple | None = None) -> list[tuple]:
         """Run a read query and return rows. Raise InfraError if unreachable."""
@@ -135,6 +143,20 @@ class PostgresDatabase:
         except Exception as exc:  # noqa: BLE001
             conn.rollback()
             raise InfraError(f"script failed: {exc}") from exc
+
+    def run_write(self, sql: str) -> None:
+        """Run learner-authored write SQL and commit. A SQL error is the learner's
+        fault (QueryError); a connection failure is infra (InfraError)."""
+        import psycopg2
+
+        conn = self._connect()  # InfraError on connect failure
+        try:
+            with conn.cursor() as cur:
+                cur.execute(sql)
+            conn.commit()
+        except psycopg2.Error as exc:
+            conn.rollback()
+            raise QueryError(str(exc).strip()) from exc
 
 
 def _dsn_from_env() -> dict:

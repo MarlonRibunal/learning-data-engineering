@@ -1,0 +1,11 @@
+-- Task: load products into the warehouse
+--
+-- The raw feed landing.products_raw has one row per (sku, load), including a
+-- DUPLICATE SKU1 (an older 'Widget' and a newer 'Widget Pro'). Load a clean
+-- raw.products with exactly one row per sku, keeping the LATEST by loaded_at.
+--
+-- Target:  raw.products(sku, name, price)
+-- Source:  landing.products_raw(sku, name, price, loaded_at)
+--
+-- TODO: write your load below.
+SELECT 1;
