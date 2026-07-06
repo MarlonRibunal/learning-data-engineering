@@ -58,6 +58,15 @@ def _sprint_rank(sprint: str) -> tuple[int, int]:
     return (1, 0)  # unknown sprints sit between the known ones and the capstone
 
 
+def next_task(repo_root: Path, tasks_root: Path | None = None) -> tuple[str, str] | None:
+    """First task (in curriculum order) the learner hasn't passed yet, or None."""
+    prog = progress.load(repo_root)
+    for sprint, task in discover_tasks(repo_root, tasks_root):
+        if prog.get(sprint, {}).get(task, {}).get("status") != "pass":
+            return (sprint, task)
+    return None
+
+
 def run_check(
     sprint: str,
     task: str,
