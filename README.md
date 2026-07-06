@@ -283,6 +283,7 @@ We're building the most comprehensive open-source data engineering learning plat
 - [**Full Learning Blueprint**](docs/blueprint.md) - Complete 6-month roadmap
 - [**Sprint-by-Sprint Guides**](docs/sprint-guides/) - Detailed weekly plans
 - [**Tool Cheatsheets**](docs/cheatsheets/) - Quick references
+- [**Glossary**](docs/cheatsheets/glossary.md) - Plain-English data engineering terms
 - [**Project Documentation**](projects/datamart-intelligence-platform/) - Example implementations
 
 ## License

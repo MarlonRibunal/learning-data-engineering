@@ -30,6 +30,7 @@ from grader.progress import load as load_progress  # noqa: E402
 from grader.spec import SpecError, TaskSpec, load_spec  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+GLOSSARY = REPO_ROOT / "docs" / "cheatsheets" / "glossary.md"
 HOME = ("__home__", None)
 
 _REAL_INFRA_CHECKS = {"sql_assert", "dbt_test", "airflow"}
@@ -52,6 +53,11 @@ def _language_for(path: str) -> str:
     if path.endswith(".py"):
         return "python"
     return "text"
+
+
+def _load_sprint_intro(sprint: str) -> str | None:
+    intro = default_tasks_root(REPO_ROOT) / sprint / "intro.md"
+    return intro.read_text() if intro.is_file() else None
 
 
 def _needs_stack(spec: TaskSpec) -> bool:
@@ -147,11 +153,18 @@ def _render_home(tasks, progress, done) -> None:
         st.warning("The data stack looks **down**. Real-infra tasks need it — start with "
                    "`./platform.sh up` (or `docker compose up -d`).")
 
+    if GLOSSARY.is_file():
+        with st.expander("📖 Glossary — data engineering terms"):
+            st.markdown(GLOSSARY.read_text())
+
     st.divider()
     current_sprint = None
     for sprint, task in tasks:
         if sprint != current_sprint:
             st.subheader(_sprint_label(sprint))
+            intro = _load_sprint_intro(sprint)
+            if intro:
+                st.caption(intro)
             current_sprint = sprint
         icon = _STATE_ICON[_task_state(sprint, task, progress)]
         st.markdown(f"{icon}  {task}")
@@ -166,6 +179,11 @@ def _render_task(sprint, task, progress) -> None:
 
     st.title(spec.title)
     st.caption(f"{_sprint_label(sprint)} · {task}")
+
+    intro = _load_sprint_intro(sprint)
+    if intro:
+        with st.expander(f"About {_sprint_label(sprint)}"):
+            st.markdown(intro)
 
     if _needs_stack(spec) and not _stack_up():
         st.warning("The data stack looks **down**, so checks will report *could not run* "
