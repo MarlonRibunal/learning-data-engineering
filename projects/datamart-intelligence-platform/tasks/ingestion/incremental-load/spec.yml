@@ -1,0 +1,18 @@
+title: Load only new data (incremental)
+order: 3
+submission_path: submissions/ingestion/incremental_load.sql
+scaffold: scaffold/incremental_load.sql
+solution: solution/incremental_load.sql
+reseed: projects/datamart-intelligence-platform/seeds/incremental_seed.sql
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: sql_ingest
+    name: appends only the new events
+    asserts:
+      - query: "SELECT COUNT(*)::int FROM raw.events"
+        equals: 5
+        hint: "day-1 (3 events) is already loaded; append only day-2 (2 more) = 5, not 8"
+      - query: "SELECT COUNT(*)::int FROM raw.events WHERE loaded_at = '2026-03-01'"
+        equals: 3
+        hint: "day-1 events must not be duplicated"
