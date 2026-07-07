@@ -42,6 +42,7 @@ _SPRINT_LABELS = {
     "sprint-3-airflow": "Sprint 3 · Airflow",
     "serving": "Serving / BI",
     "streaming": "Streaming",
+    "security": "Security",
     "capstone": "Capstone",
 }
 
@@ -105,6 +106,7 @@ _JOURNEY = [
     ("sprint-3-airflow", "Orchestrate"),
     ("serving", "Serve"),
     ("streaming", "Stream"),
+    ("security", "Secure"),
     ("capstone", "Capstone"),
 ]
 
