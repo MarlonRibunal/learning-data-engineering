@@ -1,0 +1,12 @@
+title: The headline KPIs
+order: 1
+submission_path: submissions/serving/headline_kpis.sql
+scaffold: scaffold/headline_kpis.sql
+solution: solution/headline_kpis.sql
+preview: [orders]
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: sql_result
+    name: returns the correct KPIs
+    ordered: false

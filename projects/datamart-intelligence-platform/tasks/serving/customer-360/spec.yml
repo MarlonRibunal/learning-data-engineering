@@ -1,0 +1,18 @@
+title: Build a customer 360 serving table
+order: 3
+submission_path: submissions/serving/customer_360.sql
+scaffold: scaffold/customer_360.sql
+solution: solution/customer_360.sql
+reseed: projects/datamart-intelligence-platform/seeds/serving_seed.sql
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: sql_ingest
+    name: populates analytics.customer_360 correctly
+    asserts:
+      - query: "SELECT COUNT(*)::int FROM analytics.customer_360"
+        equals: 4
+        hint: "one row per customer (4 customers)"
+      - query: "SELECT ROUND(total_spend * 100)::int FROM analytics.customer_360 WHERE customer_name = 'Ada Lovelace'"
+        equals: 37050
+        hint: "Ada's two orders total 370.50"

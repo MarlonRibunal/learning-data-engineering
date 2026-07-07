@@ -1,0 +1,12 @@
+title: Revenue over time
+order: 2
+submission_path: submissions/serving/revenue_by_day.sql
+scaffold: scaffold/revenue_by_day.sql
+solution: solution/revenue_by_day.sql
+preview: [orders]
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: sql_result
+    name: returns daily revenue in date order
+    ordered: true
