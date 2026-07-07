@@ -43,6 +43,7 @@ _SPRINT_LABELS = {
     "serving": "Serving / BI",
     "streaming": "Streaming",
     "security": "Security",
+    "architecture": "Architecture",
     "capstone": "Capstone",
 }
 
@@ -107,6 +108,7 @@ _JOURNEY = [
     ("serving", "Serve"),
     ("streaming", "Stream"),
     ("security", "Secure"),
+    ("architecture", "Design"),
     ("capstone", "Capstone"),
 ]
 

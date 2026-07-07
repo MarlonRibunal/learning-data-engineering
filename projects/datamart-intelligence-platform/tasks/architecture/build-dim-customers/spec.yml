@@ -1,0 +1,17 @@
+title: Build a customer dimension
+order: 1
+submission_path: submissions/architecture/dim_customers.sql
+scaffold: scaffold/dim_customers.sql
+solution: solution/dim_customers.sql
+reseed: projects/datamart-intelligence-platform/seeds/architecture_dim_seed.sql
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: sql_ingest
+    name: one clean row per customer
+    asserts:
+      - query: "SELECT COUNT(*)::int FROM analytics.dim_customers"
+        equals: 4
+      - query: "SELECT COUNT(DISTINCT customer_id)::int FROM analytics.dim_customers"
+        equals: 4
+        hint: "a dimension has exactly one row per business key (customer)"
