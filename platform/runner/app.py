@@ -97,6 +97,25 @@ def _task_state(sprint: str, task: str, progress: dict) -> str:
 
 _STATE_ICON = {"pass": "✅", "fail": "❌", "error": "⚠️",
                "in-progress": "✏️", "new": "⬜"}
+_STATE_PILL = {
+    "pass": ("done", "Passed"),
+    "fail": ("fail", "Try again"),
+    "error": ("wip", "Could not run"),
+    "in-progress": ("wip", "In progress"),
+    "new": ("new", "Not started"),
+}
+
+
+def _task_header(sprint: str, task: str, spec, state: str) -> str:
+    cls, label = _STATE_PILL.get(state, ("new", "Not started"))
+    return (
+        '<div class="task-head">'
+        f'<div class="task-crumb">{_sprint_label(sprint)}</div>'
+        '<div class="task-titlebar">'
+        f'<span class="task-title">{spec.title}</span>'
+        f'<span class="pill {cls}">{label}</span>'
+        "</div></div>"
+    )
 
 # The curriculum as the data-engineering lifecycle: (sprint, lifecycle role).
 _JOURNEY = [
@@ -236,6 +255,20 @@ a{color:var(--brand);}
 textarea{border-radius:10px!important; font-family:"SF Mono",ui-monospace,Menlo,monospace!important;}
 [data-testid="stAlert"]{border-radius:12px;}
 .stCode{border-radius:10px;}
+
+/* ---- task header + status pill ---- */
+.task-head{margin:2px 0 14px;}
+.task-crumb{font-size:.68rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--brand);}
+.task-titlebar{display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-top:4px;}
+.task-title{font-size:1.7rem; font-weight:800; letter-spacing:-.03em; color:var(--ink); line-height:1.1;}
+.pill{font-size:.72rem; font-weight:800; padding:3px 11px; border-radius:999px; letter-spacing:.02em; white-space:nowrap;}
+.pill.done{background:var(--green-bg); color:#166534;}
+.pill.fail{background:#fee2e2; color:#b91c1c;}
+.pill.wip{background:var(--amber-bg); color:#92400e;}
+.pill.new{background:#eef2f7; color:var(--muted);}
+/* content section headers inside the cards */
+.sec{font-size:.7rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin:0 0 6px;}
+[data-testid="stVerticalBlockBorderWrapper"]{border-radius:14px;}
 </style>
 """
 
@@ -361,13 +394,8 @@ def _render_task(sprint, task, progress) -> None:
         st.error(f"Task spec error: {exc}")
         return
 
-    st.title(spec.title)
-    st.caption(f"{_sprint_label(sprint)} · {task}")
-
-    intro = _load_sprint_intro(sprint)
-    if intro:
-        with st.expander(f"About {_sprint_label(sprint)}"):
-            st.markdown(intro)
+    state = _task_state(sprint, task, progress)
+    st.markdown(_task_header(sprint, task, spec, state), unsafe_allow_html=True)
 
     if _needs_stack(spec) and not _stack_up():
         st.warning("The data stack looks **down**, so checks will report *could not run* "
@@ -375,69 +403,79 @@ def _render_task(sprint, task, progress) -> None:
 
     submission = REPO_ROOT / spec.submission_path
     lang = _language_for(spec.submission_path)
-    col_lesson, col_work = st.columns([1, 1])
+    col_lesson, col_work = st.columns([1, 1], gap="large")
 
     with col_lesson:
-        st.subheader("Lesson")
-        lesson_file = spec.task_dir / "lesson.md"
-        if lesson_file.is_file():
-            st.markdown(lesson_file.read_text())
-        elif spec.scaffold:
-            st.markdown("Read the scaffold, then write your solution.")
-            st.code((spec.task_dir / spec.scaffold).read_text(), language=lang)
-        else:
-            st.info("No lesson text for this task yet.")
+        with st.container(border=True):
+            st.markdown('<div class="sec">📖 Lesson</div>', unsafe_allow_html=True)
+            lesson_file = spec.task_dir / "lesson.md"
+            if lesson_file.is_file():
+                st.markdown(lesson_file.read_text())
+            elif spec.scaffold:
+                st.markdown("Read the scaffold, then write your solution.")
+                st.code((spec.task_dir / spec.scaffold).read_text(), language=lang)
+            else:
+                st.info("No lesson text for this task yet.")
 
-        preview = _preview_tables(sprint, spec)
-        if preview and _stack_up():
-            with st.expander("📋 Peek at the data"):
-                for i, table in enumerate(preview):
-                    st.caption(f"`{table}`")
-                    records = _safe_preview(table, seed=(i == 0))
-                    if records:
-                        st.dataframe(records, use_container_width=True)
-                    else:
-                        st.caption("_(empty or unavailable)_")
+            intro = _load_sprint_intro(sprint)
+            if intro:
+                with st.expander(f"About {_sprint_label(sprint)}"):
+                    st.markdown(intro)
+
+            preview = _preview_tables(sprint, spec)
+            if preview and _stack_up():
+                with st.expander("📋 Peek at the data"):
+                    for i, table in enumerate(preview):
+                        st.caption(f"`{table}`")
+                        records = _safe_preview(table, seed=(i == 0))
+                        if records:
+                            st.dataframe(records, use_container_width=True, hide_index=True)
+                        else:
+                            st.caption("_(empty or unavailable)_")
 
     with col_work:
-        st.subheader("Your work")
-        if not submission.exists():
-            st.info("Not started yet.")
-            if spec.scaffold and st.button("▶ Start this task", type="primary"):
-                start(sprint, task, REPO_ROOT, overwrite=False)
-                st.rerun()
-            return
+        with st.container(border=True):
+            st.markdown('<div class="sec">⌨️ Your work</div>', unsafe_allow_html=True)
+            if not submission.exists():
+                st.info("You haven't started this task yet.")
+                if spec.scaffold and st.button("▶  Start this task", type="primary",
+                                               use_container_width=True):
+                    start(sprint, task, REPO_ROOT, overwrite=False)
+                    st.rerun()
+            else:
+                current = submission.read_text()
+                edited = st.text_area("Edit your submission", value=current, height=260,
+                                      key=f"editor-{sprint}-{task}",
+                                      label_visibility="collapsed")
+                with st.expander("Preview (syntax-highlighted)"):
+                    st.code(edited, language=lang)
 
-        current = submission.read_text()
-        edited = st.text_area("Edit your submission", value=current, height=240,
-                              key=f"editor-{sprint}-{task}")
-        with st.expander("Preview (syntax-highlighted)"):
-            st.code(edited, language=lang)
+                # Live SQL playground for plain SQL (not dbt/jinja models).
+                if lang == "sql" and "{{" not in edited:
+                    if st.button("▶  Run query", use_container_width=True,
+                                 help="Run it against the warehouse and see the rows"):
+                        _run_playground(edited)
 
-        # Live SQL playground: run plain SQL (not dbt/jinja models) and see the rows.
-        if lang == "sql" and "{{" not in edited:
-            if st.button("▶ Run query", help="Run it against the warehouse and see the rows"):
-                _run_playground(edited)
+                if st.button("✅  Check my work", type="primary", use_container_width=True):
+                    submission.write_text(edited)
+                    result = run_check(sprint, task, REPO_ROOT, make_proof=True)
+                    _render_result(result)
 
-        c1, c2, c3 = st.columns(3)
-        if c1.button("💾 Save"):
-            submission.write_text(edited)
-            st.toast("Saved.")
-        if c2.button("✅ Check my work", type="primary"):
-            submission.write_text(edited)
-            result = run_check(sprint, task, REPO_ROOT, make_proof=True)
-            _render_result(result)
-        if spec.scaffold and c3.button("↺ Reset to scaffold"):
-            start(sprint, task, REPO_ROOT, overwrite=True)
-            st.rerun()
+                s1, s2 = st.columns(2)
+                if s1.button("💾  Save", use_container_width=True):
+                    submission.write_text(edited)
+                    st.toast("Saved.")
+                if spec.scaffold and s2.button("↺  Reset", use_container_width=True):
+                    start(sprint, task, REPO_ROOT, overwrite=True)
+                    st.rerun()
 
-    if spec.solution:
-        solution_file = spec.task_dir / spec.solution
-        if solution_file.is_file():
-            with st.expander("😩 Stuck? Reveal a worked solution"):
-                st.caption("Try it yourself first — the struggle is where the learning "
-                           "happens. But a worked example beats staying stuck.")
-                st.code(solution_file.read_text(), language=lang)
+            if spec.solution:
+                solution_file = spec.task_dir / spec.solution
+                if solution_file.is_file():
+                    with st.expander("😩 Stuck? Reveal a worked solution"):
+                        st.caption("Try it yourself first — the struggle is where the "
+                                   "learning happens. But a worked example beats staying stuck.")
+                        st.code(solution_file.read_text(), language=lang)
 
 
 def _run_playground(sql: str) -> None:
