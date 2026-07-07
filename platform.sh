@@ -17,7 +17,7 @@ VENV="$ROOT/.venv"
 PY="${PYTHON:-python3}"
 
 # Services the grader actually needs (the host-run web app is separate).
-STACK_SERVICES="postgres dbt-service airflow-init airflow-scheduler"
+STACK_SERVICES="postgres dbt-service airflow-init airflow-scheduler redpanda"
 
 say() { printf '\033[36m▸ %s\033[0m\n' "$*"; }
 die() { printf '\033[31m✗ %s\033[0m\n' "$*" >&2; exit 1; }

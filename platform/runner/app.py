@@ -41,6 +41,7 @@ _SPRINT_LABELS = {
     "sprint-2-dbt": "Sprint 2 · dbt",
     "sprint-3-airflow": "Sprint 3 · Airflow",
     "serving": "Serving / BI",
+    "streaming": "Streaming",
     "capstone": "Capstone",
 }
 
@@ -103,6 +104,7 @@ _JOURNEY = [
     ("data-quality", "Validate"),
     ("sprint-3-airflow", "Orchestrate"),
     ("serving", "Serve"),
+    ("streaming", "Stream"),
     ("capstone", "Capstone"),
 ]
 

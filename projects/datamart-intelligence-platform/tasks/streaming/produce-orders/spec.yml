@@ -1,0 +1,11 @@
+title: Produce events to a stream
+order: 1
+submission_path: submissions/streaming/produce_orders.py
+scaffold: scaffold/produce_orders.py
+solution: solution/produce_orders.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: redpanda
+    name: your events reach the topic
+    mode: produce
