@@ -1,0 +1,11 @@
+title: Consume events from a stream
+order: 2
+submission_path: submissions/streaming/consume_orders.py
+scaffold: scaffold/consume_orders.py
+solution: solution/consume_orders.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: redpanda
+    name: you read all the events back
+    mode: consume
