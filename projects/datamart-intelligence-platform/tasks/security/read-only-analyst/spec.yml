@@ -1,0 +1,18 @@
+title: A read-only analyst role
+order: 1
+submission_path: submissions/security/read_only_analyst.sql
+scaffold: scaffold/read_only_analyst.sql
+solution: solution/read_only_analyst.sql
+reseed: projects/datamart-intelligence-platform/seeds/security_seed.sql
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: sql_ingest
+    name: analyst can read but not write
+    asserts:
+      - query: "SELECT has_table_privilege('analyst', 'analytics.customer_pii', 'SELECT')::int"
+        equals: 1
+        hint: "GRANT SELECT ON analytics.customer_pii TO analyst"
+      - query: "SELECT has_table_privilege('analyst', 'analytics.customer_pii', 'INSERT')::int"
+        equals: 0
+        hint: "least privilege: the analyst must NOT be able to write"

@@ -1,0 +1,18 @@
+title: A PII-safe view
+order: 2
+submission_path: submissions/security/mask_pii.sql
+scaffold: scaffold/mask_pii.sql
+solution: solution/mask_pii.sql
+reseed: projects/datamart-intelligence-platform/seeds/security_seed.sql
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: sql_ingest
+    name: exposes safe columns, hides PII
+    asserts:
+      - query: "SELECT COUNT(*)::int FROM information_schema.columns WHERE table_schema='analytics' AND table_name='customers_safe' AND column_name='customer_name'"
+        equals: 1
+        hint: "the view should expose customer_name"
+      - query: "SELECT COUNT(*)::int FROM information_schema.columns WHERE table_schema='analytics' AND table_name='customers_safe' AND column_name IN ('email','ssn')"
+        equals: 0
+        hint: "the view must NOT expose email or ssn"
