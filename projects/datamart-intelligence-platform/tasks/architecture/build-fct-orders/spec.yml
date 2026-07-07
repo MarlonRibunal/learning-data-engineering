@@ -1,0 +1,21 @@
+title: Build a fact table at the right grain
+order: 2
+submission_path: submissions/architecture/fct_orders.sql
+scaffold: scaffold/fct_orders.sql
+solution: solution/fct_orders.sql
+reseed: projects/datamart-intelligence-platform/seeds/architecture_fct_seed.sql
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: sql_ingest
+    name: one row per order, keyed to the dimension
+    asserts:
+      - query: "SELECT COUNT(*)::int FROM analytics.fct_orders"
+        equals: 5
+        hint: "the grain is one row per order (5 orders)"
+      - query: "SELECT COUNT(DISTINCT order_id)::int FROM analytics.fct_orders"
+        equals: 5
+        hint: "no duplicate orders — the grain must be exact"
+      - query: "SELECT COUNT(*)::int FROM analytics.fct_orders f LEFT JOIN analytics.dim_customers d ON f.customer_id = d.customer_id WHERE d.customer_id IS NULL"
+        equals: 0
+        hint: "every fact row must key to a real customer in the dimension"
