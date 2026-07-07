@@ -129,34 +129,119 @@ def _sprint_counts(tasks, progress) -> dict[str, list[int]]:
     return counts
 
 
-def _journey_dot(tasks, progress) -> str:
-    """A Graphviz journey map: sprints as lifecycle stages, coloured by progress."""
+def _journey_html(tasks, progress) -> str:
+    """A styled HTML journey stepper: lifecycle stages coloured by progress."""
     counts = _sprint_counts(tasks, progress)
-    lines = [
-        "digraph {",
-        '  rankdir=LR; bgcolor="transparent";',
-        '  node [shape=box style="rounded,filled" fontname="Helvetica" fontsize=11];',
-        '  edge [color="#9e9e9e"];',
-    ]
-    prev = None
+    cells = []
     for sprint, role in _JOURNEY:
         if sprint not in counts:
             continue
         done, total = counts[sprint]
-        if total and done == total:
-            fill, font = "#2e7d32", "white"      # complete
-        elif done:
-            fill, font = "#f9a825", "black"       # in progress
-        else:
-            fill, font = "#eeeeee", "#555555"     # not started
-        node = sprint.replace("-", "_")
-        label = f"{role}\\n{_sprint_label(sprint)}\\n{done}/{total}"
-        lines.append(f'  {node} [label="{label}" fillcolor="{fill}" fontcolor="{font}"];')
-        if prev:
-            lines.append(f"  {prev} -> {node};")
-        prev = node
-    lines.append("}")
-    return "\n".join(lines)
+        state = "done" if total and done == total else ("wip" if done else "todo")
+        pct = int(round(100 * done / total)) if total else 0
+        cells.append(
+            f'<div class="stage {state}">'
+            f'<div class="stage-role">{role}</div>'
+            f'<div class="stage-name">{_sprint_label(sprint)}</div>'
+            f'<div class="stage-bar"><span style="width:{pct}%"></span></div>'
+            f'<div class="stage-count">{done}/{total}</div>'
+            f"</div>"
+        )
+    return f'<div class="journey">{"".join(cells)}</div>'
+
+
+def _hero(done: int, total: int) -> str:
+    pct = int(round(100 * done / total)) if total else 0
+    return (
+        '<div class="hero">'
+        '<div class="hero-title">Learn data engineering by <em>doing</em></div>'
+        '<div class="hero-sub">Write real SQL, dbt, Airflow and streaming code. Every task is '
+        'graded against the <b>real stack</b> — not a simulation — from your first '
+        '<code>SELECT</code> to a verified end-to-end pipeline.</div>'
+        f'<div class="hero-meter"><div class="hero-meter-fill" style="width:{pct}%"></div></div>'
+        f'<div class="hero-meta">{done} of {total} tasks passed · {pct}%</div>'
+        "</div>"
+    )
+
+
+_CSS = """
+<style>
+:root{
+  --brand:#4f46e5; --brand-d:#4338ca; --ink:#0f172a; --muted:#64748b;
+  --line:#e2e8f0; --surface:#ffffff; --soft:#f8fafc;
+  --green:#16a34a; --green-bg:#dcfce7; --amber:#d97706; --amber-bg:#fef3c7;
+}
+/* hide Streamlit chrome for a product feel */
+header[data-testid="stHeader"]{display:none;}
+[data-testid="stToolbar"]{display:none;}
+.stApp{background:var(--soft);}
+[data-testid="stMainBlockContainer"]{padding-top:2.2rem; max-width:1150px;}
+html,body,[class*="css"]{font-feature-settings:"cv02","cv03","cv04";}
+h1,h2,h3{color:var(--ink); letter-spacing:-.02em; font-weight:750;}
+h2{margin-top:.4rem;}
+a{color:var(--brand);}
+
+/* ---- hero ---- */
+.hero{background:linear-gradient(135deg,#eef2ff 0%,#faf5ff 100%);
+  border:1px solid var(--line); border-radius:18px; padding:26px 28px; margin-bottom:20px;}
+.hero-title{font-size:2rem; font-weight:800; letter-spacing:-.03em; color:var(--ink);}
+.hero-title em{color:var(--brand); font-style:normal;}
+.hero-sub{color:#475569; margin-top:8px; max-width:720px; line-height:1.5;}
+.hero-sub code{background:#fff; border:1px solid var(--line); border-radius:6px; padding:1px 6px; color:var(--brand-d);}
+.hero-meter{height:8px; background:#e0e7ff; border-radius:999px; margin-top:18px; overflow:hidden;}
+.hero-meter-fill{height:100%; background:linear-gradient(90deg,var(--brand),#7c3aed); border-radius:999px;}
+.hero-meta{color:var(--muted); font-size:.82rem; margin-top:8px; font-weight:600;}
+
+/* ---- journey stepper ---- */
+.journey{display:flex; gap:10px; overflow-x:auto; padding:6px 2px 12px; margin-bottom:6px;}
+.stage{flex:1 0 118px; background:var(--surface); border:1px solid var(--line);
+  border-radius:14px; padding:12px 12px 11px; position:relative;}
+.stage:not(:last-child)::after{content:"›"; position:absolute; right:-11px; top:50%;
+  transform:translateY(-50%); color:#cbd5e1; font-size:20px; font-weight:700;}
+.stage-role{font-size:.62rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted);}
+.stage-name{font-size:.82rem; font-weight:700; color:var(--ink); margin-top:3px; line-height:1.15; min-height:2.1em;}
+.stage-bar{height:5px; background:#eef2f7; border-radius:999px; margin-top:8px; overflow:hidden;}
+.stage-bar span{display:block; height:100%; border-radius:999px; background:var(--brand);}
+.stage-count{font-size:.72rem; color:var(--muted); font-weight:700; margin-top:6px;}
+.stage.done{border-color:#bbf7d0; background:linear-gradient(180deg,#f0fdf4,#fff);}
+.stage.done .stage-bar span{background:var(--green);}
+.stage.done .stage-count{color:var(--green);}
+.stage.wip{border-color:#fde68a; background:linear-gradient(180deg,#fffbeb,#fff);}
+.stage.wip .stage-bar span{background:var(--amber);}
+
+/* ---- sidebar ---- */
+[data-testid="stSidebar"]{background:#fff; border-right:1px solid var(--line);}
+[data-testid="stSidebar"] .brand{font-weight:800; font-size:1.05rem; letter-spacing:-.02em;
+  color:var(--ink); padding:2px 4px 2px; display:flex; align-items:center; gap:8px;}
+[data-testid="stSidebar"] .grp{font-size:.66rem; font-weight:800; letter-spacing:.09em;
+  text-transform:uppercase; color:var(--muted); margin:14px 6px 4px;}
+[data-testid="stSidebar"] .stButton>button{border:none; background:transparent; color:#334155;
+  text-align:left; justify-content:flex-start; font-weight:600; padding:6px 10px; border-radius:9px;
+  box-shadow:none;}
+[data-testid="stSidebar"] .stButton>button:hover{background:var(--soft); color:var(--ink);}
+[data-testid="stSidebar"] [data-testid="stBaseButton-primary"]{background:var(--brand)!important;
+  color:#fff!important;}
+[data-testid="stSidebar"] [data-testid="stBaseButton-primary"]:hover{background:var(--brand-d)!important;}
+
+/* ---- buttons (main) ---- */
+.stButton>button{border-radius:10px; font-weight:650; border:1px solid var(--line);}
+[data-testid="stBaseButton-primary"]{background:var(--brand); border:none; box-shadow:0 1px 2px rgba(79,70,229,.35);}
+[data-testid="stBaseButton-primary"]:hover{background:var(--brand-d);}
+
+/* ---- cards / expanders / inputs ---- */
+[data-testid="stExpander"]{border:1px solid var(--line); border-radius:12px; background:#fff;}
+[data-testid="stExpander"] summary{font-weight:650;}
+[data-testid="stProgress"] > div > div > div{background:linear-gradient(90deg,var(--brand),#7c3aed);}
+[data-testid="stDataFrame"]{border:1px solid var(--line); border-radius:10px; overflow:hidden;}
+textarea{border-radius:10px!important; font-family:"SF Mono",ui-monospace,Menlo,monospace!important;}
+[data-testid="stAlert"]{border-radius:12px;}
+.stCode{border-radius:10px;}
+</style>
+"""
+
+
+def _inject_css() -> None:
+    st.markdown(_CSS, unsafe_allow_html=True)
 
 
 def _to_records(res) -> list[dict]:
@@ -192,13 +277,15 @@ def _safe_preview(table: str, seed: bool):
 # ---------- main ----------
 def main() -> None:
     st.set_page_config(page_title="Learn Data Engineering", page_icon="🧪", layout="wide")
+    _inject_css()
     if "sel" not in st.session_state:
         st.session_state.sel = HOME
 
     tasks = discover_tasks(REPO_ROOT)
     progress = load_progress(REPO_ROOT)
+    sel = st.session_state.sel
 
-    st.sidebar.title("🧪 Learn by doing")
+    st.sidebar.markdown('<div class="brand">🧪 Learn by doing</div>', unsafe_allow_html=True)
     if not tasks:
         st.sidebar.info("No tasks found yet.")
         st.title("No tasks found")
@@ -206,19 +293,22 @@ def main() -> None:
         return
 
     done = sum(1 for s, t in tasks if progress.get(s, {}).get(t, {}).get("status") == "pass")
-    st.sidebar.progress(done / len(tasks), text=f"{done}/{len(tasks)} tasks passed")
 
-    if st.sidebar.button("🏠 Home", use_container_width=True):
+    if st.sidebar.button("🏠  Home", use_container_width=True,
+                         type="primary" if sel == HOME else "secondary"):
         st.session_state.sel = HOME
+    st.sidebar.progress(done / len(tasks), text=f"{done}/{len(tasks)} passed")
 
     current_sprint = None
     for sprint, task in tasks:
         if sprint != current_sprint:
-            st.sidebar.markdown(f"**{_sprint_label(sprint)}**")
+            st.sidebar.markdown(f'<div class="grp">{_sprint_label(sprint)}</div>',
+                                unsafe_allow_html=True)
             current_sprint = sprint
         icon = _STATE_ICON[_task_state(sprint, task, progress)]
         if st.sidebar.button(f"{icon}  {task}", key=f"nav-{sprint}-{task}",
-                             use_container_width=True):
+                             use_container_width=True,
+                             type="primary" if sel == (sprint, task) else "secondary"):
             st.session_state.sel = (sprint, task)
 
     sel_sprint, sel_task = st.session_state.sel
@@ -229,16 +319,11 @@ def main() -> None:
 
 
 def _render_home(tasks, progress, done) -> None:
-    st.title("🧪 Learn data engineering by doing")
-    st.markdown(
-        "Write real SQL, dbt, and Airflow. The platform grades your work against the "
-        "**real stack** — not a simulation. Finish the capstone and you get a shareable "
-        "portfolio artifact to put on your GitHub."
-    )
-    st.progress(done / len(tasks), text=f"{done} of {len(tasks)} tasks passed")
-
-    st.caption("Your journey through the data engineering lifecycle:")
-    st.graphviz_chart(_journey_dot(tasks, progress), use_container_width=True)
+    st.markdown(_hero(done, len(tasks)), unsafe_allow_html=True)
+    st.markdown('<div class="grp" style="margin:6px 2px 8px">'
+                'Your journey through the data engineering lifecycle</div>',
+                unsafe_allow_html=True)
+    st.markdown(_journey_html(tasks, progress), unsafe_allow_html=True)
 
     nxt = next_task(REPO_ROOT)
     if nxt:
