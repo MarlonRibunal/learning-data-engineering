@@ -95,8 +95,10 @@ def _task_state(sprint: str, task: str, progress: dict) -> str:
     return "new"
 
 
-_STATE_ICON = {"pass": "✅", "fail": "❌", "error": "⚠️",
-               "in-progress": "✏️", "new": "⬜"}
+# Unified status dots (consistent shape, colour-coded like the rest of the UI):
+# green = passed, amber = in progress, red = failed, orange = could-not-run, grey = new.
+_STATE_ICON = {"pass": "🟢", "fail": "🔴", "error": "🟠",
+               "in-progress": "🟡", "new": "⚪"}
 _STATE_PILL = {
     "pass": ("done", "Passed"),
     "fail": ("fail", "Try again"),
