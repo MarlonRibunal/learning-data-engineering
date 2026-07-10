@@ -1,0 +1,21 @@
+title: "Ingestion: quarantine the bad rows"
+order: 4
+submission_path: submissions/ingestion/quarantine.sql
+scaffold: scaffold/quarantine.sql
+solution: solution/quarantine.sql
+reseed: projects/datamart-intelligence-platform/seeds/quarantine_seed.sql
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: sql_ingest
+    name: clean rows load, bad rows are quarantined
+    asserts:
+      - query: "SELECT COUNT(*)::int FROM raw.orders_clean"
+        equals: 2
+        hint: "only rows WITH a customer_id AND a non-negative amount are clean"
+      - query: "SELECT COUNT(*)::int FROM raw.orders_quarantine"
+        equals: 2
+        hint: "the null-customer row and the negative-amount row go to quarantine"
+      - query: "SELECT ROUND(SUM(amount))::int FROM raw.orders_clean"
+        equals: 130
+        hint: "clean total is 100 + 30"
