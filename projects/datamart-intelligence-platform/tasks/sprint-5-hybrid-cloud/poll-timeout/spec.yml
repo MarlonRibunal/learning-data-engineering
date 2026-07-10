@@ -1,0 +1,15 @@
+title: "Hybrid cloud: stop polling at a timeout"
+order: 4
+submission_path: submissions/hybrid/poll_result.py
+scaffold: scaffold/poll_result.py
+solution: solution/poll_result.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: returns the first terminal state and stops
+    entry: poll_result
+    args:
+      - [RUNNING, SUCCESS, FAILED]
+      - 5
+    expect: SUCCESS
