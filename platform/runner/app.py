@@ -46,6 +46,7 @@ _SPRINT_LABELS = {
     "streaming": "Streaming",
     "sprint-8-realtime": "Real-time · Windows",
     "sprint-9-dashboard": "Dashboards",
+    "sprint-10-production": "Production & Career",
     "security": "Security",
     "architecture": "Architecture",
     "capstone": "Capstone",
@@ -142,6 +143,7 @@ _JOURNEY = [
     ("sprint-9-dashboard", "Dashboard"),
     ("security", "Secure"),
     ("architecture", "Design"),
+    ("sprint-10-production", "Launch"),
     ("capstone", "Capstone"),
 ]
 

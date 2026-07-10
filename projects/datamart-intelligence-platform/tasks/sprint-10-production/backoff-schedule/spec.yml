@@ -1,0 +1,15 @@
+title: "Production: exponential backoff schedule"
+order: 2
+submission_path: submissions/production/backoff.py
+scaffold: scaffold/backoff.py
+solution: solution/backoff.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: builds an exponential backoff schedule
+    entry: backoff_delays
+    args:
+      - 4
+      - 1
+    expect: [1, 2, 4, 8]

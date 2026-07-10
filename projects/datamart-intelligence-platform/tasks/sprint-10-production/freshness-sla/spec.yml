@@ -1,0 +1,17 @@
+title: "Production: data freshness SLA"
+order: 3
+submission_path: submissions/production/freshness.py
+scaffold: scaffold/freshness.py
+solution: solution/freshness.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: flags tables past their freshness SLA
+    entry: stale_tables
+    args:
+      - - {name: orders, age_min: 5}
+        - {name: users, age_min: 30}
+        - {name: events, age_min: 120}
+      - 60
+    expect: [events]

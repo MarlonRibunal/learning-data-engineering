@@ -1,0 +1,19 @@
+title: "Production: idempotent de-duplication"
+order: 1
+submission_path: submissions/production/dedupe.py
+scaffold: scaffold/dedupe.py
+solution: solution/dedupe.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: keeps the latest record per key
+    entry: dedupe
+    args:
+      - - {id: 1, v: a}
+        - {id: 2, v: b}
+        - {id: 1, v: c}
+      - id
+    expect:
+      - {id: 1, v: c}
+      - {id: 2, v: b}

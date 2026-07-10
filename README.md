@@ -286,6 +286,7 @@ We're building the most comprehensive open-source data engineering learning plat
 - [**Sprint-by-Sprint Guides**](docs/sprint-guides/) - Detailed weekly plans
 - [**Tool Cheatsheets**](docs/cheatsheets/) - Quick references
 - [**Glossary**](docs/cheatsheets/glossary.md) - Plain-English data engineering terms
+- [**Career Guides**](docs/career/) - Interview prep, system design, and turning your passed sprints into a portfolio
 - [**Project Documentation**](projects/datamart-intelligence-platform/) - Example implementations
 
 ## License
