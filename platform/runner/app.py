@@ -108,11 +108,15 @@ _STATE_PILL = {
 }
 
 
-def _task_header(sprint: str, task: str, spec, state: str) -> str:
+def _task_header(sprint: str, task: str, spec, state: str,
+                 level: int = 0, total: int = 0) -> str:
     cls, label = _STATE_PILL.get(state, ("new", "Not started"))
+    crumb = _sprint_label(sprint)
+    if level and total:
+        crumb = f"Level {level} of {total} · {crumb}"
     return (
         '<div class="task-head">'
-        f'<div class="task-crumb">{_sprint_label(sprint)}</div>'
+        f'<div class="task-crumb">{crumb}</div>'
         '<div class="task-titlebar">'
         f'<span class="task-title">{spec.title}</span>'
         f'<span class="pill {cls}">{label}</span>'
@@ -148,6 +152,45 @@ def _sprint_counts(tasks, progress) -> dict[str, list[int]]:
         if progress.get(sprint, {}).get(task, {}).get("status") == "pass":
             c[0] += 1
     return counts
+
+
+def _res_key(sprint, task) -> str:
+    return f"_res::{sprint}::{task}"
+
+
+def _next_in_sequence(tasks, sprint, task):
+    """The task immediately after (sprint, task) in curriculum order, or None."""
+    for i, (s, t) in enumerate(tasks):
+        if (s, t) == (sprint, task):
+            return tasks[i + 1] if i + 1 < len(tasks) else None
+    return None
+
+
+def _level_of(tasks, sprint, task) -> int:
+    """1-based position of (sprint, task) in the linear path (0 if not found)."""
+    for i, (s, t) in enumerate(tasks):
+        if (s, t) == (sprint, task):
+            return i + 1
+    return 0
+
+
+def _current_sprint(tasks, progress) -> str | None:
+    """The sprint the learner is 'on' — the sprint of the next unpassed task."""
+    for sprint, task in tasks:
+        if progress.get(sprint, {}).get(task, {}).get("status") != "pass":
+            return sprint
+    return tasks[-1][0] if tasks else None
+
+
+def _grouped_by_sprint(tasks):
+    """Yield (sprint, [tasks...]) preserving curriculum order."""
+    order, groups = [], {}
+    for sprint, task in tasks:
+        if sprint not in groups:
+            order.append(sprint)
+            groups[sprint] = []
+        groups[sprint].append(task)
+    return [(s, groups[s]) for s in order]
 
 
 def _journey_html(tasks, progress) -> str:
@@ -271,6 +314,12 @@ textarea{border-radius:10px!important; font-family:"SF Mono",ui-monospace,Menlo,
 /* content section headers inside the cards */
 .sec{font-size:.7rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin:0 0 6px;}
 [data-testid="stVerticalBlockBorderWrapper"]{border-radius:14px;}
+
+/* ---- level-cleared moment ---- */
+.cleared{background:linear-gradient(135deg,#f0fdf4 0%,#ecfeff 100%);
+  border:1px solid #bbf7d0; border-radius:14px; padding:16px 18px; margin:14px 0 10px;}
+.cleared-badge{font-size:1.15rem; font-weight:850; letter-spacing:-.02em; color:#15803d;}
+.cleared-meta{color:#3f6212; font-size:.84rem; font-weight:650; margin-top:2px;}
 </style>
 """
 
@@ -334,23 +383,35 @@ def main() -> None:
         st.session_state.sel = HOME
     st.sidebar.progress(done / len(tasks), text=f"{done}/{len(tasks)} passed")
 
-    current_sprint = None
-    for sprint, task in tasks:
-        if sprint != current_sprint:
-            st.sidebar.markdown(f'<div class="grp">{_sprint_label(sprint)}</div>',
-                                unsafe_allow_html=True)
-            current_sprint = sprint
-        icon = _STATE_ICON[_task_state(sprint, task, progress)]
-        if st.sidebar.button(f"{icon}  {task}", key=f"nav-{sprint}-{task}",
+    # A calm map: completed sprints collapse to a checkmark, the sprint you're
+    # on is open, upcoming ones stay tucked away — so the whole 34-task
+    # curriculum never shouts at once.
+    on_sprint = _current_sprint(tasks, progress)
+    nxt = next_task(REPO_ROOT)  # the single "you are here" task
+    sel_sprint_now = sel[0] if sel != HOME else None
+    for sprint, sprint_tasks in _grouped_by_sprint(tasks):
+        c_done = sum(1 for t in sprint_tasks
+                     if progress.get(sprint, {}).get(t, {}).get("status") == "pass")
+        c_total = len(sprint_tasks)
+        complete = c_done == c_total
+        badge = "✅" if complete else ("🔵" if sprint == on_sprint else "⚪")
+        header = f"{badge}  {_sprint_label(sprint)}  ·  {c_done}/{c_total}"
+        # Open the sprint you're on, or one you've navigated into.
+        expanded = sprint in (on_sprint, sel_sprint_now)
+        with st.sidebar.expander(header, expanded=expanded):
+            for task in sprint_tasks:
+                icon = _STATE_ICON[_task_state(sprint, task, progress)]
+                here = "  ◄" if (sprint, task) == nxt else ""
+                if st.button(f"{icon}  {task}{here}", key=f"nav-{sprint}-{task}",
                              use_container_width=True,
                              type="primary" if sel == (sprint, task) else "secondary"):
-            st.session_state.sel = (sprint, task)
+                    st.session_state.sel = (sprint, task)
 
     sel_sprint, sel_task = st.session_state.sel
     if sel_sprint == HOME[0]:
         _render_home(tasks, progress, done)
     else:
-        _render_task(sel_sprint, sel_task, progress)
+        _render_task(sel_sprint, sel_task, progress, tasks)
 
 
 def _render_home(tasks, progress, done) -> None:
@@ -362,7 +423,10 @@ def _render_home(tasks, progress, done) -> None:
 
     nxt = next_task(REPO_ROOT)
     if nxt:
-        if st.button(f"▶ Continue: {_sprint_label(nxt[0])} · {nxt[1]}", type="primary"):
+        level = _level_of(tasks, *nxt)
+        label = "▶ Start learning" if done == 0 else f"▶ Continue at level {level}"
+        st.caption(f"Next up: **{_sprint_label(nxt[0])} · {nxt[1]}**")
+        if st.button(label, type="primary", use_container_width=True):
             st.session_state.sel = nxt
             st.rerun()
     else:
@@ -376,20 +440,8 @@ def _render_home(tasks, progress, done) -> None:
         with st.expander("📖 Glossary — data engineering terms"):
             st.markdown(GLOSSARY.read_text())
 
-    st.divider()
-    current_sprint = None
-    for sprint, task in tasks:
-        if sprint != current_sprint:
-            st.subheader(_sprint_label(sprint))
-            intro = _load_sprint_intro(sprint)
-            if intro:
-                st.caption(intro)
-            current_sprint = sprint
-        icon = _STATE_ICON[_task_state(sprint, task, progress)]
-        st.markdown(f"{icon}  {task}")
 
-
-def _render_task(sprint, task, progress) -> None:
+def _render_task(sprint, task, progress, tasks) -> None:
     try:
         spec = load_spec(sprint, task, default_tasks_root(REPO_ROOT))
     except SpecError as exc:
@@ -397,7 +449,9 @@ def _render_task(sprint, task, progress) -> None:
         return
 
     state = _task_state(sprint, task, progress)
-    st.markdown(_task_header(sprint, task, spec, state), unsafe_allow_html=True)
+    level, total = _level_of(tasks, sprint, task), len(tasks)
+    st.markdown(_task_header(sprint, task, spec, state, level, total),
+                unsafe_allow_html=True)
 
     if _needs_stack(spec) and not _stack_up():
         st.warning("The data stack looks **down**, so checks will report *could not run* "
@@ -446,29 +500,36 @@ def _render_task(sprint, task, progress) -> None:
                     st.rerun()
             else:
                 current = submission.read_text()
-                edited = st.text_area("Edit your submission", value=current, height=260,
+                edited = st.text_area("Edit your submission", value=current, height=280,
                                       key=f"editor-{sprint}-{task}",
                                       label_visibility="collapsed")
-                with st.expander("Preview (syntax-highlighted)"):
-                    st.code(edited, language=lang)
 
-                # Live SQL playground for plain SQL (not dbt/jinja models).
-                if lang == "sql" and "{{" not in edited:
-                    if st.button("▶  Run query", use_container_width=True,
-                                 help="Run it against the warehouse and see the rows"):
-                        _run_playground(edited)
-
-                if st.button("✅  Check my work", type="primary", use_container_width=True):
+                # One hero action. Checking always saves first — no separate step.
+                if st.button("✓  Check my work", type="primary", use_container_width=True):
                     submission.write_text(edited)
                     result = run_check(sprint, task, REPO_ROOT, make_proof=True)
-                    _render_result(result)
+                    st.session_state[_res_key(sprint, task)] = result
+                    st.session_state["_just_checked"] = (sprint, task)
+                    st.rerun()
 
-                s1, s2 = st.columns(2)
-                if s1.button("💾  Save", use_container_width=True):
+                # Everything else is secondary and quiet — one row, no shouting.
+                can_run = lang == "sql" and "{{" not in edited
+                cols = st.columns(3 if can_run else 2)
+                i = 0
+                if can_run:
+                    if cols[i].button("▶ Run", use_container_width=True,
+                                      help="Run this query against the warehouse"):
+                        submission.write_text(edited)
+                        st.session_state[_res_key(sprint, task)] = None
+                        _run_playground(edited)
+                    i += 1
+                if cols[i].button("💾 Save", use_container_width=True):
                     submission.write_text(edited)
                     st.toast("Saved.")
-                if spec.scaffold and s2.button("↺  Reset", use_container_width=True):
+                i += 1
+                if spec.scaffold and cols[i].button("↺ Reset", use_container_width=True):
                     start(sprint, task, REPO_ROOT, overwrite=True)
+                    st.session_state.pop(_res_key(sprint, task), None)
                     st.rerun()
 
             if spec.solution:
@@ -478,6 +539,13 @@ def _render_task(sprint, task, progress) -> None:
                         st.caption("Try it yourself first — the struggle is where the "
                                    "learning happens. But a worked example beats staying stuck.")
                         st.code(solution_file.read_text(), language=lang)
+
+    # The last check result lives below the cards and survives reruns, so the
+    # "Level cleared → Next level" moment persists until the learner moves on.
+    stored = st.session_state.get(_res_key(sprint, task))
+    if stored is not None:
+        just = st.session_state.pop("_just_checked", None) == (sprint, task)
+        _render_result(stored, sprint, task, tasks, celebrate=just)
 
 
 def _run_playground(sql: str) -> None:
@@ -499,19 +567,19 @@ def _run_playground(sql: str) -> None:
     st.caption(f"{len(res.rows)} row(s)" + (" (truncated)" if res.truncated else ""))
 
 
-def _render_result(result) -> None:
+def _render_result(result, sprint, task, tasks, celebrate=False) -> None:
     for check in result.checks:
         icon = _STATUS_ICON.get(check.status.value, "•")
         if check.status is Status.PASS:
             st.markdown(f"{icon} **{check.name}**")
         else:
             st.markdown(f"{icon} **{check.name}** — {check.hint}")
+
     if result.status is Status.PASS:
-        st.success("PASS — nice work.")
-        st.balloons()
+        _render_cleared(sprint, task, tasks, celebrate)
         if result.proof_dir is not None:
             rel = result.proof_dir.relative_to(REPO_ROOT)
-            st.info(f"🎉 Portfolio artifact written to `{rel}` — commit it to your "
+            st.info(f"🏆 Portfolio artifact written to `{rel}` — commit it to your "
                     f"GitHub to show what you built.")
             chart = result.proof_dir / "chart.png"
             if chart.is_file():
@@ -521,6 +589,31 @@ def _render_result(result) -> None:
                    "Start it with `./platform.sh up` and try again.")
     else:
         st.error("Not yet — fix the items above and check again.")
+
+
+def _render_cleared(sprint, task, tasks, celebrate) -> None:
+    """The 'level cleared → next level' moment. Balloons fire once, on the pass."""
+    if celebrate:
+        st.balloons()
+    done = sum(1 for s, t in tasks
+               if load_progress(REPO_ROOT).get(s, {}).get(t, {}).get("status") == "pass")
+    nxt = _next_in_sequence(tasks, sprint, task)
+    onto = f" · onto {_sprint_label(nxt[0])}" if nxt else ""
+    st.markdown(
+        '<div class="cleared">'
+        '<div class="cleared-badge">✦ Level cleared</div>'
+        f'<div class="cleared-meta">{done} of {len(tasks)} done{onto}</div>'
+        "</div>",
+        unsafe_allow_html=True,
+    )
+    if nxt:
+        if st.button(f"Next level → {nxt[1]}", type="primary",
+                     use_container_width=True, key=f"next-{sprint}-{task}"):
+            st.session_state.pop(_res_key(sprint, task), None)
+            st.session_state.sel = nxt
+            st.rerun()
+    else:
+        st.success("🎉 You've cleared the whole path — every level passed. Incredible.")
 
 
 _STATUS_ICON = {"pass": "✅", "fail": "❌", "error": "⚠️"}
