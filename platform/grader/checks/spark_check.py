@@ -75,6 +75,9 @@ class SparkCheck(CheckType):
                 .appName("grader-spark")
                 .config("spark.ui.enabled", "false")
                 .config("spark.sql.shuffle.partitions", "4")
+                # Pin the timezone so event-time window boundaries (and their
+                # string form) are deterministic across machines.
+                .config("spark.sql.session.timeZone", "UTC")
                 .getOrCreate()
             )
             spark.sparkContext.setLogLevel("ERROR")
