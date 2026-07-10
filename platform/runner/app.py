@@ -182,6 +182,30 @@ def _current_sprint(tasks, progress) -> str | None:
     return tasks[-1][0] if tasks else None
 
 
+def _frontier_index(tasks, progress) -> int:
+    """Index of the first unpassed task — the furthest the learner may reach.
+
+    Everything up to and including this index is unlocked; anything after it
+    is locked until the levels in front are cleared. If every task is passed,
+    the frontier is past the end (nothing locked).
+    """
+    for i, (sprint, task) in enumerate(tasks):
+        if progress.get(sprint, {}).get(task, {}).get("status") != "pass":
+            return i
+    return len(tasks)
+
+
+def _is_locked(tasks, progress, sprint, task) -> bool:
+    """A level is locked until every level ahead of it in the path is passed.
+
+    An already-passed level is never locked, even if the learner cleared it
+    out of order — you don't re-lock work that's done.
+    """
+    if progress.get(sprint, {}).get(task, {}).get("status") == "pass":
+        return False
+    return _level_of(tasks, sprint, task) - 1 > _frontier_index(tasks, progress)
+
+
 def _grouped_by_sprint(tasks):
     """Yield (sprint, [tasks...]) preserving curriculum order."""
     order, groups = [], {}
@@ -405,12 +429,16 @@ def main() -> None:
                      if progress.get(sprint, {}).get(t, {}).get("status") == "pass")
         c_total = len(sprint_tasks)
         complete = c_done == c_total
+        # A whole sprint is locked when even its first level is out of reach.
+        sprint_locked = _is_locked(tasks, progress, sprint, sprint_tasks[0])
         if complete:
             badge = "✅"                       # every level cleared
         elif sprint == on_sprint:
             badge = "🔵"                       # the sprint you're on
         elif c_done:
             badge = "🟡"                       # partway in — momentum
+        elif sprint_locked:
+            badge = "🔒"                       # not yet — finish the levels ahead
         else:
             badge = "⚪"                       # not started
         header = f"{badge} {_sprint_label(sprint)} · {c_done}/{c_total}"
@@ -418,10 +446,12 @@ def main() -> None:
         expanded = sprint in (on_sprint, sel_sprint_now)
         with st.sidebar.expander(header, expanded=expanded):
             for task in sprint_tasks:
-                icon = _STATE_ICON[_task_state(sprint, task, progress)]
+                locked = _is_locked(tasks, progress, sprint, task)
+                icon = "🔒" if locked else _STATE_ICON[_task_state(sprint, task, progress)]
                 here = "  ◄" if (sprint, task) == nxt else ""
                 if st.button(f"{icon}  {task}{here}", key=f"nav-{sprint}-{task}",
-                             use_container_width=True,
+                             use_container_width=True, disabled=locked,
+                             help="Locked — finish the levels ahead first" if locked else None,
                              type="primary" if sel == (sprint, task) else "secondary"):
                     st.session_state.sel = (sprint, task)
 
@@ -470,6 +500,20 @@ def _render_task(sprint, task, progress, tasks) -> None:
     level, total = _level_of(tasks, sprint, task), len(tasks)
     st.markdown(_task_header(sprint, task, spec, state, level, total),
                 unsafe_allow_html=True)
+
+    # Locked: the learner jumped ahead. Show a gate, not the editor, and point
+    # them back to where they left off.
+    if _is_locked(tasks, progress, sprint, task):
+        nxt = next_task(REPO_ROOT)
+        with st.container(border=True):
+            st.markdown('<div class="sec">🔒 Locked</div>', unsafe_allow_html=True)
+            st.write("Finish the levels ahead of this one first — the path is meant "
+                     "to be walked in order, so each level builds on the last.")
+            if nxt and st.button(f"▶ Go to level {_level_of(tasks, *nxt)} · {nxt[1]}",
+                                 type="primary"):
+                st.session_state.sel = nxt
+                st.rerun()
+        return
 
     if _needs_stack(spec) and not _stack_up():
         st.warning("The data stack looks **down**, so checks will report *could not run* "
