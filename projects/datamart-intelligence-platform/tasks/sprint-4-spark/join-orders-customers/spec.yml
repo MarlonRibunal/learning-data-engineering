@@ -1,0 +1,26 @@
+title: "Spark: join orders to customers"
+order: 3
+submission_path: submissions/spark/join_orders_customers.py
+scaffold: scaffold/transform.py
+solution: solution/transform.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: spark
+    name: joins each order to its customer name
+    entry: transform
+    inputs:
+      orders:
+        - {order_id: 1, customer_id: 10, category: Electronics, amount: 100}
+        - {order_id: 2, customer_id: 11, category: Books, amount: 20}
+        - {order_id: 3, customer_id: 10, category: Electronics, amount: 40}
+        - {order_id: 4, customer_id: 12, category: Home, amount: 60}
+      customers:
+        - {customer_id: 10, name: Ana}
+        - {customer_id: 11, name: Ben}
+        - {customer_id: 12, name: Cy}
+    expect:
+      - {order_id: 1, name: Ana, amount: 100}
+      - {order_id: 2, name: Ben, amount: 20}
+      - {order_id: 3, name: Ana, amount: 40}
+      - {order_id: 4, name: Cy, amount: 60}

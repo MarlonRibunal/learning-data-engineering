@@ -1,0 +1,21 @@
+title: "Spark: aggregate revenue by category"
+order: 2
+submission_path: submissions/spark/groupby_agg.py
+scaffold: scaffold/transform.py
+solution: solution/transform.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: spark
+    name: sums revenue per category
+    entry: transform
+    inputs:
+      orders:
+        - {order_id: 1, customer_id: 10, category: Electronics, amount: 100}
+        - {order_id: 2, customer_id: 11, category: Books, amount: 20}
+        - {order_id: 3, customer_id: 10, category: Electronics, amount: 40}
+        - {order_id: 4, customer_id: 12, category: Home, amount: 60}
+    expect:
+      - {category: Electronics, revenue: 140}
+      - {category: Books, revenue: 20}
+      - {category: Home, revenue: 60}
