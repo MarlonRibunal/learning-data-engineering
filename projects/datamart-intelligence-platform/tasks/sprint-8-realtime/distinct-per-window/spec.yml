@@ -1,0 +1,22 @@
+title: "Real-time: distinct categories per window"
+order: 5
+submission_path: submissions/realtime/distinct_per_window.py
+scaffold: scaffold/transform.py
+solution: solution/transform.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: spark
+    name: counts distinct categories in each window
+    entry: transform
+    inputs:
+      events:
+        - {ts: "2026-01-01 09:03:00", category: A, amount: 10}
+        - {ts: "2026-01-01 09:07:00", category: B, amount: 20}
+        - {ts: "2026-01-01 09:12:00", category: A, amount: 30}
+        - {ts: "2026-01-01 09:18:00", category: A, amount: 5}
+        - {ts: "2026-01-01 09:25:00", category: B, amount: 15}
+    expect:
+      - {window_start: "2026-01-01 09:00:00", categories: 2}
+      - {window_start: "2026-01-01 09:10:00", categories: 1}
+      - {window_start: "2026-01-01 09:20:00", categories: 1}
