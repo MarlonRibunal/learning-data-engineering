@@ -17,6 +17,9 @@ ALL_TASKS = [
     ("idempotent-dedupe", "dedupe.py"),
     ("backoff-schedule", "backoff.py"),
     ("freshness-sla", "freshness.py"),
+    ("retry-plan", "retry_plan.py"),
+    ("partition-path", "partition_path.py"),
+    ("circuit-breaker", "circuit.py"),
 ]
 
 

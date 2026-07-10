@@ -1,0 +1,13 @@
+title: "Production: build a partition path"
+order: 5
+submission_path: submissions/production/partition_path.py
+scaffold: scaffold/partition_path.py
+solution: solution/partition_path.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: builds a Hive-style partition path
+    entry: partition_path
+    args: [orders, "2026-03-01"]
+    expect: "orders/year=2026/month=03/day=01"

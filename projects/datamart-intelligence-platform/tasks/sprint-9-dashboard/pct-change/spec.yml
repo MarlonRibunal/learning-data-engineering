@@ -1,0 +1,13 @@
+title: "Dashboard: period-over-period % change"
+order: 4
+submission_path: submissions/dashboard/pct_change.py
+scaffold: scaffold/pct_change.py
+solution: solution/pct_change.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: computes the percentage change
+    entry: pct_change
+    args: [120, 100]
+    expect: 20.0

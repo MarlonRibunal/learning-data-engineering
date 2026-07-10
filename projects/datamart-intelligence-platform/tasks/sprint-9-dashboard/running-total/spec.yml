@@ -1,0 +1,14 @@
+title: "Dashboard: running total"
+order: 5
+submission_path: submissions/dashboard/running_total.py
+scaffold: scaffold/running_total.py
+solution: solution/running_total.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: builds the cumulative series
+    entry: running_total
+    args:
+      - [100, 20, 30]
+    expect: [100, 120, 150]

@@ -1,0 +1,14 @@
+title: "Production: which errors to retry"
+order: 4
+submission_path: submissions/production/retry_plan.py
+scaffold: scaffold/retry_plan.py
+solution: solution/retry_plan.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: retries transient errors, not permanent ones
+    entry: retry_plan
+    args:
+      - [503, 400, 429]
+    expect: [true, false, true]

@@ -1,0 +1,15 @@
+title: "Production: circuit breaker"
+order: 6
+submission_path: submissions/production/circuit.py
+scaffold: scaffold/circuit.py
+solution: solution/circuit.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: trips open after enough consecutive failures
+    entry: circuit_state
+    args:
+      - [ok, fail, fail, fail]
+      - 3
+    expect: open

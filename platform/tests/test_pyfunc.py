@@ -19,6 +19,9 @@ ALL_TASKS = [
     ("kpi-cards", "kpi_cards.py"),
     ("revenue-by-day", "revenue_by_day.py"),
     ("top-categories", "top_categories.py"),
+    ("pct-change", "pct_change.py"),
+    ("running-total", "running_total.py"),
+    ("threshold-status", "health_status.py"),
 ]
 
 
