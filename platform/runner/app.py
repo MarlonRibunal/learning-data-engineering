@@ -598,7 +598,8 @@ def _render_cleared(sprint, task, tasks, celebrate) -> None:
     done = sum(1 for s, t in tasks
                if load_progress(REPO_ROOT).get(s, {}).get(t, {}).get("status") == "pass")
     nxt = _next_in_sequence(tasks, sprint, task)
-    onto = f" · onto {_sprint_label(nxt[0])}" if nxt else ""
+    # Only announce a new stage when the next level actually crosses sprints.
+    onto = f" · onto {_sprint_label(nxt[0])}" if nxt and nxt[0] != sprint else ""
     st.markdown(
         '<div class="cleared">'
         '<div class="cleared-badge">✦ Level cleared</div>'
