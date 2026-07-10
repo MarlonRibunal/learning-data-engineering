@@ -1,0 +1,12 @@
+title: "Hybrid cloud: submit a job and poll to completion"
+order: 1
+submission_path: submissions/hybrid/run_and_wait.py
+scaffold: scaffold/run_and_wait.py
+solution: solution/run_and_wait.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: job_api
+    name: submits the job and waits for it to finish
+    entry: run_and_wait
+    mode: success
