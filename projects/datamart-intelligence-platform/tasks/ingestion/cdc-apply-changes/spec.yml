@@ -1,0 +1,24 @@
+title: "Ingestion: apply a change feed (CDC)"
+order: 5
+submission_path: submissions/ingestion/cdc_apply.sql
+scaffold: scaffold/cdc_apply.sql
+solution: solution/cdc_apply.sql
+reseed: projects/datamart-intelligence-platform/seeds/cdc_seed.sql
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: sql_ingest
+    name: inserts, updates, and soft-deletes are applied
+    asserts:
+      - query: "SELECT COUNT(*)::int FROM raw.customers_cdc"
+        equals: 3
+        hint: "10, 11, 12 all exist — a soft delete keeps the row, it doesn't remove it"
+      - query: "SELECT COUNT(*)::int FROM raw.customers_cdc WHERE is_deleted = false"
+        equals: 2
+        hint: "only 10 (updated) and 12 (inserted) are active; 11 is deleted"
+      - query: "SELECT name FROM raw.customers_cdc WHERE customer_id = 10"
+        equals: "Ana Smith"
+        hint: "apply the 'U' update to customer 10's name"
+      - query: "SELECT is_deleted::int FROM raw.customers_cdc WHERE customer_id = 11"
+        equals: 1
+        hint: "mark customer 11 is_deleted = true (the 'D' row)"

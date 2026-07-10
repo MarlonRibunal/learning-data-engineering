@@ -1,0 +1,23 @@
+title: "Ingestion: conform two sources into one"
+order: 6
+submission_path: submissions/ingestion/conform.sql
+scaffold: scaffold/conform.sql
+solution: solution/conform.sql
+reseed: projects/datamart-intelligence-platform/seeds/conform_seed.sql
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: sql_ingest
+    name: both feeds land in one conformed table
+    asserts:
+      - query: "SELECT COUNT(*)::int FROM raw.orders_all"
+        equals: 4
+        hint: "2 web orders + 2 store orders = 4"
+      - query: "SELECT COUNT(*)::int FROM raw.orders_all WHERE source = 'web'"
+        equals: 2
+      - query: "SELECT COUNT(*)::int FROM raw.orders_all WHERE source = 'store'"
+        equals: 2
+        hint: "don't forget the store feed — and stamp source = 'store'"
+      - query: "SELECT ROUND(SUM(amount))::int FROM raw.orders_all"
+        equals: 210
+        hint: "map store's `total` column onto the conformed `amount`"
