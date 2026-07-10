@@ -1,0 +1,14 @@
+title: "Hybrid cloud: which run states are terminal"
+order: 3
+submission_path: submissions/hybrid/is_terminal.py
+scaffold: scaffold/is_terminal.py
+solution: solution/is_terminal.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: recognizes terminal vs in-flight states
+    entry: is_terminal
+    args:
+      - [PENDING, RUNNING, SUCCESS, FAILED]
+    expect: [false, false, true, true]
