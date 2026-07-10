@@ -235,9 +235,15 @@ _CSS = """
   --line:#e2e8f0; --surface:#ffffff; --soft:#f8fafc;
   --green:#16a34a; --green-bg:#dcfce7; --amber:#d97706; --amber-bg:#fef3c7;
 }
-/* hide Streamlit chrome for a product feel */
-header[data-testid="stHeader"]{display:none;}
-[data-testid="stToolbar"]{display:none;}
+/* Strip the deploy/menu chrome for a product feel — but hide only the
+   toolbar ACTIONS, not the toolbar itself: Streamlit nests the
+   re-open-sidebar button inside stToolbar, so hiding the whole toolbar
+   traps a collapsed sidebar shut. */
+header[data-testid="stHeader"]{background:transparent; box-shadow:none;}
+[data-testid="stAppDeployButton"]{display:none;}
+[data-testid="stMainMenu"]{display:none;}
+[data-testid="stStatusWidget"]{display:none;}
+[data-testid="stDecoration"]{display:none;}
 .stApp{background:var(--soft);}
 [data-testid="stMainBlockContainer"]{padding-top:2.2rem; max-width:1150px;}
 html,body,[class*="css"]{font-feature-settings:"cv02","cv03","cv04";}
@@ -286,6 +292,11 @@ a{color:var(--brand);}
 [data-testid="stSidebar"] [data-testid="stBaseButton-primary"]{background:var(--brand)!important;
   color:#fff!important;}
 [data-testid="stSidebar"] [data-testid="stBaseButton-primary"]:hover{background:var(--brand-d)!important;}
+/* sprint groups: compact single-line headers so long names don't wrap */
+[data-testid="stSidebar"] [data-testid="stExpander"] summary{padding:6px 8px;}
+[data-testid="stSidebar"] [data-testid="stExpander"] summary p{font-size:.85rem!important;
+  font-weight:750; letter-spacing:-.015em; margin:0; white-space:nowrap; overflow:hidden;
+  text-overflow:ellipsis;}
 
 /* ---- buttons (main) ---- */
 .stButton>button{border-radius:10px; font-weight:650; border:1px solid var(--line);}
@@ -394,8 +405,15 @@ def main() -> None:
                      if progress.get(sprint, {}).get(t, {}).get("status") == "pass")
         c_total = len(sprint_tasks)
         complete = c_done == c_total
-        badge = "✅" if complete else ("🔵" if sprint == on_sprint else "⚪")
-        header = f"{badge}  {_sprint_label(sprint)}  ·  {c_done}/{c_total}"
+        if complete:
+            badge = "✅"                       # every level cleared
+        elif sprint == on_sprint:
+            badge = "🔵"                       # the sprint you're on
+        elif c_done:
+            badge = "🟡"                       # partway in — momentum
+        else:
+            badge = "⚪"                       # not started
+        header = f"{badge} {_sprint_label(sprint)} · {c_done}/{c_total}"
         # Open the sprint you're on, or one you've navigated into.
         expanded = sprint in (on_sprint, sel_sprint_now)
         with st.sidebar.expander(header, expanded=expanded):
