@@ -1,0 +1,21 @@
+title: "Dashboard: revenue trend line"
+order: 2
+submission_path: submissions/dashboard/revenue_by_day.py
+scaffold: scaffold/revenue_by_day.py
+solution: solution/revenue_by_day.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: builds an ordered daily revenue series
+    entry: revenue_by_day
+    args:
+      - - {order_id: 1, day: "2026-01-01", category: A, amount: 100}
+        - {order_id: 2, day: "2026-01-01", category: B, amount: 20}
+        - {order_id: 3, day: "2026-01-02", category: A, amount: 30}
+        - {order_id: 4, day: "2026-01-02", category: A, amount: 5}
+        - {order_id: 5, day: "2026-01-03", category: B, amount: 15}
+    expect:
+      - {day: "2026-01-01", revenue: 120}
+      - {day: "2026-01-02", revenue: 35}
+      - {day: "2026-01-03", revenue: 15}

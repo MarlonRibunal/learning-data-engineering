@@ -9,6 +9,7 @@ from . import (  # noqa: F401  (import for side effects: registers check types)
     dbt_check,
     file_check,
     job_api,
+    pyfunc,
     redpanda_check,
     spark_check,
     sql_check,

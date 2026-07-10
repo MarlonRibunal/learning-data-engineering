@@ -1,0 +1,21 @@
+title: "Dashboard: top categories bar chart"
+order: 3
+submission_path: submissions/dashboard/top_categories.py
+scaffold: scaffold/top_categories.py
+solution: solution/top_categories.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: ranks the top N categories by revenue
+    entry: top_categories
+    args:
+      - - {order_id: 1, day: "2026-01-01", category: A, amount: 100}
+        - {order_id: 2, day: "2026-01-01", category: B, amount: 20}
+        - {order_id: 3, day: "2026-01-02", category: A, amount: 30}
+        - {order_id: 4, day: "2026-01-02", category: A, amount: 5}
+        - {order_id: 5, day: "2026-01-03", category: B, amount: 15}
+      - 2
+    expect:
+      - {category: A, revenue: 135}
+      - {category: B, revenue: 35}

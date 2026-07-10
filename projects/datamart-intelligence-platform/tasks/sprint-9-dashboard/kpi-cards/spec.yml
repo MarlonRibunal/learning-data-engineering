@@ -1,0 +1,18 @@
+title: "Dashboard: KPI summary cards"
+order: 1
+submission_path: submissions/dashboard/kpi_cards.py
+scaffold: scaffold/kpi_cards.py
+solution: solution/kpi_cards.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: computes the headline KPIs
+    entry: kpi_cards
+    args:
+      - - {order_id: 1, day: "2026-01-01", category: A, amount: 100}
+        - {order_id: 2, day: "2026-01-01", category: B, amount: 20}
+        - {order_id: 3, day: "2026-01-02", category: A, amount: 30}
+        - {order_id: 4, day: "2026-01-02", category: A, amount: 5}
+        - {order_id: 5, day: "2026-01-03", category: B, amount: 15}
+    expect: {total_revenue: 170, order_count: 5, avg_order_value: 34.0}
