@@ -1,0 +1,12 @@
+title: "Hybrid cloud: fail loudly when the job fails"
+order: 2
+submission_path: submissions/hybrid/run_and_wait.py
+scaffold: scaffold/run_and_wait.py
+solution: solution/run_and_wait.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: job_api
+    name: returns on success AND raises on failure
+    entry: run_and_wait
+    mode: both
