@@ -1,0 +1,13 @@
+title: "Dashboard: KPI status thresholds"
+order: 6
+submission_path: submissions/dashboard/health_status.py
+scaffold: scaffold/health_status.py
+solution: solution/health_status.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: maps a value to ok / warn / critical
+    entry: health_status
+    args: [85, 80, 95]
+    expect: warn
