@@ -53,7 +53,7 @@ def test_key_is_order_independent_within_a_row():
 
 # ---- end-to-end against a real Spark session (gated per-test) ----
 ALL_TASKS = ["select-and-filter", "groupby-agg", "join-orders-customers",
-             "partition-cache"]
+             "partition-cache", "window-rank", "dedupe-latest"]
 
 
 def _spark_spec(task: str) -> dict:

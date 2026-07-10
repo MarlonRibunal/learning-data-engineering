@@ -1,0 +1,19 @@
+title: "Spark: keep the latest record per key"
+order: 6
+submission_path: submissions/spark/dedupe_latest.py
+scaffold: scaffold/transform.py
+solution: solution/transform.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: spark
+    name: keeps only the newest row per id
+    entry: transform
+    inputs:
+      events:
+        - {id: 1, ts: "2026-01-01 09:00:00", v: a}
+        - {id: 1, ts: "2026-01-01 10:00:00", v: b}
+        - {id: 2, ts: "2026-01-01 09:00:00", v: c}
+    expect:
+      - {id: 1, v: b}
+      - {id: 2, v: c}

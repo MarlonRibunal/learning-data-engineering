@@ -1,0 +1,22 @@
+title: "Real-time: session windows"
+order: 6
+submission_path: submissions/realtime/session_window.py
+scaffold: scaffold/transform.py
+solution: solution/transform.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: spark
+    name: groups events into activity sessions
+    entry: transform
+    inputs:
+      events:
+        - {ts: "2026-01-01 09:03:00", category: A, amount: 10}
+        - {ts: "2026-01-01 09:07:00", category: B, amount: 20}
+        - {ts: "2026-01-01 09:12:00", category: A, amount: 30}
+        - {ts: "2026-01-01 09:18:00", category: A, amount: 5}
+        - {ts: "2026-01-01 09:25:00", category: B, amount: 15}
+    expect:
+      - {session_start: "2026-01-01 09:03:00", count: 3}
+      - {session_start: "2026-01-01 09:18:00", count: 1}
+      - {session_start: "2026-01-01 09:25:00", count: 1}
