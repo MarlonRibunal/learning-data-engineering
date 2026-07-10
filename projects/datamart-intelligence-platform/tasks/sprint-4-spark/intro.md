@@ -4,4 +4,4 @@ Here you'll write **PySpark** transforms that run on a local Spark engine (no cl
 
 Each task gives you one or more input DataFrames; you write a `transform(...)` function that returns the result. The grader runs it on a real Spark session and checks your rows.
 
-> Needs a Java runtime + `pip install pyspark`. If Spark can't start, checks report *could not run* (not a wrong answer).
+> Needs **Java 17 or 21** (Spark 4 breaks on Java 22+) + `pip install pyspark`. On macOS: `brew install openjdk@17` and point `JAVA_HOME` at it. If Spark can't start, checks report *could not run* (not a wrong answer).
