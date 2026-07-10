@@ -1,0 +1,23 @@
+title: "Spark: repartition and cache"
+order: 4
+submission_path: submissions/spark/partition_cache.py
+scaffold: scaffold/transform.py
+solution: solution/transform.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: spark
+    name: returns order_id + amount across 4 partitions
+    entry: transform
+    partitions: 4
+    inputs:
+      orders:
+        - {order_id: 1, customer_id: 10, category: Electronics, amount: 100}
+        - {order_id: 2, customer_id: 11, category: Books, amount: 20}
+        - {order_id: 3, customer_id: 10, category: Electronics, amount: 40}
+        - {order_id: 4, customer_id: 12, category: Home, amount: 60}
+    expect:
+      - {order_id: 1, amount: 100}
+      - {order_id: 2, amount: 20}
+      - {order_id: 3, amount: 40}
+      - {order_id: 4, amount: 60}
