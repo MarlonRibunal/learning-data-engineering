@@ -7,3 +7,4 @@ matplotlib>=3.5          # optional: renders the portfolio proof chart
 kafka-python>=2.0        # streaming sprint (Redpanda producer/consumer)
 pyspark>=3.4             # big-data sprint (local Spark; needs Java 17 or 21 — NOT 22+, Spark 4 breaks on newer JDKs)
 pytest>=7.4              # grader self-tests
+anthropic>=0.40          # optional: powers the opt-in AI tutor (set LDE_TUTOR_KEY). Lazily imported — offline studying works without it.
