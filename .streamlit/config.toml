@@ -1,7 +1,9 @@
 [theme]
+# Light base; the app's injected CSS flips to a dark Linear palette under
+# @media (prefers-color-scheme: dark), so the UI follows the viewer's OS.
 base = "light"
-primaryColor = "#4f46e5"
-backgroundColor = "#ffffff"
-secondaryBackgroundColor = "#f8fafc"
-textColor = "#0f172a"
+primaryColor = "#1d1e21"
+backgroundColor = "#f6f7f9"
+secondaryBackgroundColor = "#ffffff"
+textColor = "#17181b"
 font = "sans serif"
