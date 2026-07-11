@@ -66,7 +66,8 @@ _SPRINT_ORDER = ["sql-fundamentals", "ingestion", "sprint-2-dbt",
                  "sprint-5-hybrid-cloud", "serving", "streaming",
                  "sprint-8-realtime", "sprint-9-dashboard",
                  "security", "architecture", "sprint-10-production",
-                 "sprint-oncall", "sprint-debug", "sprint-migration"]
+                 "sprint-oncall", "sprint-debug", "sprint-migration",
+                 "sprint-advanced"]
 
 
 def _sprint_rank(sprint: str) -> tuple[int, int]:

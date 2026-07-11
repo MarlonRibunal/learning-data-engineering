@@ -1,0 +1,18 @@
+title: "Advanced: dependency blast radius"
+order: 1
+submission_path: submissions/advanced/blast_radius.py
+scaffold: scaffold/blast_radius.py
+solution: solution/blast_radius.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: finds everything downstream of a failure
+    entry: downstream
+    args:
+      - - [extract, transform]
+        - [transform, load]
+        - [transform, report]
+        - [other, x]
+      - extract
+    expect: [load, report, transform]

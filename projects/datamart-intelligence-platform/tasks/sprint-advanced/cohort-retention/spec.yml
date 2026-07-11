@@ -1,0 +1,15 @@
+title: "Advanced: cohort retention curve"
+order: 3
+submission_path: submissions/advanced/retention.py
+scaffold: scaffold/retention.py
+solution: solution/retention.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: counts the cohort still active each day
+    entry: retention_curve
+    args:
+      - [1, 2, 3]
+      - {1: [1, 2, 3], 2: [1, 3], 3: [1]}
+    expect: {1: 3, 2: 2, 3: 1}

@@ -1,0 +1,17 @@
+title: "Advanced: topological order of a DAG"
+order: 4
+submission_path: submissions/advanced/topo_order.py
+scaffold: scaffold/topo_order.py
+solution: solution/topo_order.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: orders tasks so dependencies run first
+    entry: topo_order
+    args:
+      - - [a, b]
+        - [a, c]
+        - [b, d]
+        - [c, d]
+    expect: [a, b, c, d]
