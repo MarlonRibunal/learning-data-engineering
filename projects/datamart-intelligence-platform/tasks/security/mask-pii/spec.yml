@@ -16,3 +16,16 @@ checks:
       - query: "SELECT COUNT(*)::int FROM information_schema.columns WHERE table_schema='analytics' AND table_name='customers_safe' AND column_name IN ('email','ssn')"
         equals: 0
         hint: "the view must NOT expose email or ssn"
+    hints:
+      - >-
+        A view is a saved query, so its columns are exactly what you SELECT — and
+        <code>SELECT *</code> drags email and ssn along. How do you build
+        <code>customers_safe</code> so dashboards never see PII?
+      - >-
+        List only the safe columns in the view definition instead of a star:
+        <code>CREATE VIEW analytics.customers_safe AS SELECT customer_id,
+        customer_name FROM ...</code> exposes just those.
+      - >-
+        Define <code>CREATE VIEW analytics.customers_safe AS SELECT customer_id,
+        customer_name FROM analytics.customer_pii</code> — customer_name is
+        exposed while email and ssn are gone.

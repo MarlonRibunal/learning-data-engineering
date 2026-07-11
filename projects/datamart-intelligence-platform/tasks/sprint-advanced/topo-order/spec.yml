@@ -15,3 +15,17 @@ checks:
         - [b, d]
         - [c, d]
     expect: [a, b, c, d]
+    hints:
+      - >-
+        A task can run only after every task it depends on has run — so you
+        repeatedly pick a node with <em>no remaining incoming edges</em>. When
+        several are ready at once, which one comes first to match the expected
+        alphabetical order?
+      - >-
+        This is Kahn's algorithm: track each node's in-degree, emit a node whose
+        in-degree is <code>0</code>, then decrement its neighbours' in-degrees. Use
+        a heap so ready nodes break ties alphabetically.
+      - >-
+        For edges <code>a→b, a→c, b→d, c→d</code>, start with <code>a</code>
+        (in-degree 0), then <code>b</code> and <code>c</code> (the heap picks
+        <code>b</code> first), then <code>d</code>, giving <code>[a, b, c, d]</code>.

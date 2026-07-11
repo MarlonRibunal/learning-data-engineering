@@ -12,3 +12,16 @@ checks:
     args:
       - [503, 400, 429]
     expect: [true, false, true]
+    hints:
+      - >-
+        Some failures are worth retrying because they're <em>transient</em> (the
+        server was momentarily overloaded) and some aren't because they're
+        <em>permanent</em> (your request was malformed). Which class does a 400
+        fall into versus a 503?
+      - >-
+        Keep a set of retryable codes — <code>{429, 500, 502, 503, 504}</code> —
+        and test each status for membership. Note 429 (rate-limited) is retryable
+        even though it's a 4xx.
+      - >-
+        Return <code>[code in RETRYABLE for code in status_codes]</code>; 503 and
+        429 are in the set but 400 is not, giving <code>[true, false, true]</code>.

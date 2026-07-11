@@ -19,3 +19,16 @@ checks:
       - {day: "2026-01-01", revenue: 120}
       - {day: "2026-01-02", revenue: 35}
       - {day: "2026-01-03", revenue: 15}
+    hints:
+      - >-
+        Several rows share the same <em>day</em>, so you must collapse them into
+        one revenue figure per day — then emit the days in calendar order. What
+        data structure accumulates a total keyed by day?
+      - >-
+        Accumulate with <code>totals[r["day"]] = totals.get(r["day"], 0) +
+        r["amount"]</code>, then walk <code>sorted(totals)</code> so the days come
+        out ascending.
+      - >-
+        Return <code>[{"day": d, "revenue": totals[d]} for d in
+        sorted(totals)]</code>; the two 2026-01-01 rows sum to 120, giving the
+        first entry <code>{"day": "2026-01-01", "revenue": 120}</code>.

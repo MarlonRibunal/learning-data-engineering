@@ -11,3 +11,16 @@ checks:
     entry: health_status
     args: [85, 80, 95]
     expect: warn
+    hints:
+      - >-
+        The bands overlap — a value at or above <code>crit</code> is also at or
+        above <code>warn</code> — so the order you test them in decides the
+        answer. Which band should you check first?
+      - >-
+        Test the most severe band first: <code>if value &gt;= crit: return
+        "critical"</code>, then <code>if value &gt;= warn: return "warn"</code>,
+        otherwise <code>"ok"</code>. Checking warn first would misclassify a
+        critical value.
+      - >-
+        With value 85, warn 80, and crit 95 it is below crit but at or above warn,
+        so it returns <code>"warn"</code>.

@@ -12,3 +12,18 @@ checks:
     args:
       - [SUCCESS, RUNNING, SUCCESS]
     expect: RUNNING
+    hints:
+      - >-
+        Rolling up parallel jobs means the <em>worst</em> state wins: one
+        <code>FAILED</code> sinks the batch, and any still-<code>RUNNING</code>
+        job means you aren't done yet. Which state should you test for first?
+      - >-
+        Check the most severe state before the milder ones so a failure isn't
+        masked by a later success, e.g. <code>if "FAILED" in statuses: return
+        "FAILED"</code>, then handle <code>RUNNING</code>. Only when nothing
+        failed and nothing is running is the rollup <code>SUCCESS</code>.
+      - >-
+        Test <code>"FAILED" in statuses</code>, then <code>"RUNNING" in
+        statuses</code>, else return <code>"SUCCESS"</code>; for
+        <code>[SUCCESS, RUNNING, SUCCESS]</code> there's no FAILED but there is a
+        RUNNING, so you get <code>RUNNING</code>.

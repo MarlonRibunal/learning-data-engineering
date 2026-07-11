@@ -11,3 +11,14 @@ checks:
     entry: error_rate
     args: [200, 10]
     expect: 5.0
+    hints:
+      - >-
+        An error rate is a <em>fraction of the whole</em> expressed as a percent —
+        so which of <code>failed</code> and <code>total</code> is the numerator,
+        and which is the denominator?
+      - >-
+        The rate is <code>failed / total</code>, then multiplied by 100 to make it
+        a percentage; round to one decimal place so the number stays readable.
+      - >-
+        Return <code>round(failed / total * 100, 1)</code>; 10 failed out of 200
+        total is <code>5.0</code>.

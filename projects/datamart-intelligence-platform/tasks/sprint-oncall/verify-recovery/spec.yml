@@ -13,3 +13,17 @@ checks:
       - {orders: 100, users: 50}
       - {orders: 100, users: 48}
     expect: [users]
+    hints:
+      - >-
+        A table has recovered only when its <code>actual</code> count matches
+        what was <code>expected</code>. Here orders lines up, but users came
+        back as 48 against an expected 50 — which names should you report?
+      - >-
+        For each <code>name</code> in <code>expected</code>, compare
+        <code>actual.get(name)</code> to <code>expected[name]</code>; using
+        <code>.get</code> means a missing table reads as <em>None</em> and still
+        counts as unrecovered.
+      - >-
+        Return <code>sorted(name for name in expected if actual.get(name) !=
+        expected[name])</code>; only users differs (48 vs 50), giving
+        <code>[users]</code>.

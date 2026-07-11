@@ -10,3 +10,16 @@ checks:
   - type: sql_result
     name: returns the correct KPIs
     ordered: false
+    hints:
+      - >-
+        You want a single summary row across all orders, so there is no grouping
+        here — just three aggregates side by side. Which functions count the
+        rows, add up the amounts, and average them?
+      - >-
+        Put three aggregates in one SELECT: <code>COUNT(*)</code> for the order
+        count, <code>SUM(total_amount)</code> for revenue, and
+        <code>ROUND(AVG(total_amount), 2)</code> for the average.
+      - >-
+        Use
+        <code>SELECT COUNT(*) AS total_orders, SUM(total_amount) AS total_revenue, ROUND(AVG(total_amount), 2) AS avg_order_value FROM orders</code>
+        with no GROUP BY.

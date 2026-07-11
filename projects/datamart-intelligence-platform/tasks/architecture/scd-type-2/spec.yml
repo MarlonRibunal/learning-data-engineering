@@ -22,3 +22,19 @@ checks:
       - query: "SELECT valid_to::text FROM analytics.dim_customer_scd WHERE customer_id = 1 AND NOT is_current"
         equals: "2026-06-01"
         hint: "the old row's valid_to = the next version's valid_from"
+    hints:
+      - >-
+        SCD type 2 keeps history — each change becomes a new versioned row rather
+        than overwriting. The stub marks every version <code>is_current</code>
+        with an empty valid_to; how do you tell an old row from the live one, and
+        when did its validity end?
+      - >-
+        The end of one version is the start of the next, so look ahead within
+        each customer: <code>LEAD(valid_from) OVER (PARTITION BY customer_id
+        ORDER BY valid_from)</code> gives valid_to, and a row is current only
+        when that lead <code>IS NULL</code>.
+      - >-
+        Set <code>valid_to = LEAD(valid_from) OVER (PARTITION BY customer_id
+        ORDER BY valid_from)</code> and <code>is_current = (that LEAD IS
+        NULL)</code> — 3 rows, 2 current, and customer 1's old row closes at
+        <code>2026-06-01</code>.

@@ -74,23 +74,17 @@ def test_spark_and_streaming_rungs_ship_a_hint_ladder(spec_file):
         assert all(isinstance(h, str) and h.strip() for h in hints)
 
 
-# The foundational sprints beginners hit first. Each rung has the learner editing
-# ONE file, so a single ladder rides the PRIMARY (first non-file_exists) check;
-# secondary sql_assert/file_contains checks keep their own inline hint: one-liner.
-FUNDAMENTALS_SPRINTS = [
-    "sql-fundamentals", "ingestion", "data-quality", "sprint-2-dbt", "sprint-3-airflow",
-]
+# Universal coverage: EVERY rung in the whole curriculum ships a hint ladder on
+# its primary (first non-file_exists) check. The learner edits one file per rung,
+# so one ladder rides the primary check; secondary sql_assert/file_contains checks
+# keep their own inline hint: one-liner. This guards against any new rung landing
+# without a stuck-buster — the hint ladder is now a curriculum invariant.
+def _all_specs():
+    return sorted((TASKS).glob("*/*/spec.yml"))
 
 
-def _fundamentals_specs():
-    specs = []
-    for sprint in FUNDAMENTALS_SPRINTS:
-        specs += sorted((TASKS / sprint).glob("*/spec.yml"))
-    return specs
-
-
-@pytest.mark.parametrize("spec_file", _fundamentals_specs(), ids=lambda p: f"{p.parent.parent.name}/{p.parent.name}")
-def test_fundamentals_rungs_ship_a_hint_ladder(spec_file):
+@pytest.mark.parametrize("spec_file", _all_specs(), ids=lambda p: f"{p.parent.parent.name}/{p.parent.name}")
+def test_every_rung_ships_a_hint_ladder(spec_file):
     spec = yaml.safe_load(spec_file.read_text())
     logic = [c for c in spec["checks"] if c["type"] != "file_exists"]
     assert logic, f"{spec_file} has no logic check"

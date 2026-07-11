@@ -15,3 +15,16 @@ checks:
       - query: "SELECT COUNT(DISTINCT customer_id)::int FROM analytics.dim_customers"
         equals: 4
         hint: "a dimension has exactly one row per business key (customer)"
+    hints:
+      - >-
+        A dimension describes one thing with exactly one row per business key,
+        and <code>analytics.dim_customers</code> is still empty. Which raw table
+        holds the customer records, and how many rows should each customer get?
+      - >-
+        You populate a dimension by selecting the source rows straight into the
+        target: <code>INSERT INTO analytics.dim_customers (...) SELECT ... FROM
+        raw.customers</code>, carrying customer_id, customer_name and email.
+      - >-
+        Write <code>INSERT INTO analytics.dim_customers (customer_id,
+        customer_name, email) SELECT customer_id, customer_name, email FROM
+        raw.customers</code> — 4 clean rows, one per customer.

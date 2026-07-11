@@ -15,3 +15,15 @@ checks:
         - {name: users, age_min: 200}
       - 60
     expect: [payments, users]
+    hints:
+      - >-
+        A table is <em>stale</em> only when it has sat longer than the SLA
+        allows. Compare each table's <code>age_min</code> against
+        <code>sla_minutes</code> — and notice the expected list is sorted.
+      - >-
+        Walk the <code>tables</code> and keep a table's <code>name</code> when
+        <code>age_min &gt; sla_minutes</code>, then sort the surviving names.
+      - >-
+        Return <code>sorted(t["name"] for t in tables if t["age_min"] &gt;
+        sla_minutes)</code>; with an SLA of 60, only payments (90) and users
+        (200) exceed it, giving <code>[payments, users]</code>.

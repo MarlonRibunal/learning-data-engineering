@@ -16,3 +16,17 @@ checks:
       - query: "SELECT COUNT(*)::int FROM pg_policies WHERE tablename = 'customer_pii'"
         equals: 1
         hint: "RLS with no policy denies everyone — you also need CREATE POLICY ..."
+    hints:
+      - >-
+        Enabling row-level security with no policy is a default-deny — it locks
+        everyone out, the analyst included. Once RLS is on, what else must exist
+        before any row becomes visible?
+      - >-
+        RLS decides visibility through policies; a SELECT policy's
+        <code>USING</code> predicate says which rows come back. <code>CREATE
+        POLICY name ON analytics.customer_pii FOR SELECT USING (...)</code> with
+        <code>USING (true)</code> allows every row.
+      - >-
+        Keep the ENABLE line and add <code>CREATE POLICY analyst_select ON
+        analytics.customer_pii FOR SELECT USING (true);</code> so RLS is on and
+        exactly one policy exists.

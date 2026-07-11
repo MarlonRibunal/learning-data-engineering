@@ -10,3 +10,14 @@ checks:
   - type: sql_result
     name: returns the cumulative revenue by date
     ordered: true
+    hints:
+      - >-
+        The scaffold shows each day's own amount, but you want a
+        <em>running</em> total — each day plus every day before it. Which kind
+        of function accumulates across rows while keeping one row per date?
+      - >-
+        A window function does it: <code>SUM(total_amount) OVER (ORDER BY order_date)</code>
+        adds up rows through the current date without collapsing them into one.
+      - >-
+        Use
+        <code>SELECT order_date, SUM(total_amount) OVER (ORDER BY order_date) AS cumulative_revenue FROM orders ORDER BY order_date</code>.

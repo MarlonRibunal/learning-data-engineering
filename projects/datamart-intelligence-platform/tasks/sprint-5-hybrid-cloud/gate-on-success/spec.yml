@@ -12,3 +12,17 @@ checks:
     args:
       - [SUCCESS, SUCCESS]
     expect: true
+    hints:
+      - >-
+        You should only proceed when <em>every</em> job succeeded — a single
+        non-<code>SUCCESS</code> status has to gate the whole batch. Which
+        Python builtin returns <code>True</code> only when a condition holds for
+        all items?
+      - >-
+        <code>all(...)</code> is <code>True</code> only when every element
+        passes, so feed it a generator that checks each status against the
+        success state: <code>all(s == "SUCCESS" for s in statuses)</code>.
+      - >-
+        Return <code>all(s == "SUCCESS" for s in statuses)</code>; for
+        <code>[SUCCESS, SUCCESS]</code> every status is <code>SUCCESS</code>, so
+        it returns <code>true</code>.

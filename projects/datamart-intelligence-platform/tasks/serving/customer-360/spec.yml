@@ -9,6 +9,20 @@ checks:
     name: submission exists and is non-empty
   - type: sql_ingest
     name: populates analytics.customer_360 correctly
+    hints:
+      - >-
+        You need one row per customer, <em>including</em> anyone who never
+        ordered. Which join keeps every customer even with no matching order,
+        and how do you turn a missing spend into 0 rather than null?
+      - >-
+        A left join drives it: <code>LEFT JOIN raw.orders o ON c.customer_id = o.customer_id</code>
+        keeps all customers, then wrap the total in
+        <code>COALESCE(SUM(o.total_amount), 0)</code> so no-order customers show 0.
+      - >-
+        End with
+        <code>INSERT INTO analytics.customer_360 (customer_name, order_count, total_spend) SELECT c.customer_name, COUNT(o.order_id), COALESCE(SUM(o.total_amount), 0)</code>
+        from <code>raw.customers c</code> left-joined to <code>raw.orders o</code>, grouped by
+        <code>c.customer_name</code>.
     asserts:
       - query: "SELECT COUNT(*)::int FROM analytics.customer_360"
         equals: 4

@@ -12,3 +12,14 @@ checks:
     args:
       - [100, 20, 30]
     expect: [100, 120, 150]
+    hints:
+      - >-
+        Each output element is the sum of everything up to and including that
+        position, so you carry a total as you walk the list. What do you do to
+        that carried total at each step?
+      - >-
+        Keep an accumulator that starts at 0, add each value into it, and append
+        the accumulator right after — e.g. <code>total += v; out.append(total)</code>.
+      - >-
+        After 100 the total is 100, after +20 it is 120, and after +30 it is 150 —
+        return <code>[100, 120, 150]</code>.

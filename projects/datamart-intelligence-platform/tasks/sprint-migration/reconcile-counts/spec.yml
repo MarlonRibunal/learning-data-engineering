@@ -13,3 +13,16 @@ checks:
       - {orders: 100, users: 50}
       - {orders: 100, users: 48}
     expect: {users: -2}
+    hints:
+      - >-
+        You only report tables whose count <em>changed</em> — <code>orders</code>
+        stayed at 100, so it shouldn't appear. And the delta is signed: losing
+        rows is negative. Which way round is <code>after</code> minus <code>before</code>?
+      - >-
+        Walk the tables in <code>before</code> and keep only those whose counts
+        differ, mapping each to its delta <code>after[t] - before[t]</code>. Skip a
+        table when <code>after.get(t) == before[t]</code>.
+      - >-
+        Return <code>{t: after[t] - before[t] for t in before if after.get(t) !=
+        before[t]}</code>; with users dropping 50→48 that's <code>{users: -2}</code>
+        and orders omitted.

@@ -16,3 +16,17 @@ checks:
       - query: "SELECT has_table_privilege('analyst', 'analytics.customer_pii', 'INSERT')::int"
         equals: 0
         hint: "least privilege: the analyst must NOT be able to write"
+    hints:
+      - >-
+        The role exists but was granted nothing, so it cannot even read. Least
+        privilege means giving exactly read access and no more — what two grants
+        let the analyst SELECT without being able to write?
+      - >-
+        The analyst needs <code>USAGE</code> on the schema to reach the table,
+        then only SELECT on it — never INSERT/UPDATE/DELETE. <code>GRANT SELECT
+        ON analytics.customer_pii TO analyst</code> reads; withholding write
+        privileges keeps INSERT denied.
+      - >-
+        Add <code>GRANT USAGE ON SCHEMA analytics TO analyst;</code> and
+        <code>GRANT SELECT ON analytics.customer_pii TO analyst;</code> — SELECT
+        allowed, INSERT still 0.

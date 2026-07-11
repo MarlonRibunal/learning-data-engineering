@@ -14,3 +14,16 @@ checks:
         - {job: transform, status: failed}
         - {job: load, status: failed}
     expect: transform
+    hints:
+      - >-
+        More than one job failed here, so <em>order</em> is what matters — you
+        want the <em>first</em> failure in the sequence, not just any failure.
+        Which job in <code>runs</code> fails earliest?
+      - >-
+        Iterate over <code>runs</code> in order and stop the moment you hit a
+        run whose <code>status</code> is <code>"failed"</code> — returning
+        immediately is what makes it the <em>first</em>.
+      - >-
+        Loop <code>for run in runs:</code> and <code>if run["status"] ==
+        "failed": return run["job"]</code>; transform fails before load, so the
+        answer is <code>transform</code>.

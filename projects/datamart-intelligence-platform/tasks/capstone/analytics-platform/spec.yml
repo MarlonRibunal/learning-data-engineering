@@ -11,6 +11,21 @@ checks:
   - type: dbt_test
     name: warehouse model builds and passes its tests
     select: revenue_by_status
+    hints:
+      - >-
+        This is the final mart of the whole platform: it must land one row per
+        order <em>status</em> with that status's total revenue, built from the
+        raw source. A pass-through <code>SELECT</code> won't collapse to one row
+        per status — what has to aggregate?
+      - >-
+        Point the model at the raw orders with
+        <code>{{ source('raw', 'orders') }}</code>, then
+        <code>GROUP BY status</code> and <code>SUM(total_amount) AS revenue</code>
+        so each status becomes a single tested row.
+      - >-
+        The mart is <code>SELECT status, SUM(total_amount) AS revenue FROM {{
+        source('raw', 'orders') }} GROUP BY status</code> — 3 status rows whose
+        revenue sums to 986, which the sql_assert checks then confirm.
   - type: sql_assert
     name: warehouse has one row per status
     query: "SELECT COUNT(*)::int FROM analytics_analytics.revenue_by_status"

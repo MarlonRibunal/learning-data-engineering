@@ -13,3 +13,17 @@ checks:
       - [ok, fail, fail, fail]
       - 3
     expect: open
+    hints:
+      - >-
+        A breaker trips only on failures that pile up <em>consecutively</em> —
+        an old failure that a later success recovered from shouldn't count. Which
+        end of <code>results</code> holds the most recent attempts, and does a
+        single <code>ok</code> reset the streak?
+      - >-
+        Walk <code>results</code> from the end and count the trailing run of
+        <code>fail</code>, stopping at the first non-fail. The breaker is
+        <code>open</code> once that streak reaches <code>threshold</code>.
+      - >-
+        Return <code>"open" if streak &gt;= threshold else "closed"</code>; for
+        <code>[ok, fail, fail, fail]</code> with threshold <code>3</code> the
+        trailing streak is 3, so the result is <code>open</code>.

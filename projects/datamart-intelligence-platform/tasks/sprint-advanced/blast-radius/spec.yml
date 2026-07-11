@@ -16,3 +16,16 @@ checks:
         - [other, x]
       - extract
     expect: [load, report, transform]
+    hints:
+      - >-
+        A failure ripples <em>downstream</em>: everything reachable by following
+        edges out of the failed node, transitively — not just its immediate
+        children. Should the failed node itself appear in its own blast radius?
+      - >-
+        Build an adjacency list from the <code>[from, to]</code> edges, then
+        BFS/DFS from <code>failed</code>, collecting each newly seen node. The
+        start node isn't added — only the nodes you reach.
+      - >-
+        From <code>extract</code> you reach <code>transform</code>, then
+        <code>load</code> and <code>report</code>; sorted that's
+        <code>[load, report, transform]</code> (the <code>other→x</code> edge is unreachable).

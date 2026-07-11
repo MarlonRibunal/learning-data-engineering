@@ -17,3 +17,16 @@ checks:
     expect:
       - {id: 1, value: b}
       - {id: 3, value: c}
+    hints:
+      - >-
+        Silver refines bronze: keep only the <em>latest</em> row per
+        <code>id</code>, then drop any row whose <code>value</code> is null.
+        Notice id 1 appears twice and id 2 is null — which survives?
+      - >-
+        Collapse to the latest per id by overwriting into a dict while iterating
+        in order — <code>latest[row["id"]] = row</code> — so the last write per
+        id wins. Then emit ids in sorted order, skipping null values.
+      - >-
+        Return <code>[latest[k] for k in sorted(latest) if latest[k]["value"] is
+        not None]</code>. For the sample id 1 keeps <code>b</code>, id 2 is
+        dropped for being null, giving <code>expect</code>.

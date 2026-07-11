@@ -11,3 +11,15 @@ checks:
     entry: pct_change
     args: [120, 100]
     expect: 20.0
+    hints:
+      - >-
+        Percent change measures the gap between <code>current</code> and
+        <code>previous</code> relative to <em>previous</em> — not relative to
+        current. Which of the two is the denominator?
+      - >-
+        <code>(current - previous) / previous</code> gives the fractional change;
+        multiply by 100 to turn it into a percentage. Guard
+        <code>previous == 0</code> so you don't divide by zero.
+      - >-
+        Return <code>round((current - previous) / previous * 100, 1)</code>; for
+        current 120 and previous 100 that is <code>20 / 100 * 100 = 20.0</code>.

@@ -17,3 +17,17 @@ checks:
     expect:
       - {id: 1, region: UNKNOWN}
       - {id: 2, region: US}
+    hints:
+      - >-
+        Every row needs the <code>column</code>, but you only fill
+        <code>default</code> where it's <em>missing</em> — a row that already has
+        a value must keep it. What happens to <code>region: US</code> if you
+        overwrite unconditionally?
+      - >-
+        Merge each row with the column set to its current value <em>or</em> the
+        default: <code>row.get(column, default)</code> returns the existing value
+        when present and the default only when it's absent.
+      - >-
+        Return <code>[{**row, column: row.get(column, default)} for row in
+        rows]</code>; the first row gains <code>region: UNKNOWN</code> while the
+        second keeps <code>region: US</code>.

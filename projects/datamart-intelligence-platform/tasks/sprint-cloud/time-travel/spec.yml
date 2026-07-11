@@ -15,3 +15,15 @@ checks:
         - [1, 2, 3]
       - 1
     expect: [1, 2]
+    hints:
+      - >-
+        Time travel returns the table as it looked at a past <em>version</em>.
+        Here <code>history</code> is a list where each index is one snapshot —
+        how do you read the snapshot at index <code>version</code>?
+      - >-
+        The version number is just a positional index into the history list, so
+        <code>history[version]</code> is the snapshot you want. No searching or
+        copying is needed.
+      - >-
+        Return <code>history[version]</code>; for the sample
+        <code>version</code> 1 selects the middle snapshot <code>[1, 2]</code>.

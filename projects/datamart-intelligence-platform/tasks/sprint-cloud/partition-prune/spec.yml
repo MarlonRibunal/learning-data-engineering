@@ -14,3 +14,16 @@ checks:
       - "2026-03-02"
       - "2026-03-03"
     expect: ["2026-03-02", "2026-03-03"]
+    hints:
+      - >-
+        Pruning is the cost lever: only scan partitions inside the requested
+        window <code>[start, end]</code>, inclusive on both ends. Which of the
+        four dates fall between <code>2026-03-02</code> and
+        <code>2026-03-03</code>?
+      - >-
+        Filter with an inclusive range test — dates are strings, so
+        <code>start &lt;= p &lt;= end</code> compares them lexically, which works
+        for ISO dates. Keep only the partitions that pass.
+      - >-
+        Return <code>sorted(p for p in partitions if start &lt;= p &lt;= end)</code>;
+        for the sample that leaves <code>["2026-03-02", "2026-03-03"]</code>.

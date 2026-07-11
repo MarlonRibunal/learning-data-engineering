@@ -10,3 +10,16 @@ checks:
   - type: sql_result
     name: ranks categories by total revenue
     ordered: false
+    hints:
+      - >-
+        The scaffold hard-codes every category to rank 1. You need each category
+        numbered by its total revenue, highest first. Which window function
+        assigns positions over an ordering?
+      - >-
+        <code>RANK()</code> does it, ordered by the summed revenue descending:
+        <code>RANK() OVER (ORDER BY SUM(total_amount) DESC)</code> ranks the
+        aggregated groups.
+      - >-
+        Replace the constant <code>1</code> with
+        <code>RANK() OVER (ORDER BY SUM(total_amount) DESC) AS rank</code>, still
+        keeping <code>GROUP BY category</code>.

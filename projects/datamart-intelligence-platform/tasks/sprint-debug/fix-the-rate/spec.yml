@@ -11,3 +11,15 @@ checks:
     entry: conversion_rate
     args: [25, 200]
     expect: 12.5
+    hints:
+      - >-
+        <code>25 / 200</code> is <code>0.125</code> — a bare fraction, which is
+        why the dashboard reads 0.1 instead of a real percentage. What has to
+        happen to a fraction to turn it into a percent?
+      - >-
+        A percentage is the fraction scaled up by 100: <code>conversions /
+        visitors * 100</code>. The current code rounds the fraction before ever
+        scaling it.
+      - >-
+        Return <code>round(conversions / visitors * 100, 1)</code>; for
+        <code>args</code> [25, 200] that is <code>25 / 200 * 100 = 12.5</code>.
