@@ -107,6 +107,10 @@ def _task_state(sprint: str, task: str, progress: dict) -> str:
 # green = passed, amber = in progress, red = failed, orange = could-not-run, grey = new.
 _STATE_ICON = {"pass": "🟢", "fail": "🔴", "error": "🟠",
                "in-progress": "🟡", "new": "⚪"}
+# Consistent Material line-icons for the sidebar nav (shape conveys state).
+_STATE_MICON = {"pass": ":material/check_circle:", "fail": ":material/cancel:",
+                "error": ":material/error:", "in-progress": ":material/pending:",
+                "new": ":material/radio_button_unchecked:"}
 _STATE_PILL = {
     "pass": ("done", "Passed"),
     "fail": ("fail", "Try again"),
@@ -124,10 +128,10 @@ def _task_header(sprint: str, task: str, spec, state: str,
         crumb = f"Level {level} of {total} · {crumb}"
     return (
         '<div class="task-head">'
-        f'<div class="task-crumb">{crumb}</div>'
+        f'<div class="task-crumb">{_ICON["target"]}{crumb}</div>'
         '<div class="task-titlebar">'
         f'<span class="task-title">{spec.title}</span>'
-        f'<span class="pill {cls}">{label}</span>'
+        f'<span class="pill {cls}"><span class="dot"></span>{label}</span>'
         "</div></div>"
     )
 
@@ -270,109 +274,166 @@ def _hero(done: int, total: int) -> str:
 
 _CSS = """
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 :root{
-  --brand:#4f46e5; --brand-d:#4338ca; --ink:#0f172a; --muted:#64748b;
-  --line:#e2e8f0; --surface:#ffffff; --soft:#f8fafc;
-  --green:#16a34a; --green-bg:#dcfce7; --amber:#d97706; --amber-bg:#fef3c7;
+  --bg:#f6f7f9; --panel:#ffffff; --panel-2:#fbfbfc;
+  --line:#e7e8ec; --line-2:#eef0f3;
+  --ink:#17181b; --muted:#6a6e77; --faint:#9297a0;
+  /* Monochrome-forward: ink is the accent. Colour is reserved for status. */
+  --accent:#1d1e21; --accent-h:#34363b; --accent-soft:#f0f1f3;
+  --green:#3fa66a; --green-soft:#e9f5ee; --green-ink:#217a4b;
+  --amber:#c88a1c; --amber-soft:#fbf1db; --amber-ink:#8a5d0e;
+  --red:#d6494f; --red-soft:#fbe9ea; --red-ink:#a3323a;
+  --r:12px; --r-sm:8px;
+  --sh:0 1px 2px rgba(20,21,26,.04), 0 1px 3px rgba(20,21,26,.05);
 }
-/* Strip the deploy/menu chrome for a product feel — but hide only the
-   toolbar ACTIONS, not the toolbar itself: Streamlit nests the
-   re-open-sidebar button inside stToolbar, so hiding the whole toolbar
-   traps a collapsed sidebar shut. */
+/* Strip the deploy/menu chrome — but keep the toolbar so the collapsed
+   sidebar's re-open control stays reachable. */
 header[data-testid="stHeader"]{background:transparent; box-shadow:none;}
 [data-testid="stAppDeployButton"]{display:none;}
 [data-testid="stMainMenu"]{display:none;}
 [data-testid="stStatusWidget"]{display:none;}
 [data-testid="stDecoration"]{display:none;}
-.stApp{background:var(--soft);}
-[data-testid="stMainBlockContainer"]{padding-top:2.2rem; max-width:1150px;}
-html,body,[class*="css"]{font-feature-settings:"cv02","cv03","cv04";}
-h1,h2,h3{color:var(--ink); letter-spacing:-.02em; font-weight:750;}
-h2{margin-top:.4rem;}
-a{color:var(--brand);}
+html,body,[class*="css"],[data-testid="stAppViewContainer"]{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  font-feature-settings:'cv02','cv03','cv04','cv11'; -webkit-font-smoothing:antialiased;}
+.stApp{background:var(--bg);}
+[data-testid="stMainBlockContainer"]{padding-top:2.4rem; max-width:1120px;}
+h1,h2,h3{color:var(--ink); letter-spacing:-.021em; font-weight:650;}
+h2{margin-top:.3rem;}
+p,li,span{color:var(--ink);}
+a{color:var(--accent); text-decoration:none;}
+.icon{width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:1.6;
+  stroke-linecap:round; stroke-linejoin:round; flex:0 0 auto; vertical-align:-2px;}
 
-/* ---- hero ---- */
-.hero{background:linear-gradient(135deg,#eef2ff 0%,#faf5ff 100%);
-  border:1px solid var(--line); border-radius:18px; padding:26px 28px; margin-bottom:20px;}
-.hero-title{font-size:2rem; font-weight:800; letter-spacing:-.03em; color:var(--ink);}
-.hero-title em{color:var(--brand); font-style:normal;}
-.hero-sub{color:#475569; margin-top:8px; max-width:720px; line-height:1.5;}
-.hero-sub code{background:#fff; border:1px solid var(--line); border-radius:6px; padding:1px 6px; color:var(--brand-d);}
-.hero-meter{height:8px; background:#e0e7ff; border-radius:999px; margin-top:18px; overflow:hidden;}
-.hero-meter-fill{height:100%; background:linear-gradient(90deg,var(--brand),#7c3aed); border-radius:999px;}
-.hero-meta{color:var(--muted); font-size:.82rem; margin-top:8px; font-weight:600;}
+/* ---- hero (bento) ---- */
+.hero{background:var(--panel); border:1px solid var(--line); border-radius:16px;
+  padding:24px 26px; margin-bottom:18px; box-shadow:var(--sh);}
+.hero-title{font-size:1.7rem; font-weight:680; letter-spacing:-.03em; color:var(--ink);}
+.hero-title em{color:var(--ink); font-style:normal; box-shadow:inset 0 -.42em 0 var(--accent-soft);}
+.hero-sub{color:var(--muted); margin-top:7px; max-width:660px; line-height:1.55; font-size:.92rem;}
+.hero-sub code{background:var(--panel-2); border:1px solid var(--line); border-radius:5px;
+  padding:1px 5px; color:var(--accent-h); font-size:.85em;}
+.hero-meter{height:6px; background:var(--line-2); border-radius:999px; margin-top:18px; overflow:hidden;}
+.hero-meter-fill{height:100%; background:var(--accent); border-radius:999px;}
+.hero-meta{color:var(--faint); font-size:.78rem; margin-top:8px; font-weight:500; letter-spacing:.01em;}
 
-/* ---- journey stepper ---- */
-.journey{display:flex; gap:10px; overflow-x:auto; padding:6px 2px 12px; margin-bottom:6px;}
-.stage{flex:1 0 118px; background:var(--surface); border:1px solid var(--line);
-  border-radius:14px; padding:12px 12px 11px; position:relative;}
-.stage:not(:last-child)::after{content:"›"; position:absolute; right:-11px; top:50%;
-  transform:translateY(-50%); color:#cbd5e1; font-size:20px; font-weight:700;}
-.stage-role{font-size:.62rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted);}
-.stage-name{font-size:.82rem; font-weight:700; color:var(--ink); margin-top:3px; line-height:1.15; min-height:2.1em;}
-.stage-bar{height:5px; background:#eef2f7; border-radius:999px; margin-top:8px; overflow:hidden;}
-.stage-bar span{display:block; height:100%; border-radius:999px; background:var(--brand);}
-.stage-count{font-size:.72rem; color:var(--muted); font-weight:700; margin-top:6px;}
-.stage.done{border-color:#bbf7d0; background:linear-gradient(180deg,#f0fdf4,#fff);}
+/* ---- journey (bento tiles) ---- */
+.journey{display:flex; gap:8px; overflow-x:auto; padding:2px 2px 10px; margin-bottom:2px;}
+.stage{flex:1 0 112px; background:var(--panel); border:1px solid var(--line);
+  border-radius:12px; padding:12px 13px 11px; position:relative; box-shadow:var(--sh);}
+.stage:not(:last-child)::after{content:""; position:absolute; right:-6px; top:50%; width:6px;
+  height:1px; background:var(--line); transform:translateY(-50%);}
+.stage-role{font-size:.6rem; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--faint);}
+.stage-name{font-size:.8rem; font-weight:600; color:var(--ink); margin-top:3px; line-height:1.2; min-height:2.1em; letter-spacing:-.01em;}
+.stage-bar{height:4px; background:var(--line-2); border-radius:999px; margin-top:9px; overflow:hidden;}
+.stage-bar span{display:block; height:100%; border-radius:999px; background:var(--accent);}
+.stage-count{font-size:.7rem; color:var(--faint); font-weight:500; margin-top:7px;}
+.stage.done{border-color:#cfe8da;}
 .stage.done .stage-bar span{background:var(--green);}
-.stage.done .stage-count{color:var(--green);}
-.stage.wip{border-color:#fde68a; background:linear-gradient(180deg,#fffbeb,#fff);}
+.stage.done .stage-count{color:var(--green-ink);}
+.stage.wip{border-color:#ecdcb4;}
 .stage.wip .stage-bar span{background:var(--amber);}
 
 /* ---- sidebar ---- */
-[data-testid="stSidebar"]{background:#fff; border-right:1px solid var(--line);}
-[data-testid="stSidebar"] .brand{font-weight:800; font-size:1.05rem; letter-spacing:-.02em;
-  color:var(--ink); padding:2px 4px 2px; display:flex; align-items:center; gap:8px;}
-[data-testid="stSidebar"] .grp{font-size:.66rem; font-weight:800; letter-spacing:.09em;
-  text-transform:uppercase; color:var(--muted); margin:14px 6px 4px;}
-[data-testid="stSidebar"] .stButton>button{border:none; background:transparent; color:#334155;
-  text-align:left; justify-content:flex-start; font-weight:600; padding:6px 10px; border-radius:9px;
-  box-shadow:none;}
-[data-testid="stSidebar"] .stButton>button:hover{background:var(--soft); color:var(--ink);}
-[data-testid="stSidebar"] [data-testid="stBaseButton-primary"]{background:var(--brand)!important;
-  color:#fff!important;}
-[data-testid="stSidebar"] [data-testid="stBaseButton-primary"]:hover{background:var(--brand-d)!important;}
-/* sprint groups: compact single-line headers so long names don't wrap */
-[data-testid="stSidebar"] [data-testid="stExpander"] summary{padding:6px 8px;}
-[data-testid="stSidebar"] [data-testid="stExpander"] summary p{font-size:.85rem!important;
-  font-weight:750; letter-spacing:-.015em; margin:0; white-space:nowrap; overflow:hidden;
-  text-overflow:ellipsis;}
+[data-testid="stSidebar"]{background:var(--panel); border-right:1px solid var(--line);}
+[data-testid="stSidebar"] .brand{font-weight:650; font-size:.98rem; letter-spacing:-.02em;
+  color:var(--ink); padding:2px 4px; display:flex; align-items:center; gap:8px;}
+[data-testid="stSidebar"] .brand .icon{width:17px; height:17px; color:var(--accent);}
+[data-testid="stSidebar"] .grp{font-size:.64rem; font-weight:600; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--faint); margin:14px 6px 4px;}
+[data-testid="stSidebar"] .stButton>button{border:none; background:transparent; color:var(--muted);
+  text-align:left; justify-content:flex-start; font-weight:500; padding:5px 9px; border-radius:7px;
+  box-shadow:none; font-size:.88rem; letter-spacing:-.01em; min-height:0;}
+[data-testid="stSidebar"] .stButton>button:hover{background:var(--panel-2); color:var(--ink);}
+[data-testid="stSidebar"] .stButton>button:disabled{color:var(--faint); opacity:.6;}
+[data-testid="stSidebar"] [data-testid="stBaseButton-primary"]{background:var(--accent-soft)!important;
+  color:var(--accent-h)!important; font-weight:600!important;}
+[data-testid="stSidebar"] [data-testid="stBaseButton-primary"]:hover{background:#e4e7fb!important;}
+[data-testid="stSidebar"] [data-testid="stExpander"]{border:none; background:transparent;}
+[data-testid="stSidebar"] [data-testid="stExpander"] summary{padding:6px 8px; border-radius:7px;}
+[data-testid="stSidebar"] [data-testid="stExpander"] summary:hover{background:var(--panel-2);}
+[data-testid="stSidebar"] [data-testid="stExpander"] summary p{font-size:.82rem!important;
+  font-weight:600; letter-spacing:-.01em; margin:0; white-space:nowrap; overflow:hidden;
+  text-overflow:ellipsis; color:var(--ink);}
 
-/* ---- buttons (main) ---- */
-.stButton>button{border-radius:10px; font-weight:650; border:1px solid var(--line);}
-[data-testid="stBaseButton-primary"]{background:var(--brand); border:none; box-shadow:0 1px 2px rgba(79,70,229,.35);}
-[data-testid="stBaseButton-primary"]:hover{background:var(--brand-d);}
+/* ---- buttons (main) — Linear flat ---- */
+.stButton>button{border-radius:8px; font-weight:550; border:1px solid var(--line);
+  background:var(--panel); color:var(--ink); box-shadow:var(--sh); letter-spacing:-.01em;
+  transition:background .12s,border-color .12s;}
+.stButton>button:hover{border-color:#d7d9df; background:var(--panel-2);}
+[data-testid="stBaseButton-primary"]{background:var(--accent)!important; border:1px solid var(--accent)!important;
+  color:#fff!important; box-shadow:0 1px 2px rgba(20,21,26,.18);}
+[data-testid="stBaseButton-primary"]:hover{background:var(--accent-h)!important; border-color:var(--accent-h)!important;}
+/* button label + icon sit in child nodes — make them follow the button colour */
+.stButton>button *{color:inherit!important;}
 
 /* ---- cards / expanders / inputs ---- */
-[data-testid="stExpander"]{border:1px solid var(--line); border-radius:12px; background:#fff;}
-[data-testid="stExpander"] summary{font-weight:650;}
-[data-testid="stProgress"] > div > div > div{background:linear-gradient(90deg,var(--brand),#7c3aed);}
-[data-testid="stDataFrame"]{border:1px solid var(--line); border-radius:10px; overflow:hidden;}
-textarea{border-radius:10px!important; font-family:"SF Mono",ui-monospace,Menlo,monospace!important;}
-[data-testid="stAlert"]{border-radius:12px;}
-.stCode{border-radius:10px;}
+[data-testid="stExpander"]{border:1px solid var(--line); border-radius:10px; background:var(--panel); box-shadow:none;}
+[data-testid="stExpander"] summary{font-weight:550; font-size:.9rem; color:var(--ink);}
+[data-testid="stVerticalBlockBorderWrapper"]{border-radius:14px; border-color:var(--line)!important;}
+[data-testid="stProgress"] > div > div > div{background:var(--accent);}
+[data-testid="stDataFrame"]{border:1px solid var(--line); border-radius:9px; overflow:hidden;}
+textarea{border-radius:9px!important; font-family:'SF Mono',ui-monospace,Menlo,monospace!important;
+  font-size:.86rem!important; border-color:var(--line)!important; background:var(--panel-2)!important;}
+[data-testid="stAlert"]{border-radius:10px; border:1px solid var(--line);}
+.stCode{border-radius:9px;}
+code{font-family:'SF Mono',ui-monospace,Menlo,monospace;}
 
 /* ---- task header + status pill ---- */
-.task-head{margin:2px 0 14px;}
-.task-crumb{font-size:.68rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--brand);}
-.task-titlebar{display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-top:4px;}
-.task-title{font-size:1.7rem; font-weight:800; letter-spacing:-.03em; color:var(--ink); line-height:1.1;}
-.pill{font-size:.72rem; font-weight:800; padding:3px 11px; border-radius:999px; letter-spacing:.02em; white-space:nowrap;}
-.pill.done{background:var(--green-bg); color:#166534;}
-.pill.fail{background:#fee2e2; color:#b91c1c;}
-.pill.wip{background:var(--amber-bg); color:#92400e;}
-.pill.new{background:#eef2f7; color:var(--muted);}
+.task-head{margin:2px 0 16px;}
+.task-crumb{font-size:.68rem; font-weight:600; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--faint); display:flex; align-items:center; gap:6px;}
+.task-titlebar{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:6px;}
+.task-title{font-size:1.55rem; font-weight:680; letter-spacing:-.032em; color:var(--ink); line-height:1.1;}
+.pill{font-size:.72rem; font-weight:550; padding:3px 10px 3px 8px; border-radius:999px;
+  letter-spacing:-.005em; white-space:nowrap; display:inline-flex; align-items:center; gap:5px;
+  border:1px solid transparent;}
+.pill .dot{width:7px; height:7px; border-radius:999px; flex:0 0 auto;}
+.pill.done{background:var(--green-soft); color:var(--green-ink); border-color:#cfe8da;}
+.pill.done .dot{background:var(--green);}
+.pill.fail{background:var(--red-soft); color:var(--red-ink); border-color:#f0d2d4;}
+.pill.fail .dot{background:var(--red);}
+.pill.wip{background:var(--amber-soft); color:var(--amber-ink); border-color:#ecdcb4;}
+.pill.wip .dot{background:var(--amber);}
+.pill.new{background:var(--panel-2); color:var(--muted); border-color:var(--line);}
+.pill.new .dot{background:var(--faint);}
 /* content section headers inside the cards */
-.sec{font-size:.7rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin:0 0 6px;}
-[data-testid="stVerticalBlockBorderWrapper"]{border-radius:14px;}
+.sec{font-size:.68rem; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--faint);
+  margin:0 0 8px; display:flex; align-items:center; gap:6px;}
+.sec .icon{width:14px; height:14px; color:var(--faint);}
 
 /* ---- level-cleared moment ---- */
-.cleared{background:linear-gradient(135deg,#f0fdf4 0%,#ecfeff 100%);
-  border:1px solid #bbf7d0; border-radius:14px; padding:16px 18px; margin:14px 0 10px;}
-.cleared-badge{font-size:1.15rem; font-weight:850; letter-spacing:-.02em; color:#15803d;}
-.cleared-meta{color:#3f6212; font-size:.84rem; font-weight:650; margin-top:2px;}
+.cleared{background:var(--green-soft); border:1px solid #cfe8da; border-radius:12px;
+  padding:15px 17px; margin:14px 0 10px;}
+.cleared-badge{font-size:1.05rem; font-weight:650; letter-spacing:-.02em; color:var(--green-ink);
+  display:flex; align-items:center; gap:7px;}
+.cleared-badge .icon{width:17px; height:17px; color:var(--green);}
+.cleared-meta{color:var(--green-ink); opacity:.85; font-size:.82rem; font-weight:500; margin-top:3px;}
+
+/* ---- check result lines ---- */
+.chk{display:flex; align-items:flex-start; gap:8px; margin:4px 0; font-size:.9rem; color:var(--ink);}
+.chk .dot{width:8px; height:8px; border-radius:999px; margin-top:6px; flex:0 0 auto;}
+.d-done{background:var(--green);} .d-fail{background:var(--red);}
+.d-wip{background:var(--amber);} .d-new{background:var(--faint);}
 </style>
 """
+
+# Consistent line icons (Linear/Bento): thin-stroke SVG, inherit currentColor.
+def _ic(paths: str) -> str:
+    return f'<svg class="icon" viewBox="0 0 24 24">{paths}</svg>'
+
+_ICON = {
+    "spark": _ic('<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2 2M16 16l2 2M18 6l-2 2M8 16l-2 2"/>'),
+    "home": _ic('<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>'),
+    "book": _ic('<path d="M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h12"/>'),
+    "reading": _ic('<path d="M12 6c-2-1.5-5-1.5-7 0v12c2-1.5 5-1.5 7 0 2-1.5 5-1.5 7 0V6c-2-1.5-5-1.5-7 0z"/><path d="M12 6v12"/>'),
+    "code": _ic('<path d="M8 9l-3 3 3 3M16 9l3 3-3 3"/>'),
+    "check": _ic('<path d="M20 6L9 17l-5-5"/>'),
+    "arrow": _ic('<path d="M5 12h14M13 6l6 6-6 6"/>'),
+    "target": _ic('<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>'),
+    "lock": _ic('<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>'),
+}
 
 
 def _inject_css() -> None:
@@ -420,7 +481,8 @@ def main() -> None:
     progress = load_progress(REPO_ROOT)
     sel = st.session_state.sel
 
-    st.sidebar.markdown('<div class="brand">🧪 Learn by doing</div>', unsafe_allow_html=True)
+    st.sidebar.markdown(f'<div class="brand">{_ICON["spark"]} Learn by doing</div>',
+                        unsafe_allow_html=True)
     if not tasks:
         st.sidebar.info("No tasks found yet.")
         st.title("No tasks found")
@@ -429,7 +491,7 @@ def main() -> None:
 
     done = sum(1 for s, t in tasks if progress.get(s, {}).get(t, {}).get("status") == "pass")
 
-    if st.sidebar.button("🏠  Home", use_container_width=True,
+    if st.sidebar.button("Home", icon=":material/home:", use_container_width=True,
                          type="primary" if sel == HOME else "secondary"):
         st.session_state.sel = HOME
     st.sidebar.progress(done / len(tasks), text=f"{done}/{len(tasks)} passed")
@@ -448,24 +510,25 @@ def main() -> None:
         # A whole sprint is locked when even its first level is out of reach.
         sprint_locked = _is_locked(tasks, progress, sprint, sprint_tasks[0])
         if complete:
-            badge = "✅"                       # every level cleared
+            badge = ":material/check_circle:"        # every level cleared
         elif sprint == on_sprint:
-            badge = "🔵"                       # the sprint you're on
+            badge = ":material/adjust:"              # the sprint you're on
         elif c_done:
-            badge = "🟡"                       # partway in — momentum
+            badge = ":material/pending:"             # partway in — momentum
         elif sprint_locked:
-            badge = "🔒"                       # not yet — finish the levels ahead
+            badge = ":material/lock:"                # finish the levels ahead first
         else:
-            badge = "⚪"                       # not started
-        header = f"{badge} {_sprint_label(sprint)} · {c_done}/{c_total}"
+            badge = ":material/radio_button_unchecked:"  # not started
+        header = f"{_sprint_label(sprint)} · {c_done}/{c_total}"
         # Open the sprint you're on, or one you've navigated into.
         expanded = sprint in (on_sprint, sel_sprint_now)
-        with st.sidebar.expander(header, expanded=expanded):
+        with st.sidebar.expander(header, expanded=expanded, icon=badge):
             for task in sprint_tasks:
                 locked = _is_locked(tasks, progress, sprint, task)
-                icon = "🔒" if locked else _STATE_ICON[_task_state(sprint, task, progress)]
-                here = "  ◄" if (sprint, task) == nxt else ""
-                if st.button(f"{icon}  {task}{here}", key=f"nav-{sprint}-{task}",
+                micon = ":material/lock:" if locked \
+                    else _STATE_MICON[_task_state(sprint, task, progress)]
+                here = "  ‹" if (sprint, task) == nxt else ""
+                if st.button(f"{task}{here}", key=f"nav-{sprint}-{task}", icon=micon,
                              use_container_width=True, disabled=locked,
                              help="Locked — finish the levels ahead first" if locked else None,
                              type="primary" if sel == (sprint, task) else "secondary"):
@@ -488,20 +551,21 @@ def _render_home(tasks, progress, done) -> None:
     nxt = next_task(REPO_ROOT)
     if nxt:
         level = _level_of(tasks, *nxt)
-        label = "▶ Start learning" if done == 0 else f"▶ Continue at level {level}"
+        label = "Start learning" if done == 0 else f"Continue at level {level}"
         st.caption(f"Next up: **{_sprint_label(nxt[0])} · {nxt[1]}**")
-        if st.button(label, type="primary", use_container_width=True):
+        if st.button(label, type="primary", use_container_width=True,
+                     icon=":material/play_arrow:"):
             st.session_state.sel = nxt
             st.rerun()
     else:
-        st.success("🎉 You've passed every task. Nice work!")
+        st.success("You've passed every task. Nice work.", icon=":material/celebration:")
 
     if not _stack_up():
         st.warning("The data stack looks **down**. Real-infra tasks need it — start with "
                    "`./platform.sh up` (or `docker compose up -d`).")
 
     if GLOSSARY.is_file():
-        with st.expander("📖 Glossary — data engineering terms"):
+        with st.expander("Glossary — data engineering terms", icon=":material/book_2:"):
             st.markdown(GLOSSARY.read_text())
 
 
@@ -522,11 +586,11 @@ def _render_task(sprint, task, progress, tasks) -> None:
     if _is_locked(tasks, progress, sprint, task):
         nxt = next_task(REPO_ROOT)
         with st.container(border=True):
-            st.markdown('<div class="sec">🔒 Locked</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="sec">{_ICON["lock"]} Locked</div>', unsafe_allow_html=True)
             st.write("Finish the levels ahead of this one first — the path is meant "
                      "to be walked in order, so each level builds on the last.")
-            if nxt and st.button(f"▶ Go to level {_level_of(tasks, *nxt)} · {nxt[1]}",
-                                 type="primary"):
+            if nxt and st.button(f"Go to level {_level_of(tasks, *nxt)} · {nxt[1]}",
+                                 type="primary", icon=":material/arrow_forward:"):
                 st.session_state.sel = nxt
                 st.rerun()
         return
@@ -541,7 +605,7 @@ def _render_task(sprint, task, progress, tasks) -> None:
 
     with col_lesson:
         with st.container(border=True):
-            st.markdown('<div class="sec">📖 Lesson</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="sec">{_ICON["book"]} Lesson</div>', unsafe_allow_html=True)
             lesson_file = spec.task_dir / "lesson.md"
             if lesson_file.is_file():
                 st.markdown(lesson_file.read_text())
@@ -553,17 +617,18 @@ def _render_task(sprint, task, progress, tasks) -> None:
 
             reading_file = spec.task_dir / "reading.md"
             if reading_file.is_file():
-                with st.expander("📚 Reading — the concept behind this level"):
+                with st.expander("Reading — the concept behind this level",
+                                 icon=":material/auto_stories:"):
                     st.markdown(reading_file.read_text())
 
             intro = _load_sprint_intro(sprint)
             if intro:
-                with st.expander(f"About {_sprint_label(sprint)}"):
+                with st.expander(f"About {_sprint_label(sprint)}", icon=":material/info:"):
                     st.markdown(intro)
 
             preview = _preview_tables(sprint, spec)
             if preview and _stack_up():
-                with st.expander("📋 Peek at the data"):
+                with st.expander("Peek at the data", icon=":material/table:"):
                     for i, table in enumerate(preview):
                         st.caption(f"`{table}`")
                         records = _safe_preview(table, seed=(i == 0))
@@ -574,11 +639,12 @@ def _render_task(sprint, task, progress, tasks) -> None:
 
     with col_work:
         with st.container(border=True):
-            st.markdown('<div class="sec">⌨️ Your work</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="sec">{_ICON["code"]} Your work</div>', unsafe_allow_html=True)
             if not submission.exists():
                 st.info("You haven't started this task yet.")
-                if spec.scaffold and st.button("▶  Start this task", type="primary",
-                                               use_container_width=True):
+                if spec.scaffold and st.button("Start this task", type="primary",
+                                               use_container_width=True,
+                                               icon=":material/play_arrow:"):
                     start(sprint, task, REPO_ROOT, overwrite=False)
                     st.rerun()
             else:
@@ -588,7 +654,8 @@ def _render_task(sprint, task, progress, tasks) -> None:
                                       label_visibility="collapsed")
 
                 # One hero action. Checking always saves first — no separate step.
-                if st.button("✓  Check my work", type="primary", use_container_width=True):
+                if st.button("Check my work", type="primary", use_container_width=True,
+                             icon=":material/check:"):
                     submission.write_text(edited)
                     result = run_check(sprint, task, REPO_ROOT, make_proof=True)
                     st.session_state[_res_key(sprint, task)] = result
@@ -600,17 +667,18 @@ def _render_task(sprint, task, progress, tasks) -> None:
                 cols = st.columns(3 if can_run else 2)
                 i = 0
                 if can_run:
-                    if cols[i].button("▶ Run", use_container_width=True,
+                    if cols[i].button("Run", use_container_width=True, icon=":material/play_arrow:",
                                       help="Run this query against the warehouse"):
                         submission.write_text(edited)
                         st.session_state[_res_key(sprint, task)] = None
                         _run_playground(edited)
                     i += 1
-                if cols[i].button("💾 Save", use_container_width=True):
+                if cols[i].button("Save", use_container_width=True, icon=":material/save:"):
                     submission.write_text(edited)
                     st.toast("Saved.")
                 i += 1
-                if spec.scaffold and cols[i].button("↺ Reset", use_container_width=True):
+                if spec.scaffold and cols[i].button("Reset", use_container_width=True,
+                                                    icon=":material/restart_alt:"):
                     start(sprint, task, REPO_ROOT, overwrite=True)
                     st.session_state.pop(_res_key(sprint, task), None)
                     st.rerun()
@@ -618,7 +686,8 @@ def _render_task(sprint, task, progress, tasks) -> None:
             if spec.solution:
                 solution_file = spec.task_dir / spec.solution
                 if solution_file.is_file():
-                    with st.expander("😩 Stuck? Reveal a worked solution"):
+                    with st.expander("Stuck? Reveal a worked solution",
+                                     icon=":material/lightbulb:"):
                         st.caption("Try it yourself first — the struggle is where the "
                                    "learning happens. But a worked example beats staying stuck.")
                         st.code(solution_file.read_text(), language=lang)
@@ -651,19 +720,22 @@ def _run_playground(sql: str) -> None:
 
 
 def _render_result(result, sprint, task, tasks, celebrate=False) -> None:
+    _dot_cls = {"pass": "done", "fail": "fail", "error": "wip"}
     for check in result.checks:
-        icon = _STATUS_ICON.get(check.status.value, "•")
-        if check.status is Status.PASS:
-            st.markdown(f"{icon} **{check.name}**")
-        else:
-            st.markdown(f"{icon} **{check.name}** — {check.hint}")
+        cls = _dot_cls.get(check.status.value, "new")
+        hint = "" if check.status is Status.PASS else f" — {check.hint}"
+        st.markdown(
+            f'<div class="chk"><span class="dot d-{cls}"></span>'
+            f'<span><b>{check.name}</b>{hint}</span></div>',
+            unsafe_allow_html=True,
+        )
 
     if result.status is Status.PASS:
         _render_cleared(sprint, task, tasks, celebrate)
         if result.proof_dir is not None:
             rel = result.proof_dir.relative_to(REPO_ROOT)
-            st.info(f"🏆 Portfolio artifact written to `{rel}` — commit it to your "
-                    f"GitHub to show what you built.")
+            st.info(f"Portfolio artifact written to `{rel}` — commit it to your "
+                    f"GitHub to show what you built.", icon=":material/workspace_premium:")
             chart = result.proof_dir / "chart.png"
             if chart.is_file():
                 st.image(str(chart))
@@ -685,19 +757,20 @@ def _render_cleared(sprint, task, tasks, celebrate) -> None:
     onto = f" · onto {_sprint_label(nxt[0])}" if nxt and nxt[0] != sprint else ""
     st.markdown(
         '<div class="cleared">'
-        '<div class="cleared-badge">✦ Level cleared</div>'
+        f'<div class="cleared-badge">{_ICON["check"]} Level cleared</div>'
         f'<div class="cleared-meta">{done} of {len(tasks)} done{onto}</div>'
         "</div>",
         unsafe_allow_html=True,
     )
     if nxt:
-        if st.button(f"Next level → {nxt[1]}", type="primary",
+        if st.button(f"Next level — {nxt[1]}", type="primary", icon=":material/arrow_forward:",
                      use_container_width=True, key=f"next-{sprint}-{task}"):
             st.session_state.pop(_res_key(sprint, task), None)
             st.session_state.sel = nxt
             st.rerun()
     else:
-        st.success("🎉 You've cleared the whole path — every level passed. Incredible.")
+        st.success("You've cleared the whole path — every level passed. Incredible.",
+                   icon=":material/military_tech:")
 
 
 _STATUS_ICON = {"pass": "✅", "fail": "❌", "error": "⚠️"}
