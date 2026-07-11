@@ -13,6 +13,12 @@ A task lives at ``<tasks_root>/<sprint>/<task>/spec.yml`` and looks like:
 
 ``submission_path`` is where the learner's work lives, relative to the repo root.
 ``scaffold`` (relative to the task dir) is copied there by ``check start``.
+
+Any check may carry an optional ``hints:`` list — a progressive nudge → concept
+→ near-answer ladder the runner reveals one step at a time when that check fails.
+It's author-written, so it stays offline and deterministic; the grader ignores
+it, the runner reads it. Keep hints Socratic — point at the mistake, don't paste
+the answer (the worked solution already exists for that).
 """
 
 from __future__ import annotations

@@ -11,3 +11,16 @@ checks:
     entry: scan_cost
     args: [2000000000000, 5.0]
     expect: 10.0
+    hints:
+      - >-
+        The price is <em>per terabyte</em>, but <code>bytes_scanned</code> is in
+        bytes. You can't multiply raw bytes by a per-TB price — the units don't
+        line up. How many bytes are in one terabyte?
+      - >-
+        1 TB = <code>1e12</code> bytes. So the terabytes actually scanned is
+        <code>bytes_scanned / 1e12</code>. Multiply <em>that</em> by
+        <code>price_per_tb</code> — not the byte count itself.
+      - >-
+        Put it together: <code>terabytes = bytes_scanned / 1e12</code>, then
+        <code>round(terabytes * price_per_tb, 2)</code>. For 2e12 bytes at
+        $5/TB that's 2 × 5 = <code>10.0</code>.
