@@ -64,9 +64,25 @@ cd learning-data-engineering
 | Service | URL | Credentials |
 |---------|-----|-------------|
 | **Airflow** | http://localhost:8080 | `admin` / `admin` |
-| **Streamlit Dashboard** | http://localhost:8501 | - |
+| **Streamlit (learning app)** | http://localhost:8501 | - |
 | **PGAdmin** | http://localhost:8081 | `admin@datamart.com` / `admin` |
 | **Redpanda Console** | http://localhost:8082 | - |
+
+These run as a **Docker Compose** stack — the full platform. Inside the learning
+app, the **Platform** page surfaces every service with a live-status link so you
+can open and explore each one first-hand. Paid cloud tools (BigQuery, Databricks)
+are **simulated locally** — no accounts, no bills.
+
+### System requirements
+
+| Run mode | Disk (images) | RAM | Services |
+|----------|--------------|-----|----------|
+| **Full platform** (`./platform.sh` / `./bootstrap.sh`) | ~4–5 GB | **8 GB Docker recommended** (4 GB min) | Postgres · Airflow · dbt · Redpanda + Console · PGAdmin · learning app |
+| **Single study container** (below) | ~1.5–2 GB | ~2 GB | learning app + embedded Postgres + Spark |
+
+> Give Docker Desktop at least **4 GB RAM** (8 GB is comfortable) — Redpanda and
+> Airflow are the heavy tenants. Low on resources? The single study container and
+> all pure-Python/SQL levels run in ~2 GB.
 
 
 ## Start Here — Learn by Doing (60 seconds)
