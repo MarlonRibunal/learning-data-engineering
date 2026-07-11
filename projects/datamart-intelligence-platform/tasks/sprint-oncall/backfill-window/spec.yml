@@ -1,0 +1,13 @@
+title: "On-call: compute the backfill window"
+order: 3
+submission_path: submissions/oncall/backfill.py
+scaffold: scaffold/backfill.py
+solution: solution/backfill.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: reprocesses exactly the missing days
+    entry: backfill_dates
+    args: ["2026-03-01", "2026-03-04"]
+    expect: ["2026-03-02", "2026-03-03", "2026-03-04"]

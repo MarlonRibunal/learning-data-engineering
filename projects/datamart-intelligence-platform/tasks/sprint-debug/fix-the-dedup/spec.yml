@@ -1,0 +1,19 @@
+title: "Debug: duplicates on the dashboard"
+order: 1
+submission_path: submissions/debug/dedupe_latest.py
+scaffold: scaffold/dedupe_latest.py
+solution: solution/dedupe_latest.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: keeps the latest version, not the first
+    entry: dedupe_latest
+    args:
+      - - {id: 1, version: 1, v: a}
+        - {id: 1, version: 2, v: b}
+        - {id: 2, version: 1, v: c}
+      - id
+    expect:
+      - {id: 1, version: 2, v: b}
+      - {id: 2, version: 1, v: c}

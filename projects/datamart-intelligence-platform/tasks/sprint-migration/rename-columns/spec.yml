@@ -1,0 +1,16 @@
+title: "Migration: map old columns to new"
+order: 1
+submission_path: submissions/migration/rename_keys.py
+scaffold: scaffold/rename_keys.py
+solution: solution/rename_keys.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: renames keys per the mapping
+    entry: rename_keys
+    args:
+      - - {cust: 1, amt: 100}
+      - {cust: customer_id, amt: amount}
+    expect:
+      - {customer_id: 1, amount: 100}

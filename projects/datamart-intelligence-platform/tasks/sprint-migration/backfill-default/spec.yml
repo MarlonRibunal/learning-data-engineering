@@ -1,0 +1,19 @@
+title: "Migration: backfill a new column"
+order: 2
+submission_path: submissions/migration/add_column.py
+scaffold: scaffold/add_column.py
+solution: solution/add_column.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: fills the new column without clobbering existing values
+    entry: add_column
+    args:
+      - - {id: 1}
+        - {id: 2, region: US}
+      - region
+      - UNKNOWN
+    expect:
+      - {id: 1, region: UNKNOWN}
+      - {id: 2, region: US}

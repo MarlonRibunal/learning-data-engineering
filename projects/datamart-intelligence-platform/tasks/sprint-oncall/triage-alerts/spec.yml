@@ -1,0 +1,17 @@
+title: "On-call: triage the freshness alerts"
+order: 1
+submission_path: submissions/oncall/triage.py
+scaffold: scaffold/triage.py
+solution: solution/triage.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: flags only the tables past their SLA
+    entry: stale_tables
+    args:
+      - - {name: orders, age_min: 5}
+        - {name: payments, age_min: 90}
+        - {name: users, age_min: 200}
+      - 60
+    expect: [payments, users]
