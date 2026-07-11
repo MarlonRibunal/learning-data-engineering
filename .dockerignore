@@ -1,0 +1,15 @@
+# Keep the build context small and the image clean.
+.venv
+.git
+.github
+portfolio
+submissions
+.progress.json
+state
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/dbt/target
+**/dbt/logs
+**/dbt/dbt_packages
+*.log
