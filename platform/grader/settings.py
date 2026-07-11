@@ -17,16 +17,17 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-SETTINGS_FILENAME = ".tutor.json"
+SETTINGS_FILENAME = ".tutor.json"   # tutor provider/model/key (an API key lives here)
+PREFS_FILENAME = ".prefs.json"      # UI preferences (theme) — non-secret
 
 
-def _path(repo_root: Path) -> Path:
-    return repo_root / SETTINGS_FILENAME
+def _path(repo_root: Path, filename: str) -> Path:
+    return repo_root / filename
 
 
-def load(repo_root: Path) -> dict:
-    """Return saved settings, or {} if none/corrupt. Never raises."""
-    path = _path(repo_root)
+def load(repo_root: Path, filename: str = SETTINGS_FILENAME) -> dict:
+    """Return the saved JSON dict, or {} if none/corrupt. Never raises."""
+    path = _path(repo_root, filename)
     if not path.is_file():
         return {}
     try:
@@ -36,12 +37,14 @@ def load(repo_root: Path) -> dict:
     return data if isinstance(data, dict) else {}
 
 
-def save(repo_root: Path, data: dict) -> dict:
-    """Write settings (full replace) and lock the file to the owner (0600)."""
-    path = _path(repo_root)
+def save(repo_root: Path, data: dict, filename: str = SETTINGS_FILENAME) -> dict:
+    """Write the dict (full replace). The tutor file also gets locked to 0600
+    since a key lives in it; other prefs files are non-secret."""
+    path = _path(repo_root, filename)
     path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
-    try:
-        path.chmod(0o600)  # a key lives here — keep it owner-only
-    except OSError:  # pragma: no cover - filesystem-dependent
-        pass
+    if filename == SETTINGS_FILENAME:
+        try:
+            path.chmod(0o600)  # an API key lives here — keep it owner-only
+        except OSError:  # pragma: no cover - filesystem-dependent
+            pass
     return data

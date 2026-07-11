@@ -578,9 +578,21 @@ def _safe_preview(table: str, seed: bool):
 
 
 # ---------- main ----------
+def _save_theme() -> None:
+    """Persist the theme choice to the state volume so it survives a restart."""
+    from grader import settings
+    settings.save(REPO_ROOT, {"theme": st.session_state.theme_choice}, settings.PREFS_FILENAME)
+
+
 def main() -> None:
     st.set_page_config(page_title="Learn Data Engineering", page_icon="🧪", layout="wide")
-    theme = st.session_state.get("theme_choice", "Auto").lower()
+    # Seed the theme from the persisted pref before first paint (no light→dark
+    # flash), then it lives in session state for the rest of the session.
+    if "theme_choice" not in st.session_state:
+        from grader import settings
+        st.session_state.theme_choice = \
+            settings.load(REPO_ROOT, settings.PREFS_FILENAME).get("theme", "Auto")
+    theme = st.session_state.theme_choice.lower()
     _inject_css(theme)
     if "sel" not in st.session_state:
         st.session_state.sel = HOME
@@ -657,8 +669,9 @@ def main() -> None:
         st.rerun()
 
     st.sidebar.markdown('<div class="navcap">Appearance</div>', unsafe_allow_html=True)
-    st.sidebar.segmented_control("Theme", ["Auto", "Light", "Dark"], default="Auto",
-                                 key="theme_choice", label_visibility="collapsed")
+    st.sidebar.segmented_control("Theme", ["Auto", "Light", "Dark"],
+                                 key="theme_choice", label_visibility="collapsed",
+                                 on_change=_save_theme)
 
     # ---- route ----
     sel = st.session_state.sel
