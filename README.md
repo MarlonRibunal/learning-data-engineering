@@ -167,38 +167,59 @@ over the env vars.
 
 ## Complete Learning Path
 
-**Learning Cadence: By Sprint**  
-*Each sprint represents 2 weeks of focused learning, following agile methodology used in professional data teams. This structured approach ensures steady progress while building real portfolio projects.*
+**Learning cadence: by sprint.** The path runs across **five phases — Foundations → Scaling → Real-time → Production → Capstone**, 20 sprints in all. Each sprint is a focused set of hands-on levels with a clear **Focus** and targeted **Skills**. Browse it live in the app's **Curriculum** page.
 
-### Phase 1: Foundations (Months 1-2)
-**Project: E-Commerce Data Pipeline**
-
-| Sprint | Focus | Skills |
-|--------|-------|--------|
-| **1** | Cloud Data Ingestion | BigQuery, Python, Data Validation |
-| **2** | Modern Transformation | dbt Core, Star Schema, Data Modeling |
-| **3** | Workflow Orchestration | Airflow, DAGs, Task Dependencies |
-
-### Phase 2: Scaling (Months 3-4)  
-**Project: Hybrid Cloud Platform**
+### Phase 1 · Foundations
+*The bedrock of every pipeline: query data with SQL, land it reliably in the warehouse, model it with dbt, and schedule it with Airflow. Finish here and you can build and run a batch pipeline end to end.*
 
 | Sprint | Focus | Skills |
 |--------|-------|--------|
-| **4** | Big Data Processing | Spark, Databricks, Distributed Computing |
-| **5** | Hybrid Pipelines | Cloud Integration, API Orchestration |
-| **6** | Data Quality | Testing Frameworks, Monitoring, Alerting |
+| **1 · SQL Foundations** | Read data confidently with SQL | SELECT & WHERE, JOIN, GROUP BY, HAVING, CASE, window functions |
+| **2 · Cloud Data Ingestion** | Land raw source data cleanly and repeatably | INSERT…SELECT, dedupe, idempotent upserts, incremental loads, CDC, quarantine |
+| **3 · Modern Transformation** | Turn raw tables into trustworthy dbt models | dbt models, sources & refs, star schema, aggregations, tests |
+| **4 · Workflow Orchestration** | Schedule and chain the pipeline | Airflow DAGs, PythonOperator, task dependencies, schedules, retries |
 
-### Phase 3: Real-time (Months 5-6)
-**Project: Real-time Intelligence Platform**
+### Phase 2 · Scaling
+*Grow past a single machine and a single tool: distributed processing with Spark, the cloud lakehouse and its cost model, hybrid job orchestration, and the data-quality and serving layers that make output trustworthy and usable.*
 
 | Sprint | Focus | Skills |
 |--------|-------|--------|
-| **7** | Streaming Data | Kafka/Redpanda, Event Processing |
-| **8** | Real-time Analytics | Spark Streaming, Stateful Processing |
-| **9** | Unified Dashboards | Streamlit, Real-time Visualization |
-| **10-12** | Portfolio & Career | Interviews, System Design, Job Search |
+| **5 · Big Data Processing** | Process data that won't fit on one machine | Spark DataFrames, groupBy/agg, joins, windows, partition & cache |
+| **6 · Cloud & Lakehouse** | Work the cloud lakehouse and its cost model | scan cost / FinOps, partition pruning, medallion, Delta MERGE, time travel |
+| **7 · Hybrid Pipelines** | Drive remote jobs and stitch systems via APIs | job submit/poll, terminal states, timeouts, success gating, failure handling |
+| **8 · Data Quality & Testing** | Prove the data is right before it reaches users | data tests, not-null / unique, orphan / FK checks, range checks, valid sets |
+| **9 · Serving & BI** | Shape analytics-ready marts and KPIs | serving marts, headline KPIs, running totals, ranking, customer-360 |
 
-*For detailed daily breakdowns, weekly goals, and specific learning objectives for each sprint, see the [Complete Learning Blueprint](docs/blueprint.md).*
+### Phase 3 · Real-time
+*Leave batch behind. Work with unbounded event streams — producing and consuming, windowed and stateful aggregation, and the live metrics a real-time dashboard renders.*
+
+| Sprint | Focus | Skills |
+|--------|-------|--------|
+| **10 · Streaming Data** | Move from batch to event streams | Kafka/Redpanda producers & consumers, JSON, offsets, key partitioning, dedupe |
+| **11 · Real-time Analytics** | Aggregate unbounded streams with windows & state | tumbling/sliding/session windows, `F.window`, watermarks, Structured Streaming |
+| **12 · Unified Dashboards** | Compute the metrics a live dashboard renders | moving averages, pct change, normalization, top-N, threshold bands |
+
+### Phase 4 · Production
+*The difference between "it works on my machine" and "it runs the business": security and governance, warehouse architecture, reliability engineering, on-call incident response, debugging, safe migrations, and the advanced algorithms expected of a senior.*
+
+| Sprint | Focus | Skills |
+|--------|-------|--------|
+| **13 · Data Security** | Lock down who can see and do what | GRANT / REVOKE, column-level grants, PII masking, read-only roles, row-level security |
+| **14 · Architecture & Modeling** | Design dimensions, facts, and history | dimension tables, fact grain, SCD Type 2, daily snapshots, surrogate keys |
+| **15 · Production Engineering** | Make pipelines reliable and self-healing | retry / backoff, circuit breakers, error rate & SLAs, freshness, idempotent dedupe |
+| **16 · On-Call & Incidents** | Respond when the pager goes off | alert triage, root-cause analysis, backfill windows, recovery verification |
+| **17 · Debugging Pipelines** | Find and fix real defects in existing code | reading buggy code, dedup logic, rate / percentage math, revenue filters |
+| **18 · Schema Migration** | Evolve schemas without losing data | column rename / remap, backfilling defaults, row-count reconciliation |
+| **19 · Advanced Challenges** | Tackle the algorithms senior DEs must know | sessionization, cohort retention, topological sort, blast-radius / graphs |
+
+### Phase 5 · Capstone
+*Bring it all together in portfolio-grade projects — a full analytics platform, an incident response, and a stateful streaming pipeline — the pieces you'll walk through in interviews.*
+
+| Sprint | Focus | Skills |
+|--------|-------|--------|
+| **20 · Capstone Projects** | Integrate everything into end-to-end projects | end-to-end analytics, incident response, stateful streaming |
+
+*For detailed daily breakdowns, weekly goals, and specific learning objectives, see the [Complete Learning Blueprint](docs/blueprint.md).*
 
 
 ## Tech Stack

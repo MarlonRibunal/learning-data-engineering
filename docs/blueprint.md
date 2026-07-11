@@ -1,20 +1,37 @@
 # Learning Data Engineering - 6 Month Blueprint
 
-## Phase 1: Foundations (Months 1-2)
-- Sprint 1: Cloud Data Ingestion
-- Sprint 2: Data Transformation with dbt  
-- Sprint 3: Workflow Orchestration
+The path runs across five phases — 20 sprints. Each sprint has a Focus and
+targeted Skills; browse the full breakdown in the app's **Curriculum** page.
 
-## Phase 2: Scaling (Months 3-4)
-- Sprint 4: Big Data Processing
-- Sprint 5: Hybrid Cloud Pipelines
-- Sprint 6: Data Quality & Testing
+## Phase 1: Foundations
+- Sprint 1: SQL Foundations
+- Sprint 2: Cloud Data Ingestion
+- Sprint 3: Modern Transformation (dbt)
+- Sprint 4: Workflow Orchestration (Airflow)
 
-## Phase 3: Real-time (Months 5-6)
-- Sprint 7: Streaming Data
-- Sprint 8: Real-time Processing
-- Sprint 9: Unified Dashboards
-- Sprint 10-12: Portfolio & Career
+## Phase 2: Scaling
+- Sprint 5: Big Data Processing (Spark)
+- Sprint 6: Cloud & Lakehouse
+- Sprint 7: Hybrid Pipelines
+- Sprint 8: Data Quality & Testing
+- Sprint 9: Serving & BI
+
+## Phase 3: Real-time
+- Sprint 10: Streaming Data
+- Sprint 11: Real-time Analytics
+- Sprint 12: Unified Dashboards
+
+## Phase 4: Production
+- Sprint 13: Data Security
+- Sprint 14: Architecture & Modeling
+- Sprint 15: Production Engineering
+- Sprint 16: On-Call & Incidents
+- Sprint 17: Debugging Pipelines
+- Sprint 18: Schema Migration
+- Sprint 19: Advanced Challenges
+
+## Phase 5: Capstone
+- Sprint 20: Capstone Projects
 
 ## Success Metrics
 

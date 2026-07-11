@@ -61,13 +61,20 @@ def _read_order(spec_file: Path) -> int:
 
 
 # Curriculum order: fundamentals, then the lifecycle sprints, capstone last.
-_SPRINT_ORDER = ["sql-fundamentals", "ingestion", "sprint-2-dbt",
-                 "data-quality", "sprint-3-airflow", "sprint-4-spark",
-                 "sprint-cloud", "sprint-5-hybrid-cloud", "serving", "streaming",
-                 "sprint-8-realtime", "sprint-9-dashboard",
-                 "security", "architecture", "sprint-10-production",
-                 "sprint-oncall", "sprint-debug", "sprint-migration",
-                 "sprint-advanced"]
+# Learning order across the 5 curriculum phases (Foundations → Scaling →
+# Real-time → Production → Capstone). Must match the runner's _CURRICULUM order;
+# `capstone` is discovered separately and always sorts last.
+_SPRINT_ORDER = [
+    # Phase 1 · Foundations
+    "sql-fundamentals", "ingestion", "sprint-2-dbt", "sprint-3-airflow",
+    # Phase 2 · Scaling
+    "sprint-4-spark", "sprint-cloud", "sprint-5-hybrid-cloud", "data-quality", "serving",
+    # Phase 3 · Real-time
+    "streaming", "sprint-8-realtime", "sprint-9-dashboard",
+    # Phase 4 · Production
+    "security", "architecture", "sprint-10-production",
+    "sprint-oncall", "sprint-debug", "sprint-migration", "sprint-advanced",
+]
 
 
 def _sprint_rank(sprint: str) -> tuple[int, int]:

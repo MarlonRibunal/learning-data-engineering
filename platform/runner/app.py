@@ -32,37 +32,184 @@ from grader.spec import SpecError, TaskSpec, load_spec  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 GLOSSARY = REPO_ROOT / "docs" / "cheatsheets" / "glossary.md"
-HOME = ("__home__", None)
-SETTINGS = ("__settings__", None)
-GLOSSARY_NAV = ("__glossary__", None)
-
-
-def _sprint_page(sprint: str):
-    return ("__sprint__", sprint)
 
 _REAL_INFRA_CHECKS = {"sql_assert", "dbt_test", "airflow"}
-_SPRINT_LABELS = {
-    "sql-fundamentals": "SQL Fundamentals",
-    "ingestion": "Ingestion",
-    "data-quality": "Data Quality",
-    "sprint-2-dbt": "Sprint 2 · dbt",
-    "sprint-3-airflow": "Sprint 3 · Airflow",
-    "sprint-4-spark": "Big Data · Spark",
-    "sprint-cloud": "Cloud & Lakehouse",
-    "sprint-5-hybrid-cloud": "Hybrid Cloud",
-    "serving": "Serving / BI",
-    "streaming": "Streaming",
-    "sprint-8-realtime": "Real-time · Windows",
-    "sprint-9-dashboard": "Dashboards",
-    "sprint-10-production": "Production & Career",
-    "sprint-oncall": "On-Call Incident",
-    "sprint-debug": "Debug the Pipeline",
-    "sprint-migration": "Schema Migration",
-    "sprint-advanced": "Advanced Challenges",
-    "security": "Security",
-    "architecture": "Architecture",
-    "capstone": "Capstone",
-}
+# ============================================================================
+# THE CURRICULUM — single source of truth.
+# Five phases (Foundations → Scaling → Real-time → Production → Capstone), each
+# with a phase intro; every sprint carries a Focus, targeted Skills, and a
+# sub-intro. Sprint ORDER here defines the learning order and the global
+# "Sprint N" numbering; it must match grader.core._SPRINT_ORDER (a test guards
+# this). `stage` is the short label used in the lifecycle journey stepper.
+# ============================================================================
+_CURRICULUM = [
+    {
+        "title": "Phase 1 · Foundations",
+        "intro": "The bedrock of every pipeline: query data with SQL, land it "
+                 "reliably in the warehouse, model it with dbt, and schedule it "
+                 "with Airflow. Finish here and you can build and run a batch "
+                 "pipeline end to end.",
+        "sprints": [
+            {"key": "sql-fundamentals", "name": "SQL Foundations", "stage": "Query",
+             "focus": "Read data confidently with SQL — the language every layer builds on.",
+             "skills": ["SELECT & WHERE", "JOIN", "GROUP BY", "HAVING", "CASE", "window functions"],
+             "intro": "Start where every pipeline starts: pulling the exact rows you "
+                      "need. You'll filter, join, aggregate, and rank real e-commerce "
+                      "data until querying is second nature."},
+            {"key": "ingestion", "name": "Cloud Data Ingestion", "stage": "Ingest",
+             "focus": "Land raw source data into the warehouse — cleanly and repeatably.",
+             "skills": ["INSERT…SELECT", "dedupe", "idempotent upserts", "incremental loads", "CDC", "quarantine"],
+             "intro": "Get data in without making a mess. You'll load feeds "
+                      "idempotently, dedupe by key, apply change-data-capture, and "
+                      "quarantine anything that fails validation."},
+            {"key": "sprint-2-dbt", "name": "Modern Transformation", "stage": "Transform",
+             "focus": "Turn raw tables into trustworthy analytics models with dbt.",
+             "skills": ["dbt models", "sources & refs", "star schema", "aggregations", "dbt tests"],
+             "intro": "Model the business, not just the data. You'll build dbt models "
+                      "over your raw sources, shape a star schema, and let dbt tests "
+                      "guard the numbers."},
+            {"key": "sprint-3-airflow", "name": "Workflow Orchestration", "stage": "Orchestrate",
+             "focus": "Schedule and chain the pipeline into reliable, repeatable runs.",
+             "skills": ["Airflow DAGs", "PythonOperator", "task dependencies", "schedules", "retries"],
+             "intro": "Make it run on its own. You'll author Airflow DAGs, wire task "
+                      "dependencies, set schedules, and add retries so a transient blip "
+                      "doesn't page you."},
+        ],
+    },
+    {
+        "title": "Phase 2 · Scaling",
+        "intro": "Grow past a single machine and a single tool: distributed processing "
+                 "with Spark, the cloud lakehouse and its cost model, hybrid job "
+                 "orchestration, and the data-quality and serving layers that make "
+                 "output trustworthy and usable.",
+        "sprints": [
+            {"key": "sprint-4-spark", "name": "Big Data Processing", "stage": "Process",
+             "focus": "Process data that won't fit on one machine, with Spark.",
+             "skills": ["Spark DataFrames", "groupBy/agg", "joins", "window functions", "partition & cache"],
+             "intro": "Scale out. You'll rewrite familiar transforms as distributed "
+                      "Spark jobs — aggregations, joins, ranking, and partition-aware "
+                      "performance."},
+            {"key": "sprint-cloud", "name": "Cloud & Lakehouse", "stage": "Cloud",
+             "focus": "Work the modern cloud lakehouse and its cost model.",
+             "skills": ["scan cost / FinOps", "partition pruning", "medallion", "Delta MERGE", "time travel"],
+             "intro": "Think like the cloud bill. You'll price queries by bytes "
+                      "scanned, prune partitions, refine bronze into silver, upsert "
+                      "with Delta MERGE, and read a table as of a past version."},
+            {"key": "sprint-5-hybrid-cloud", "name": "Hybrid Pipelines", "stage": "Hybrid",
+             "focus": "Drive remote/cloud jobs and stitch systems together via APIs.",
+             "skills": ["job submit/poll", "terminal states", "timeouts", "success gating", "failure handling"],
+             "intro": "Orchestrate across boundaries. You'll submit jobs to a remote "
+                      "service, poll to terminal states with timeouts, gate downstream "
+                      "work on success, and handle failures."},
+            {"key": "data-quality", "name": "Data Quality & Testing", "stage": "Validate",
+             "focus": "Prove the data is right — catch defects before they reach users.",
+             "skills": ["data tests", "not-null / unique", "orphan / FK checks", "range checks", "valid sets"],
+             "intro": "Trust, but verify. You'll write tests that return the offending "
+                      "rows — duplicate emails, null keys, orphaned orders, impossible "
+                      "dates — and only pass when the data is clean."},
+            {"key": "serving", "name": "Serving & BI", "stage": "Serve",
+             "focus": "Shape analytics-ready marts and KPIs for the business.",
+             "skills": ["serving marts", "headline KPIs", "running totals", "ranking", "customer-360"],
+             "intro": "Deliver the numbers people actually read. You'll build KPI "
+                      "queries, running totals, category rankings, and a wide "
+                      "customer-360 serving table."},
+        ],
+    },
+    {
+        "title": "Phase 3 · Real-time",
+        "intro": "Leave batch behind. Work with unbounded event streams — producing "
+                 "and consuming, windowed and stateful aggregation, and the live "
+                 "metrics a real-time dashboard renders.",
+        "sprints": [
+            {"key": "streaming", "name": "Streaming Data", "stage": "Stream",
+             "focus": "Move from batch to event streams with Kafka / Redpanda.",
+             "skills": ["producers & consumers", "JSON serialization", "offsets", "key partitioning", "dedupe"],
+             "intro": "Data in motion. You'll produce and consume events, key-partition "
+                      "for ordering, track offsets, and dedupe a replayed stream."},
+            {"key": "sprint-8-realtime", "name": "Real-time Analytics", "stage": "Real-time",
+             "focus": "Aggregate unbounded streams with time windows and state.",
+             "skills": ["tumbling/sliding/session windows", "F.window", "watermarks", "windowed aggregates", "Structured Streaming"],
+             "intro": "Answer questions as events arrive. You'll bucket a stream into "
+                      "time windows, handle late data with watermarks, and compute "
+                      "windowed revenue, counts, and distinct users."},
+            {"key": "sprint-9-dashboard", "name": "Unified Dashboards", "stage": "Dashboard",
+             "focus": "Compute the metrics a real-time dashboard renders.",
+             "skills": ["moving averages", "pct change", "normalization", "top-N", "threshold bands"],
+             "intro": "Turn rows into signals. You'll compute moving averages, "
+                      "percentage changes, normalized series, top categories, and "
+                      "health thresholds for the dashboard."},
+        ],
+    },
+    {
+        "title": "Phase 4 · Production",
+        "intro": "The difference between 'it works on my machine' and 'it runs the "
+                 "business': security and governance, warehouse architecture, "
+                 "reliability engineering, on-call incident response, debugging, safe "
+                 "migrations, and the advanced algorithms expected of a senior.",
+        "sprints": [
+            {"key": "security", "name": "Data Security", "stage": "Secure",
+             "focus": "Lock down who can see and do what in the warehouse.",
+             "skills": ["GRANT / REVOKE", "column-level grants", "PII masking", "read-only roles", "row-level security"],
+             "intro": "Least privilege by default. You'll grant scoped access, mask "
+                      "PII, create read-only analysts, and enforce row-level security "
+                      "policies."},
+            {"key": "architecture", "name": "Architecture & Modeling", "stage": "Design",
+             "focus": "Design the warehouse: dimensions, facts, and history.",
+             "skills": ["dimension tables", "fact grain", "SCD Type 2", "daily snapshots", "surrogate keys"],
+             "intro": "Model for the long run. You'll build conformed dimensions and "
+                      "facts, track history with slowly-changing dimensions, and "
+                      "capture point-in-time snapshots."},
+            {"key": "sprint-10-production", "name": "Production Engineering", "stage": "Production",
+             "focus": "Make pipelines reliable, observable, and self-healing.",
+             "skills": ["retry / backoff", "circuit breakers", "error rate & SLAs", "freshness", "idempotent dedupe", "partition paths"],
+             "intro": "Ship things that stay up. You'll compute error rates and SLAs, "
+                      "add exponential backoff and circuit breakers, check freshness, "
+                      "and build idempotent, partition-aware writes."},
+            {"key": "sprint-oncall", "name": "On-Call & Incidents", "stage": "On-Call",
+             "focus": "Respond when the pager goes off.",
+             "skills": ["alert triage", "root-cause analysis", "backfill windows", "recovery verification"],
+             "intro": "It's 3am and a table is stale. You'll triage alerts by severity, "
+                      "trace the first failure, compute the exact backfill window, and "
+                      "verify recovery."},
+            {"key": "sprint-debug", "name": "Debugging Pipelines", "stage": "Debug",
+             "focus": "Find and fix real defects in existing code.",
+             "skills": ["reading buggy code", "dedup logic", "rate / percentage math", "revenue filters"],
+             "intro": "Not everything is greenfield. You'll be handed working-but-wrong "
+                      "functions and hunt the planted bug — a bad dedupe, a missing "
+                      "×100, an unfiltered sum."},
+            {"key": "sprint-migration", "name": "Schema Migration", "stage": "Migrate",
+             "focus": "Evolve schemas without losing or corrupting data.",
+             "skills": ["column rename / remap", "backfilling defaults", "row-count reconciliation"],
+             "intro": "Change the shape safely. You'll remap columns, backfill new "
+                      "fields without clobbering existing values, and reconcile row "
+                      "counts across a migration."},
+            {"key": "sprint-advanced", "name": "Advanced Challenges", "stage": "Advanced",
+             "focus": "Tackle the algorithms senior DEs are expected to know.",
+             "skills": ["sessionization", "cohort retention", "topological sort", "blast-radius / graphs"],
+             "intro": "Level up to senior. You'll sessionize events by gap, compute "
+                      "cohort retention, topologically order a DAG, and trace blast "
+                      "radius through a dependency graph."},
+        ],
+    },
+    {
+        "title": "Phase 5 · Capstone",
+        "intro": "Bring it all together in portfolio-grade projects — a full analytics "
+                 "platform, an incident response, and a stateful streaming pipeline — "
+                 "the pieces you'll walk through in interviews.",
+        "sprints": [
+            {"key": "capstone", "name": "Capstone Projects", "stage": "Capstone",
+             "focus": "Integrate everything into portfolio-grade, end-to-end projects.",
+             "skills": ["end-to-end analytics", "incident response", "stateful streaming"],
+             "intro": "Prove you can do the job. Three integrative capstones — a full "
+                      "analytics platform, an incident response, and a stateful "
+                      "streaming pipeline — the work you'll show in interviews."},
+        ],
+    },
+]
+
+# Flatten to the lookups the rest of the app uses (all derived from _CURRICULUM).
+_SPRINT_META = {s["key"]: s for ph in _CURRICULUM for s in ph["sprints"]}
+_SPRINT_LABELS = {k: m["name"] for k, m in _SPRINT_META.items()}
 
 
 # ---------- small helpers ----------
@@ -144,29 +291,8 @@ def _task_header(sprint: str, task: str, spec, state: str,
         "</div></div>"
     )
 
-# The curriculum as the data-engineering lifecycle: (sprint, lifecycle role).
-_JOURNEY = [
-    ("sql-fundamentals", "Query"),
-    ("ingestion", "Ingestion"),
-    ("sprint-2-dbt", "Transform"),
-    ("data-quality", "Validate"),
-    ("sprint-3-airflow", "Orchestrate"),
-    ("sprint-4-spark", "Process"),
-    ("sprint-cloud", "Cloud"),
-    ("sprint-5-hybrid-cloud", "Hybrid"),
-    ("serving", "Serve"),
-    ("streaming", "Stream"),
-    ("sprint-8-realtime", "Real-time"),
-    ("sprint-9-dashboard", "Dashboard"),
-    ("security", "Secure"),
-    ("architecture", "Design"),
-    ("sprint-10-production", "Launch"),
-    ("sprint-oncall", "On-Call"),
-    ("sprint-debug", "Debug"),
-    ("sprint-migration", "Migrate"),
-    ("sprint-advanced", "Advanced"),
-    ("capstone", "Capstone"),
-]
+# The lifecycle journey stepper: (sprint, short stage label), in learning order.
+_JOURNEY = [(k, m["stage"]) for k, m in _SPRINT_META.items()]
 
 # Tables to sample in a task's lesson pane, by sprint (spec `preview` overrides).
 _SPRINT_PREVIEW = {
@@ -514,6 +640,86 @@ code{font-family:'SF Mono',ui-monospace,Menlo,monospace;}
 .tcard-lvl{font-size:.64rem; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--faint);}
 .tcard-title{font-size:.98rem; font-weight:620; color:var(--ink); letter-spacing:-.01em; margin:1px 0 2px;}
 .tcard-sub{font-size:.8rem; color:var(--muted); line-height:1.4; min-height:2.2em;}
+
+/* ===== Learnify-style custom sidebar (HTML nav, query-param links) ===== */
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] a{text-decoration:none;}
+.lf-brand{display:flex; align-items:center; gap:10px; padding:4px 4px 12px;}
+.lf-logo{width:30px; height:30px; border-radius:9px; background:var(--accent);
+  display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
+.lf-logo .icon{width:16px; height:16px; color:var(--panel);}
+.lf-brandname{font-weight:680; font-size:1.02rem; letter-spacing:-.02em; color:var(--ink);}
+.lf-nav{display:flex; align-items:center; gap:11px; padding:9px 11px; margin:2px 0; border-radius:9px;
+  color:var(--muted)!important; font-size:.9rem; font-weight:500; letter-spacing:-.01em;
+  cursor:pointer; transition:background .12s,color .12s;}
+.lf-nav:hover{background:var(--panel-2); color:var(--ink)!important;}
+.lf-nav.active{background:var(--accent-soft); color:var(--ink)!important; font-weight:600;}
+.lf-nav .icon{width:18px; height:18px; color:currentColor; flex:0 0 auto;}
+.lf-nav .lf-caret{margin-left:auto; width:15px; height:15px;}
+.lf-nav.open .lf-caret{transform:rotate(180deg);}
+.lf-sub{margin:1px 0 6px 21px; padding-left:13px; border-left:1.5px solid var(--line);
+  display:flex; flex-direction:column; gap:2px;}
+.lf-subitem{display:flex; align-items:center; padding:7px 10px; border-radius:8px;
+  color:var(--muted)!important; font-size:.85rem; font-weight:500; letter-spacing:-.01em; cursor:pointer;}
+.lf-subitem:hover{background:var(--panel-2); color:var(--ink)!important;}
+.lf-subitem.active{background:var(--panel); box-shadow:var(--sh); color:var(--ink)!important; font-weight:600;}
+.lf-badge{margin-left:auto; font-size:.67rem; font-weight:600; color:var(--faint);
+  background:var(--panel-2); border:1px solid var(--line); border-radius:999px;
+  padding:1px 8px; min-width:20px; text-align:center;}
+.lf-subitem.active .lf-badge{background:var(--accent); color:var(--panel); border-color:var(--accent);}
+.lf-cap{font-size:.6rem; font-weight:650; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--faint); margin:15px 10px 5px;}
+/* progress card (Learnify's plan card) */
+.lf-card{background:var(--panel-2); border:1px solid var(--line); border-radius:13px;
+  padding:13px 14px; margin:8px 2px 4px;}
+.lf-card-top{display:flex; align-items:center; gap:9px; margin-bottom:9px;}
+.lf-card-ic{width:28px; height:28px; border-radius:8px; background:var(--accent-soft);
+  display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
+.lf-card-ic .icon{width:15px; height:15px; color:var(--accent);}
+.lf-card-t{font-size:.78rem; font-weight:650; color:var(--ink); line-height:1.15;}
+.lf-card-s{font-size:.67rem; color:var(--faint); margin-top:1px;}
+.lf-card-bar{height:6px; background:var(--line-2); border-radius:999px; overflow:hidden;}
+.lf-card-bar span{display:block; height:100%; background:var(--green); border-radius:999px;}
+/* profile footer */
+.lf-profile{display:flex; align-items:center; gap:10px; padding:11px 6px 2px;}
+.lf-avatar{width:34px; height:34px; border-radius:50%; background:var(--accent); color:var(--panel);
+  display:flex; align-items:center; justify-content:center; font-weight:650; font-size:.82rem;
+  flex:0 0 auto; position:relative;}
+.lf-dot{position:absolute; right:-1px; bottom:-1px; width:10px; height:10px; border-radius:50%;
+  background:var(--green); border:2px solid var(--panel);}
+.lf-pname{font-size:.82rem; font-weight:600; color:var(--ink); line-height:1.15;}
+.lf-psub{font-size:.69rem; color:var(--faint);}
+
+/* curriculum sprint-card grid (anchor cards) */
+.sc-grid{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:14px;}
+[data-testid="stMarkdownContainer"] a.scard, a.scard *{text-decoration:none!important;}
+.scard{display:block; background:var(--panel); border:1px solid var(--line); border-radius:14px;
+  padding:16px 17px; box-shadow:var(--sh); transition:border-color .12s, transform .06s;}
+.scard:hover{border-color:var(--accent-h); transform:translateY(-1px);}
+.scard.locked{opacity:.55;}
+.scard-role{display:flex; align-items:center; gap:7px; font-size:.6rem; font-weight:600;
+  letter-spacing:.07em; text-transform:uppercase; color:var(--faint);}
+.scard-role .dot{width:7px; height:7px; border-radius:999px;}
+.scard-name{font-size:1.05rem; font-weight:650; color:var(--ink)!important; letter-spacing:-.02em; margin:4px 0 2px;}
+.scard-meta{font-size:.75rem; color:var(--muted); margin-bottom:10px;}
+.scard-bar{height:5px; background:var(--line-2); border-radius:999px; overflow:hidden;}
+.scard-bar span{display:block; height:100%; background:var(--green); border-radius:999px;}
+.phase-head{display:flex; align-items:baseline; gap:10px; margin:26px 2px 12px;}
+.phase-head:first-of-type{margin-top:6px;}
+.phase-title{font-size:.95rem; font-weight:680; letter-spacing:-.02em; color:var(--ink);}
+.phase-count{font-size:.72rem; color:var(--faint); font-weight:500;}
+.phase-rule{flex:1; height:1px; background:var(--line);}
+.phase-intro{color:var(--muted); font-size:.85rem; line-height:1.55; max-width:780px; margin:-4px 2px 15px;}
+/* rich sprint cards: focus line + skill chips */
+.scard-focus{font-size:.81rem; color:var(--muted); line-height:1.45; margin:3px 0 9px; min-height:2.3em;}
+.scard-chips{display:flex; flex-wrap:wrap; gap:5px; margin-bottom:11px;}
+.chip{font-size:.66rem; font-weight:500; color:var(--muted); background:var(--panel-2);
+  border:1px solid var(--line); border-radius:6px; padding:2px 7px; white-space:nowrap;}
+.scard.locked .chip{opacity:.7;}
+/* sprint-page header: focus, sub-intro, skills */
+.sprint-focus{font-size:.96rem; color:var(--ink); font-weight:550; margin:9px 0 7px; letter-spacing:-.01em;}
+.sprint-intro{font-size:.88rem; color:var(--muted); line-height:1.55; max-width:680px; margin-bottom:13px;}
+.sprint-skills{display:flex; align-items:center; gap:9px; flex-wrap:wrap; margin-bottom:15px;}
+.sprint-skills-lbl{font-size:.6rem; font-weight:650; letter-spacing:.08em; text-transform:uppercase; color:var(--faint);}
 </style>
 """
 
@@ -528,6 +734,8 @@ _ICON = {
     "reading": _ic('<path d="M12 6c-2-1.5-5-1.5-7 0v12c2-1.5 5-1.5 7 0 2-1.5 5-1.5 7 0V6c-2-1.5-5-1.5-7 0z"/><path d="M12 6v12"/>'),
     "bulb": _ic('<path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.6.6 1 1.4 1 2.5h6c0-1.1.4-1.9 1-2.5A6 6 0 0 0 12 3z"/>'),
     "tutor": _ic('<path d="M12 4 2 9l10 5 10-5-10-5z"/><path d="M6 11v5c0 1 3 2.5 6 2.5s6-1.5 6-2.5v-5"/>'),
+    "gear": _ic('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>'),
+    "caret": _ic('<path d="M6 9l6 6 6-6"/>'),
     "code": _ic('<path d="M8 9l-3 3 3 3M16 9l3 3-3 3"/>'),
     "check": _ic('<path d="M20 6L9 17l-5-5"/>'),
     "arrow": _ic('<path d="M5 12h14M13 6l6 6-6 6"/>'),
@@ -579,114 +787,114 @@ def _safe_preview(table: str, seed: bool):
     return _to_records(res)
 
 
-# ---------- main ----------
+# ---------- navigation ----------
 def _save_theme() -> None:
     """Persist the theme choice to the state volume so it survives a restart."""
     from grader import settings
     settings.save(REPO_ROOT, {"theme": st.session_state.theme_choice}, settings.PREFS_FILENAME)
 
 
+def _goto(v: str, s: str | None = None, t: str | None = None, f: str | None = None) -> None:
+    """Navigate by rewriting the URL query params, then rerun."""
+    st.query_params.clear()
+    st.query_params["v"] = v
+    if s:
+        st.query_params["s"] = s
+    if t:
+        st.query_params["t"] = t
+    if f:
+        st.query_params["f"] = f
+    st.rerun()
+
+
+def _nav(v: str, icon: str, label: str, active: bool) -> str:
+    cls = "lf-nav active" if active else "lf-nav"
+    return (f'<a class="{cls}" href="?v={v}" target="_self">'
+            f'{_ICON[icon]}<span>{label}</span></a>')
+
+
+def _sidebar_html(tasks, progress, view, f, done, inprog, total) -> str:
+    """The Learnify-style sidebar: brand, icon nav rows, a Curriculum group with
+    connector-line sub-items + count pills, a progress card, and a profile
+    footer. Nav is plain <a> query-param links — no Streamlit widget chrome."""
+    pct = round(done / total * 100) if total else 0
+    cur = view == "curriculum"
+
+    def sub(fname, label, count):
+        cls = "lf-subitem active" if (cur and f == fname) else "lf-subitem"
+        return (f'<a class="{cls}" href="?v=curriculum&amp;f={fname}" target="_self">'
+                f'<span>{label}</span><span class="lf-badge">{count}</span></a>')
+
+    nxt = next_task(REPO_ROOT)
+    psub = (f'Level {_level_of(tasks, *nxt)} · {_sprint_label(nxt[0])}'
+            if nxt else 'Every level cleared')
+    return (
+        f'<div class="lf-brand"><span class="lf-logo">{_ICON["spark"]}</span>'
+        f'<span class="lf-brandname">Learn by doing</span></div>'
+        + _nav("home", "home", "Home", view == "home")
+        + f'<a class="lf-nav{" open" if cur else ""}" href="?v=curriculum&amp;f=all" '
+          f'target="_self">{_ICON["book"]}<span>Curriculum</span>'
+          f'<span class="lf-caret">{_ICON["caret"]}</span></a>'
+        + '<div class="lf-sub">'
+        + sub("progress", "In progress", inprog)
+        + sub("done", "Completed", done)
+        + sub("all", "All levels", total)
+        + '</div>'
+        + '<div class="lf-cap">More</div>'
+        + _nav("glossary", "reading", "Glossary", view == "glossary")
+        + _nav("settings", "gear", "Settings", view == "settings")
+        + f'<div class="lf-card"><div class="lf-card-top">'
+          f'<span class="lf-card-ic">{_ICON["spark"]}</span>'
+          f'<div><div class="lf-card-t">Your progress</div>'
+          f'<div class="lf-card-s">{done} of {total} levels cleared</div></div></div>'
+          f'<div class="lf-card-bar"><span style="width:{pct}%"></span></div></div>'
+        + f'<div class="lf-profile"><span class="lf-avatar">L<span class="lf-dot"></span></span>'
+          f'<div><div class="lf-pname">Learner</div><div class="lf-psub">{psub}</div></div></div>'
+    )
+
+
+# ---------- main ----------
 def main() -> None:
     st.set_page_config(page_title="Learn Data Engineering", page_icon="🧪", layout="wide")
-    # Seed the theme from the persisted pref before first paint (no light→dark
-    # flash), then it lives in session state for the rest of the session.
+    # Seed the theme from the persisted pref before first paint (no light→dark flash).
     if "theme_choice" not in st.session_state:
         from grader import settings
         st.session_state.theme_choice = \
             settings.load(REPO_ROOT, settings.PREFS_FILENAME).get("theme", "Auto")
-    theme = st.session_state.theme_choice.lower()
-    _inject_css(theme)
-    if "sel" not in st.session_state:
-        st.session_state.sel = HOME
+    _inject_css(st.session_state.theme_choice.lower())
 
     tasks = discover_tasks(REPO_ROOT)
     progress = load_progress(REPO_ROOT)
-    sel = st.session_state.sel
-
-    st.sidebar.markdown(f'<div class="brand">{_ICON["spark"]} Learn by doing</div>',
-                        unsafe_allow_html=True)
     if not tasks:
         st.sidebar.info("No tasks found yet.")
         st.title("No tasks found")
         st.write("Add a task under `projects/datamart-intelligence-platform/tasks/`.")
         return
 
+    view = st.query_params.get("v", "home")
+    f = st.query_params.get("f", "all")
     done = sum(1 for s, t in tasks if progress.get(s, {}).get(t, {}).get("status") == "pass")
     total = len(tasks)
-    on_sprint = _current_sprint(tasks, progress)
-    nxt = next_task(REPO_ROOT)  # the single "you are here" task
-    active_sprint = sel[1] if sel[0] == "__sprint__" else (sel[0] if sel not in
-                    (HOME, SETTINGS, GLOSSARY_NAV) else None)
+    inprog = sum(1 for s, t in tasks
+                 if progress.get(s, {}).get(t, {}).get("status") != "pass"
+                 and not _is_locked(tasks, progress, s, t))
 
-    if st.sidebar.button("Home", icon=":material/home:", use_container_width=True,
-                         type="primary" if sel == HOME else "secondary"):
-        st.session_state.sel = HOME
-        st.rerun()
+    st.sidebar.markdown(_sidebar_html(tasks, progress, view, f, done, inprog, total),
+                        unsafe_allow_html=True)
 
-    # Curriculum: a clean, single-level list of sprints (not a wall of 112
-    # tasks). Each row shows a status glyph + its X/Y. Clicking opens the
-    # sprint's levels as cards in the main area.
-    st.sidebar.markdown('<div class="navcap">Curriculum</div>', unsafe_allow_html=True)
-    for sprint, sprint_tasks in _grouped_by_sprint(tasks):
-        c_done = sum(1 for t in sprint_tasks
-                     if progress.get(sprint, {}).get(t, {}).get("status") == "pass")
-        c_total = len(sprint_tasks)
-        if c_done == c_total:
-            micon = ":material/check_circle:"
-        elif sprint == on_sprint:
-            micon = ":material/adjust:"
-        elif c_done:
-            micon = ":material/pending:"
-        elif _is_locked(tasks, progress, sprint, sprint_tasks[0]):
-            micon = ":material/lock:"
-        else:
-            micon = ":material/radio_button_unchecked:"
-        if st.sidebar.button(f"{_sprint_label(sprint)}   ·   {c_done}/{c_total}",
-                             key=f"nav-{sprint}", icon=micon, use_container_width=True,
-                             type="primary" if sprint == active_sprint else "secondary"):
-            st.session_state.sel = _sprint_page(sprint)
-            st.rerun()
-
-    st.sidebar.markdown('<div class="navcap">More</div>', unsafe_allow_html=True)
-    if st.sidebar.button("Glossary", icon=":material/book_2:", use_container_width=True,
-                         type="primary" if sel == GLOSSARY_NAV else "secondary"):
-        st.session_state.sel = GLOSSARY_NAV
-        st.rerun()
-    if st.sidebar.button("Settings", icon=":material/settings:", use_container_width=True,
-                         type="primary" if sel == SETTINGS else "secondary"):
-        st.session_state.sel = SETTINGS
-        st.rerun()
-
-    # Progress card (Learnify-style), with a one-tap Continue to the frontier.
-    pct = round(done / total * 100)
-    st.sidebar.markdown(
-        f'<div class="sidecard"><div class="sc-top">'
-        f'<span class="sc-lbl">Your progress</span><span class="sc-pct">{pct}%</span></div>'
-        f'<div class="sc-bar"><span style="width:{pct}%"></span></div>'
-        f'<div class="sc-pct" style="margin-top:7px">{done} of {total} levels cleared</div>'
-        f'</div>', unsafe_allow_html=True)
-    if nxt and st.sidebar.button("Continue", icon=":material/play_arrow:",
-                                 use_container_width=True, type="primary"):
-        st.session_state.sel = nxt
-        st.rerun()
-
-    st.sidebar.markdown('<div class="navcap">Appearance</div>', unsafe_allow_html=True)
-    st.sidebar.segmented_control("Theme", ["Auto", "Light", "Dark"],
-                                 key="theme_choice", label_visibility="collapsed",
-                                 on_change=_save_theme)
-
-    # ---- route ----
-    sel = st.session_state.sel
-    if sel == SETTINGS:
+    # ---- route on the URL ----
+    if view == "settings":
         _render_settings()
-    elif sel == GLOSSARY_NAV:
+    elif view == "glossary":
         _render_glossary()
-    elif sel[0] == "__sprint__":
-        _render_sprint(sel[1], tasks, progress)
-    elif sel == HOME:
-        _render_home(tasks, progress, done)
+    elif view == "curriculum":
+        _render_curriculum(tasks, progress, f)
+    elif view == "sprint" and st.query_params.get("s"):
+        _render_sprint(st.query_params.get("s"), tasks, progress)
+    elif view == "task" and st.query_params.get("s") and st.query_params.get("t"):
+        _render_task(st.query_params.get("s"), st.query_params.get("t"), progress, tasks)
     else:
-        _render_task(sel[0], sel[1], progress, tasks)
+        _render_home(tasks, progress, done)
 
 
 def _render_home(tasks, progress, done) -> None:
@@ -703,8 +911,7 @@ def _render_home(tasks, progress, done) -> None:
         st.caption(f"Next up: **{_sprint_label(nxt[0])} · {nxt[1]}**")
         if st.button(label, type="primary", use_container_width=True,
                      icon=":material/play_arrow:"):
-            st.session_state.sel = nxt
-            st.rerun()
+            _goto("task", s=nxt[0], t=nxt[1])
     else:
         st.success("You've passed every task. Nice work.", icon=":material/celebration:")
 
@@ -727,18 +934,27 @@ def _render_sprint(sprint, tasks, progress) -> None:
                  if progress.get(sprint, {}).get(t, {}).get("status") == "pass")
     total = len(sprint_tasks)
     pct = round(c_done / total * 100) if total else 0
-    role = dict(_JOURNEY).get(sprint, "Sprint")
+    meta = _SPRINT_META.get(sprint, {})
+    order = [s for s, _ in _grouped_by_sprint(tasks)]
+    num = order.index(sprint) + 1 if sprint in order else None
+    stage = meta.get("stage", "")
+    tag = (f"Sprint {num}" if num else "Sprint") + (f" · {stage}" if stage else "")
+    chips = "".join(f'<span class="chip">{sk}</span>' for sk in meta.get("skills", []))
     st.markdown(
-        f'<div class="sprint-head"><div class="sprint-role">{role}</div>'
+        f'<div class="sprint-head"><div class="sprint-role">{tag}</div>'
         f'<div class="sprint-name">{_sprint_label(sprint)}</div>'
-        f'<div class="sprint-meta">{c_done} of {total} levels cleared · {pct}%</div>'
-        f'<div class="sprint-bar"><span style="width:{pct}%"></span></div></div>',
+        + (f'<div class="sprint-focus">{meta["focus"]}</div>' if meta.get("focus") else "")
+        + (f'<div class="sprint-intro">{meta["intro"]}</div>' if meta.get("intro") else "")
+        + (f'<div class="sprint-skills"><span class="sprint-skills-lbl">Skills</span>'
+           f'<span class="scard-chips">{chips}</span></div>' if chips else "")
+        + f'<div class="sprint-meta">{c_done} of {total} levels cleared · {pct}%</div>'
+          f'<div class="sprint-bar"><span style="width:{pct}%"></span></div></div>',
         unsafe_allow_html=True)
 
-    intro = _load_sprint_intro(sprint)
-    if intro:
-        with st.expander("About this sprint", icon=":material/info:"):
-            st.markdown(intro)
+    detail = _load_sprint_intro(sprint)
+    if detail:
+        with st.expander("More about this sprint", icon=":material/info:"):
+            st.markdown(detail)
 
     _dot = {"pass": "done", "fail": "fail", "error": "wip", "in-progress": "wip", "new": "new"}
     nxt = next_task(REPO_ROOT)
@@ -762,8 +978,7 @@ def _render_sprint(sprint, tasks, progress) -> None:
                 if st.button(label, key=f"open-{sprint}-{task}", use_container_width=True,
                              disabled=locked, icon=icon,
                              type="primary" if highlight else "secondary"):
-                    st.session_state.sel = (sprint, task)
-                    st.rerun()
+                    _goto("task", s=sprint, t=task)
 
 
 def _render_glossary() -> None:
@@ -776,6 +991,92 @@ def _render_glossary() -> None:
             st.markdown(GLOSSARY.read_text())
     else:
         st.info("No glossary found.")
+
+
+def _render_curriculum(tasks, progress, f) -> None:
+    """Curriculum browser: All levels → sprint cards; In progress / Completed →
+    the matching level cards. Cards are query-param links, no widget chrome."""
+    subtitle = {"all": "Every sprint in the path — open one to see its levels.",
+                "progress": "Levels you can take on right now.",
+                "done": "Levels you've already cleared."}.get(f, "")
+    st.markdown(f'<div class="hero"><div class="hero-title">Curriculum</div>'
+                f'<div class="hero-sub">{subtitle}</div></div>', unsafe_allow_html=True)
+
+    if f == "all":
+        on = _current_sprint(tasks, progress)
+        grouped = _grouped_by_sprint(tasks)          # learning order
+        tmap = dict(grouped)
+        number = {s: i + 1 for i, (s, _) in enumerate(grouped)}  # global "Sprint N"
+
+        def card(sprint):
+            meta = _SPRINT_META.get(sprint, {})
+            stasks = tmap[sprint]
+            cdone = sum(1 for t in stasks
+                        if progress.get(sprint, {}).get(t, {}).get("status") == "pass")
+            ctot = len(stasks)
+            pct = round(cdone / ctot * 100) if ctot else 0
+            locked = _is_locked(tasks, progress, sprint, stasks[0])
+            dot = "done" if cdone == ctot else ("wip" if (cdone or sprint == on) else "new")
+            stage = meta.get("stage", "")
+            tag = f"Sprint {number[sprint]}" + (f" · {stage}" if stage else "")
+            chips = "".join(f'<span class="chip">{sk}</span>' for sk in meta.get("skills", [])[:5])
+            cls = "scard locked" if locked else "scard"
+            return (f'<a class="{cls}" href="?v=sprint&amp;s={sprint}" target="_self">'
+                    f'<div class="scard-role"><span class="dot d-{dot}"></span>{tag}</div>'
+                    f'<div class="scard-name">{_sprint_label(sprint)}</div>'
+                    f'<div class="scard-focus">{meta.get("focus", "")}</div>'
+                    f'<div class="scard-chips">{chips}</div>'
+                    f'<div class="scard-meta">{cdone}/{ctot} levels · {pct}%</div>'
+                    f'<div class="scard-bar"><span style="width:{pct}%"></span></div></a>')
+
+        seen = set()
+        for phase in _CURRICULUM:
+            present = [s["key"] for s in phase["sprints"] if s["key"] in tmap]
+            if not present:
+                continue
+            seen.update(present)
+            pdone = sum(1 for s in present for t in tmap[s]
+                        if progress.get(s, {}).get(t, {}).get("status") == "pass")
+            ptot = sum(len(tmap[s]) for s in present)
+            st.markdown(
+                f'<div class="phase-head"><span class="phase-title">{phase["title"]}</span>'
+                f'<span class="phase-count">{pdone}/{ptot} levels</span>'
+                f'<span class="phase-rule"></span></div>'
+                f'<div class="phase-intro">{phase["intro"]}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="sc-grid">{"".join(card(s) for s in present)}</div>',
+                        unsafe_allow_html=True)
+        # safety net: any discovered sprint not placed in a phase still shows
+        leftover = [s for s, _ in grouped if s not in seen]
+        if leftover:
+            st.markdown('<div class="phase-head"><span class="phase-title">More</span>'
+                        '<span class="phase-rule"></span></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="sc-grid">{"".join(card(s) for s in leftover)}</div>',
+                        unsafe_allow_html=True)
+        return
+
+    if f == "done":
+        picks = [(s, t) for s, t in tasks
+                 if progress.get(s, {}).get(t, {}).get("status") == "pass"]
+        empty = "No cleared levels yet — start from Home."
+    else:
+        picks = [(s, t) for s, t in tasks
+                 if progress.get(s, {}).get(t, {}).get("status") != "pass"
+                 and not _is_locked(tasks, progress, s, t)]
+        empty = "Nothing unlocked to do right now — clear the current level to open more."
+    if not picks:
+        st.info(empty)
+        return
+    dotmap = {"pass": "done", "fail": "fail", "error": "wip", "in-progress": "wip", "new": "new"}
+    cards = []
+    for s, t in picks:
+        lvl = _level_of(tasks, s, t)
+        dot = dotmap.get(_task_state(s, t, progress), "new")
+        cards.append(
+            f'<a class="scard" href="?v=task&amp;s={s}&amp;t={t}" target="_self">'
+            f'<div class="scard-role"><span class="dot d-{dot}"></span>'
+            f'{_sprint_label(s)} · Level {lvl}</div>'
+            f'<div class="scard-name">{t}</div></a>')
+    st.markdown(f'<div class="sc-grid">{"".join(cards)}</div>', unsafe_allow_html=True)
 
 
 def _render_settings() -> None:
@@ -792,6 +1093,13 @@ def _render_settings() -> None:
                 'when you fail a check. It never gives the answer, and it is off until '
                 'you turn it on. Bring your own model and key; everything stays on this '
                 'machine.</div></div>', unsafe_allow_html=True)
+
+    with st.container(border=True):
+        st.markdown(f'<div class="sec">{_ICON["home"]} Appearance</div>', unsafe_allow_html=True)
+        st.segmented_control("Theme", ["Auto", "Light", "Dark"], key="theme_choice",
+                             on_change=_save_theme,
+                             help="Auto follows your device. Your choice is saved and "
+                                  "persists across restarts.")
 
     cfg = resolve_config(REPO_ROOT)
     saved = tsettings.load(REPO_ROOT)
@@ -872,8 +1180,7 @@ def _render_task(sprint, task, progress, tasks) -> None:
                      "to be walked in order, so each level builds on the last.")
             if nxt and st.button(f"Go to level {_level_of(tasks, *nxt)} · {nxt[1]}",
                                  type="primary", icon=":material/arrow_forward:"):
-                st.session_state.sel = nxt
-                st.rerun()
+                _goto("task", s=nxt[0], t=nxt[1])
         return
 
     if _needs_stack(spec) and not _stack_up():
@@ -1151,8 +1458,7 @@ def _render_cleared(sprint, task, tasks, celebrate) -> None:
         if st.button(f"Next level — {nxt[1]}", type="primary", icon=":material/arrow_forward:",
                      use_container_width=True, key=f"next-{sprint}-{task}"):
             st.session_state.pop(_res_key(sprint, task), None)
-            st.session_state.sel = nxt
-            st.rerun()
+            _goto("task", s=nxt[0], t=nxt[1])
     else:
         st.success("You've cleared the whole path — every level passed. Incredible.",
                    icon=":material/military_tech:")
