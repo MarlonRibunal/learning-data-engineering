@@ -84,6 +84,27 @@ services:
       postgres:
         condition: service_healthy
 
+  # ---- dbt docs: the project's lineage graph + model/test/source catalog ----
+  dbt-docs:
+    build:
+      context: ./containers/dbt
+      dockerfile: Dockerfile
+    volumes:
+      - ./projects/datamart-intelligence-platform/dbt:/usr/app/dbt
+      - ./config:/usr/app/config
+    environment:
+      DBT_PROFILES_DIR: /usr/app/config
+      POSTGRES_HOST: postgres
+    command:
+      - bash
+      - -lc
+      - "cd /usr/app/dbt && (dbt docs generate || true) && python -m http.server 8084 --bind 0.0.0.0 --directory target"
+    ports: ["8084:8084"]
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   # NOTE: port 8501 belongs to the learning app (the lesson-runner). It is
   # host-run by `./platform.sh` (it imports the grader and drives these
   # containers via `docker compose exec`), or bundled in the single study
