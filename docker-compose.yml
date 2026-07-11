@@ -87,9 +87,26 @@ services:
   # NOTE: port 8501 belongs to the learning app (the lesson-runner). It is
   # host-run by `./platform.sh` (it imports the grader and drives these
   # containers via `docker compose exec`), or bundled in the single study
-  # image — so it is deliberately NOT a compose service here. There used to be
-  # a placeholder "streamlit dashboard" on 8501; it was removed to end the
-  # double-occupancy of that port.
+  # image — so it is deliberately NOT a compose service here.
+
+  # ---- BI Dashboard & Builder: real Streamlit + Plotly over the warehouse ----
+  dashboard:
+    build:
+      context: ./containers/dashboard
+      dockerfile: Dockerfile
+    volumes:
+      - ./projects/datamart-intelligence-platform/dashboard:/app
+    environment:
+      PGHOST: postgres
+      PGPORT: "5432"
+      PGUSER: airflow
+      PGPASSWORD: airflow
+      PGDATABASE: datamart
+    ports: ["8083:8501"]
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   # ---- PGAdmin: Postgres UI ----
   pgadmin:
