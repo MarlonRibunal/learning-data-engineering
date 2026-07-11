@@ -21,7 +21,7 @@ PY="${PYTHON:-python3}"
 # (below) on 8501, so we don't start the compose `streamlit` service here.
 # Students reach every UI from the app's "Platform" page.
 STACK_SERVICES="postgres dbt-service airflow-init airflow-webserver airflow-scheduler \
-redpanda redpanda-console pgadmin"
+redpanda redpanda-console pgadmin dashboard"
 
 say() { printf '\033[36m▸ %s\033[0m\n' "$*"; }
 die() { printf '\033[31m✗ %s\033[0m\n' "$*" >&2; exit 1; }

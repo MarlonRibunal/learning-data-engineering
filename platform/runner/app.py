@@ -316,20 +316,39 @@ _SERVICES = [
     {"name": "Redpanda Console", "port": 8082, "creds": None,
      "desc": "Watch events flow across Kafka topics in real time as your producers run.",
      "used": "Sprint 10 · Streaming Data"},
+    {"name": "BI Dashboard & Builder", "port": 8083, "creds": None,
+     "desc": "Build your own dashboards — write a read-only query, chart it with Plotly, "
+             "and assemble a dashboard over the live warehouse.",
+     "used": "Sprint 12 · Unified Dashboards"},
 ]
 
 # Paid/cloud services the curriculum teaches — simulated locally so nobody needs
-# an account or a credit card. Each links to the levels where you use it.
+# an account or a credit card. Each carries pointers to the REAL platform (a free
+# tier / sandbox + official docs) so students can go learn the actual service.
 _SIMULATED = [
     {"name": "BigQuery", "vendor": "Google Cloud",
-     "desc": "Serverless warehouse & pay-per-byte cost model — simulated as local pyfunc levels.",
-     "sprint": "sprint-cloud", "used": "Sprint 6 · scan-cost, partition-prune"},
+     "desc": "Serverless warehouse with a pay-per-byte cost model. You learn the mental "
+             "model — price a query by bytes scanned, prune partitions to scan less — "
+             "as local pyfunc levels.",
+     "sprint": "sprint-cloud", "used": "Sprint 6 · scan-cost, partition-prune",
+     "free": "BigQuery Sandbox — free, no credit card, 1 TB of queries/month.",
+     "try": "https://console.cloud.google.com/bigquery",
+     "docs": "https://cloud.google.com/bigquery/docs"},
     {"name": "Databricks / Delta Lake", "vendor": "Databricks",
-     "desc": "Lakehouse: medallion refinement, MERGE upserts, time travel — simulated locally.",
-     "sprint": "sprint-cloud", "used": "Sprint 6 · medallion-silver, delta-merge, time-travel"},
-    {"name": "Cloud Job API", "vendor": "AWS/GCP/Azure",
-     "desc": "Submit/poll remote batch jobs with timeouts and retries — simulated locally.",
-     "sprint": "sprint-5-hybrid-cloud", "used": "Sprint 7 · Hybrid Pipelines"},
+     "desc": "The lakehouse: bronze→silver→gold medallion refinement, ACID MERGE upserts, "
+             "and time travel. Taught locally against the same Delta concepts and APIs.",
+     "sprint": "sprint-cloud", "used": "Sprint 6 · medallion-silver, delta-merge, time-travel",
+     "free": "Databricks Community Edition is free; Delta Lake itself is open source.",
+     "try": "https://www.databricks.com/try-databricks",
+     "docs": "https://docs.delta.io/latest/index.html"},
+    {"name": "Cloud Job API", "vendor": "AWS · GCP · Azure",
+     "desc": "Submit a batch job to a remote service, poll it to a terminal state with "
+             "timeouts and retries, gate downstream work on success. The pattern behind "
+             "AWS Batch, Dataflow, and Databricks Jobs.",
+     "sprint": "sprint-5-hybrid-cloud", "used": "Sprint 7 · Hybrid Pipelines",
+     "free": "AWS/GCP/Azure free tiers cover small batch workloads to practice on.",
+     "try": "https://aws.amazon.com/batch/",
+     "docs": "https://docs.aws.amazon.com/batch/latest/userguide/what-is-batch.html"},
 ]
 
 
@@ -769,6 +788,12 @@ code{font-family:'SF Mono',ui-monospace,Menlo,monospace;}
   border:1px solid var(--line); border-radius:7px; padding:3px 11px; text-decoration:none!important;}
 .svc-open:hover{background:var(--panel-2); border-color:var(--accent-h);}
 .svc-here{margin-left:auto; font-size:.7rem; font-weight:600; color:var(--green-ink);}
+.sim-free{font-size:.78rem; color:var(--ink); background:var(--amber-soft); border:1px solid var(--line);
+  border-radius:8px; padding:7px 10px; margin:2px 0 10px; line-height:1.45;}
+.chip.chip-link{text-decoration:none!important; color:var(--muted)!important;}
+.chip.chip-link:hover{border-color:var(--accent-h); color:var(--ink)!important;}
+.svc-foot .svc-open{margin-left:0;}
+.svc-foot{gap:7px;}
 </style>
 """
 
@@ -1072,16 +1097,22 @@ def _render_services() -> None:
     st.markdown('<div class="phase-head"><span class="phase-title">Cloud services — simulated</span>'
                 '<span class="phase-rule"></span></div>'
                 '<div class="phase-intro">Paid cloud tools are taught as faithful local simulations — '
-                'the concepts and APIs, none of the accounts or bills. Open one to jump to its '
-                'levels.</div>', unsafe_allow_html=True)
+                'the concepts and APIs, none of the accounts or bills. Each card links to the levels '
+                'where you practice it here, <em>and</em> to a free tier + docs so you can go learn the '
+                'real platform.</div>', unsafe_allow_html=True)
     cards = []
     for s in _SIMULATED:
         cards.append(
-            f'<a class="scard" href="?v=sprint&amp;s={s["sprint"]}" target="_self">'
-            f'<div class="scard-role"><span class="dot d-wip"></span>{s["vendor"]} · simulated</div>'
+            f'<div class="scard">'
+            f'<div class="scard-role"><span class="dot d-wip"></span>{s["vendor"]} · simulated locally</div>'
             f'<div class="scard-name">{s["name"]}</div>'
             f'<div class="scard-focus">{s["desc"]}</div>'
-            f'<div class="svc-foot"><span class="chip">{s["used"]}</span></div></a>')
+            f'<div class="sim-free">🎓 Learn the real thing: {s["free"]}</div>'
+            f'<div class="svc-foot">'
+            f'<a class="chip chip-link" href="?v=sprint&amp;s={s["sprint"]}" target="_self">{s["used"]}</a>'
+            f'<a class="svc-open" href="{s["try"]}" target="_blank" rel="noopener">Try it free ↗</a>'
+            f'<a class="svc-open" href="{s["docs"]}" target="_blank" rel="noopener">Docs ↗</a>'
+            f'</div></div>')
     st.markdown(f'<div class="sc-grid">{"".join(cards)}</div>', unsafe_allow_html=True)
 
 

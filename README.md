@@ -68,6 +68,7 @@ opens the **learning app** at http://localhost:8501. The platform's services:
 | **Airflow** | http://localhost:8080 | `admin` / `admin` |
 | **PGAdmin** | http://localhost:8081 | `admin@datamart.com` / `admin` |
 | **Redpanda Console** | http://localhost:8082 | - |
+| **BI Dashboard & Builder** (Streamlit + Plotly) | http://localhost:8083 | - |
 
 The learning app on 8501 is the host-run lesson-runner (or the single study
 container); the other three are the Docker Compose stack. One port, one app — no
