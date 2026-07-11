@@ -1,0 +1,13 @@
+title: "Production: error rate"
+order: 7
+submission_path: submissions/production/error_rate.py
+scaffold: scaffold/error_rate.py
+solution: solution/error_rate.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: computes the failure percentage
+    entry: error_rate
+    args: [200, 10]
+    expect: 5.0

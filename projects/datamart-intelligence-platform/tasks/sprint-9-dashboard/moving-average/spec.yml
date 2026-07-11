@@ -1,0 +1,15 @@
+title: "Dashboard: smooth a line with a moving average"
+order: 8
+submission_path: submissions/dashboard/moving_average.py
+scaffold: scaffold/moving_average.py
+solution: solution/moving_average.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: computes a trailing moving average
+    entry: moving_average
+    args:
+      - [10, 20, 30, 40]
+      - 2
+    expect: [10.0, 15.0, 25.0, 35.0]

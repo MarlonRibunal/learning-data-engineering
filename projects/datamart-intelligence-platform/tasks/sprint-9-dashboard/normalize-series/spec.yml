@@ -1,0 +1,14 @@
+title: "Dashboard: normalize a series for a sparkline"
+order: 7
+submission_path: submissions/dashboard/normalize_series.py
+scaffold: scaffold/normalize_series.py
+solution: solution/normalize_series.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: min-max scales the values to 0..1
+    entry: normalize_series
+    args:
+      - [10, 20, 30]
+    expect: [0.0, 0.5, 1.0]

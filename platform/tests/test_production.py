@@ -20,6 +20,8 @@ ALL_TASKS = [
     ("retry-plan", "retry_plan.py"),
     ("partition-path", "partition_path.py"),
     ("circuit-breaker", "circuit.py"),
+    ("error-rate", "error_rate.py"),
+    ("sla-check", "sla_check.py"),
 ]
 
 

@@ -1,0 +1,14 @@
+title: "Hybrid cloud: overall status of parallel jobs"
+order: 5
+submission_path: submissions/hybrid/overall_status.py
+scaffold: scaffold/overall_status.py
+solution: solution/overall_status.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: rolls up parallel job states
+    entry: overall_status
+    args:
+      - [SUCCESS, RUNNING, SUCCESS]
+    expect: RUNNING

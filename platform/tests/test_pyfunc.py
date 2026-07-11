@@ -22,6 +22,8 @@ ALL_TASKS = [
     ("pct-change", "pct_change.py"),
     ("running-total", "running_total.py"),
     ("threshold-status", "health_status.py"),
+    ("normalize-series", "normalize_series.py"),
+    ("moving-average", "moving_average.py"),
 ]
 
 

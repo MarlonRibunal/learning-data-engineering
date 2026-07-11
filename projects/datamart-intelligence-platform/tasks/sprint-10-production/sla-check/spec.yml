@@ -1,0 +1,13 @@
+title: "Production: did we meet the latency SLA"
+order: 8
+submission_path: submissions/production/sla_check.py
+scaffold: scaffold/sla_check.py
+solution: solution/sla_check.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: passes only when actual is within target
+    entry: sla_met
+    args: [120, 200]
+    expect: true
