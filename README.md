@@ -374,7 +374,9 @@ We're building the most comprehensive open-source data engineering learning plat
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **GNU Affero General Public License v3.0 (AGPLv3)**, and AGPLv3 is its **sole license** — see the [LICENSE](LICENSE) file for the full text.
+
+If you run a modified version of this software as a network service, AGPLv3 requires you to make your modified source available to its users.
 
 ## 🙏 Acknowledgments
 
