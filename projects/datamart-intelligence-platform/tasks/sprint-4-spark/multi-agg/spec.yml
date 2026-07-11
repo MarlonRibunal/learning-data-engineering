@@ -1,0 +1,21 @@
+title: "Spark: several aggregates at once"
+order: 7
+submission_path: submissions/spark/multi_agg.py
+scaffold: scaffold/transform.py
+solution: solution/transform.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: spark
+    name: count, sum and average per category
+    entry: transform
+    inputs:
+      orders:
+        - {order_id: 1, customer_id: 10, category: Electronics, amount: 100}
+        - {order_id: 2, customer_id: 11, category: Books, amount: 20}
+        - {order_id: 3, customer_id: 10, category: Electronics, amount: 40}
+        - {order_id: 4, customer_id: 12, category: Home, amount: 60}
+    expect:
+      - {category: Electronics, order_count: 2, revenue: 140, avg_amount: 70.0}
+      - {category: Books, order_count: 1, revenue: 20, avg_amount: 20.0}
+      - {category: Home, order_count: 1, revenue: 60, avg_amount: 60.0}
