@@ -1,0 +1,15 @@
+title: "Migration: reconcile before and after"
+order: 3
+submission_path: submissions/migration/reconcile.py
+scaffold: scaffold/reconcile.py
+solution: solution/reconcile.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: reports tables that lost or gained rows
+    entry: reconcile
+    args:
+      - {orders: 100, users: 50}
+      - {orders: 100, users: 48}
+    expect: {users: -2}

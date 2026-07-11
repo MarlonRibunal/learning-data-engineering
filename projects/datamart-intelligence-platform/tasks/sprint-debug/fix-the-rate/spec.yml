@@ -1,0 +1,13 @@
+title: "Debug: conversion rate reads 0.1%"
+order: 3
+submission_path: submissions/debug/conversion_rate.py
+scaffold: scaffold/conversion_rate.py
+solution: solution/conversion_rate.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: returns a real percentage
+    entry: conversion_rate
+    args: [25, 200]
+    expect: 12.5

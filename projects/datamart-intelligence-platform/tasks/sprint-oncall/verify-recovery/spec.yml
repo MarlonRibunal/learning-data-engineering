@@ -1,0 +1,15 @@
+title: "On-call: verify the recovery"
+order: 4
+submission_path: submissions/oncall/verify.py
+scaffold: scaffold/verify.py
+solution: solution/verify.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: reports which tables still don't reconcile
+    entry: unrecovered
+    args:
+      - {orders: 100, users: 50}
+      - {orders: 100, users: 48}
+    expect: [users]

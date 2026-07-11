@@ -1,0 +1,16 @@
+title: "On-call: find the root-cause job"
+order: 2
+submission_path: submissions/oncall/root_cause.py
+scaffold: scaffold/root_cause.py
+solution: solution/root_cause.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: identifies the first failed job
+    entry: first_failure
+    args:
+      - - {job: extract, status: success}
+        - {job: transform, status: failed}
+        - {job: load, status: failed}
+    expect: transform
