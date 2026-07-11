@@ -1,0 +1,19 @@
+title: "Lakehouse: bronze to silver"
+order: 3
+submission_path: submissions/cloud/to_silver.py
+scaffold: scaffold/to_silver.py
+solution: solution/to_silver.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: cleans bronze into silver
+    entry: to_silver
+    args:
+      - - {id: 1, value: a}
+        - {id: 1, value: b}
+        - {id: 2, value: null}
+        - {id: 3, value: c}
+    expect:
+      - {id: 1, value: b}
+      - {id: 3, value: c}

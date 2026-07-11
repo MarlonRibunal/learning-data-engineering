@@ -63,7 +63,7 @@ def _read_order(spec_file: Path) -> int:
 # Curriculum order: fundamentals, then the lifecycle sprints, capstone last.
 _SPRINT_ORDER = ["sql-fundamentals", "ingestion", "sprint-2-dbt",
                  "data-quality", "sprint-3-airflow", "sprint-4-spark",
-                 "sprint-5-hybrid-cloud", "serving", "streaming",
+                 "sprint-cloud", "sprint-5-hybrid-cloud", "serving", "streaming",
                  "sprint-8-realtime", "sprint-9-dashboard",
                  "security", "architecture", "sprint-10-production",
                  "sprint-oncall", "sprint-debug", "sprint-migration",

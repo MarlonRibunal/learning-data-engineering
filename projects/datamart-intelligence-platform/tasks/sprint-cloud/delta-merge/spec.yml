@@ -1,0 +1,21 @@
+title: "Lakehouse: MERGE (upsert)"
+order: 4
+submission_path: submissions/cloud/delta_merge.py
+scaffold: scaffold/delta_merge.py
+solution: solution/delta_merge.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: updates matches and inserts new rows
+    entry: merge
+    args:
+      - - {id: 1, v: a}
+        - {id: 2, v: b}
+      - - {id: 2, v: B}
+        - {id: 3, v: c}
+      - id
+    expect:
+      - {id: 1, v: a}
+      - {id: 2, v: B}
+      - {id: 3, v: c}

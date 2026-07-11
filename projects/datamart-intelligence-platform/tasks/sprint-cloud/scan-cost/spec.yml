@@ -1,0 +1,13 @@
+title: "Cloud: what a query costs"
+order: 1
+submission_path: submissions/cloud/scan_cost.py
+scaffold: scaffold/scan_cost.py
+solution: solution/scan_cost.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: prices a query by bytes scanned
+    entry: scan_cost
+    args: [2000000000000, 5.0]
+    expect: 10.0

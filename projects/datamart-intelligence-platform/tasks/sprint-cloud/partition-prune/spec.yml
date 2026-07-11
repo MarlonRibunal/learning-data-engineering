@@ -1,0 +1,16 @@
+title: "Cloud: partition pruning"
+order: 2
+submission_path: submissions/cloud/partition_prune.py
+scaffold: scaffold/partition_prune.py
+solution: solution/partition_prune.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: scans only the partitions in range
+    entry: pruned
+    args:
+      - ["2026-03-01", "2026-03-02", "2026-03-03", "2026-03-04"]
+      - "2026-03-02"
+      - "2026-03-03"
+    expect: ["2026-03-02", "2026-03-03"]

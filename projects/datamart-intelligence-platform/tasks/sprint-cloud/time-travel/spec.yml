@@ -1,0 +1,17 @@
+title: "Lakehouse: time travel"
+order: 5
+submission_path: submissions/cloud/time_travel.py
+scaffold: scaffold/time_travel.py
+solution: solution/time_travel.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: reads the table as of a past version
+    entry: snapshot_at
+    args:
+      - - [1]
+        - [1, 2]
+        - [1, 2, 3]
+      - 1
+    expect: [1, 2]
