@@ -49,4 +49,9 @@ ENV POSTGRES_HOST=127.0.0.1 \
 VOLUME ["/app/state"]
 EXPOSE 8501
 
+# Report healthy once the app is actually serving (allow time for first-boot
+# Postgres init). Uses Streamlit's built-in health endpoint; no extra tooling.
+HEALTHCHECK --interval=15s --timeout=5s --start-period=45s --retries=5 \
+    CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8501/_stcore/health', timeout=3).status==200 else 1)"
+
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
