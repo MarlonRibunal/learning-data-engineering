@@ -56,17 +56,22 @@ We've built the platform we wish existed when we started our data engineering jo
 ```bash
 git clone https://github.com/marlonribunal/learning-data-engineering.git
 cd learning-data-engineering
-./bootstrap.sh
+./platform.sh          # ./bootstrap.sh is an alias for the same command
 ```
 
-**That's it!** Your complete data engineering environment automatically builds and will be ready at:
+**That's it!** This sets up the Python env, brings the full Docker stack up, and
+opens the **learning app** at http://localhost:8501. The platform's services:
 
 | Service | URL | Credentials |
 |---------|-----|-------------|
+| **Learning app** (lesson-runner) | http://localhost:8501 | - |
 | **Airflow** | http://localhost:8080 | `admin` / `admin` |
-| **Streamlit (learning app)** | http://localhost:8501 | - |
 | **PGAdmin** | http://localhost:8081 | `admin@datamart.com` / `admin` |
 | **Redpanda Console** | http://localhost:8082 | - |
+
+The learning app on 8501 is the host-run lesson-runner (or the single study
+container); the other three are the Docker Compose stack. One port, one app — no
+more placeholder dashboard on 8501.
 
 These run as a **Docker Compose** stack — the full platform. Inside the learning
 app, the **Platform** page surfaces every service with a live-status link so you
@@ -87,15 +92,14 @@ are **simulated locally** — no accounts, no bills.
 
 ## Start Here — Learn by Doing (60 seconds)
 
-`./bootstrap.sh` above just starts the raw infrastructure. To actually **learn by
-doing** — get real exercises that the platform grades against the live stack — use
-the learning platform:
+`./platform.sh` (the same command as `./bootstrap.sh` above) is the whole learning
+platform in one shot:
 
 ```bash
 ./platform.sh
 ```
 
-One command: it creates a Python virtualenv, installs the platform, brings the data
+It creates a Python virtualenv, installs the platform, brings the data
 stack up (waits until it's ready), and opens the interactive lesson-runner at
 **http://localhost:8501**. Pick a task, write real SQL / dbt / Airflow, and hit
 **Check my work** — the grader runs your work against the real Postgres, dbt, and
