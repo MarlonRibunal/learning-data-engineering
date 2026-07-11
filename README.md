@@ -109,8 +109,8 @@ Want it *ready whenever you feel like studying*, with zero local setup and your
 progress saved between sessions? Build the self-contained study image once and run it:
 
 ```bash
-docker build -t learn-de .
-docker run -d -p 8501:8501 -v learn-de-state:/app/state --name learn-de learn-de
+docker build -t learn-data-engineering .
+docker run -d -p 8501:8501 -v learn-data-engineering-state:/app/state --name learn-data-engineering learn-data-engineering
 # open http://localhost:8501
 ```
 
@@ -121,12 +121,12 @@ inside the container. No `docker compose`, no venv.
 
 **Your progress persists.** Everything that matters — the levels you've cleared
 (`.progress.json`), your submitted code (`submissions/`), and the warehouse data —
-lives on the `learn-de-state` **named volume**. Stop the container, reboot your
+lives on the `learn-data-engineering-state` **named volume**. Stop the container, reboot your
 laptop, come back next week — the levels you finished stay finished:
 
 ```bash
-docker stop learn-de     # done for now — progress is safe on the volume
-docker start learn-de    # pick up exactly where you left off
+docker stop learn-data-engineering     # done for now — progress is safe on the volume
+docker start learn-data-engineering    # pick up exactly where you left off
 ```
 
 A handful of tool-specific levels (a real dbt build, live Airflow DAGs, the

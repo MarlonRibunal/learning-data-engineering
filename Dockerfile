@@ -9,8 +9,8 @@
 # /app/state, which is a named volume — so nothing is lost when the container
 # stops. Build once, study anytime:
 #
-#   docker build -t learn-de .
-#   docker run -d -p 8501:8501 -v learn-de-state:/app/state --name learn-de learn-de
+#   docker build -t learn-data-engineering .
+#   docker run -d -p 8501:8501 -v learn-data-engineering-state:/app/state --name learn-data-engineering learn-data-engineering
 #   open http://localhost:8501
 #
 # A few tool-specific tasks (real dbt build, live Airflow DAGs, the Redpanda
