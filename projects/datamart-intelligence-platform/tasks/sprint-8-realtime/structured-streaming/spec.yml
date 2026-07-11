@@ -20,3 +20,19 @@ checks:
       - {window_start: "2026-01-01 09:00:00", count: 2}
       - {window_start: "2026-01-01 09:10:00", count: 2}
       - {window_start: "2026-01-01 09:20:00", count: 1}
+    hints:
+      - >-
+        Two things are off in the scaffold's streaming aggregation: the window is
+        the wrong size for these expected buckets, and a real stream needs a
+        bound on how long to wait for late events. What tells Spark when a window
+        is safe to finalize?
+      - >-
+        Widen the window to <code>F.window("ts", "10 minutes")</code>, and before
+        grouping add a watermark:
+        <code>.withWatermark("ts", "10 minutes")</code> so late data past the
+        threshold is dropped and state can be released.
+      - >-
+        After casting <code>ts</code>, chain
+        <code>.withWatermark("ts", "10 minutes").groupBy(F.window("ts", "10 minutes")).count()</code>,
+        then select <code>window.start</code> as <code>window_start</code>. The
+        09:03 and 09:07 events land in the 09:00 window for <code>count: 2</code>.

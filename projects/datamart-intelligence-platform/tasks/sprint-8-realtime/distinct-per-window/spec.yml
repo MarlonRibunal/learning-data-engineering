@@ -20,3 +20,17 @@ checks:
       - {window_start: "2026-01-01 09:00:00", categories: 2}
       - {window_start: "2026-01-01 09:10:00", categories: 1}
       - {window_start: "2026-01-01 09:20:00", categories: 1}
+    hints:
+      - >-
+        You're counting <em>how many different</em> categories appear per
+        window, not how many events. A plain count would report total rows —
+        what counts only the unique <code>category</code> values?
+      - >-
+        Inside <code>.agg(...)</code>, use
+        <code>F.countDistinct("category").alias("categories")</code> after
+        grouping by <code>F.window("ts", "10 minutes")</code>.
+      - >-
+        Group by <code>F.window("ts", "10 minutes")</code>, then
+        <code>.agg(F.countDistinct("category").alias("categories"))</code> and
+        select <code>window.start</code> as <code>window_start</code>. The 09:00
+        window sees both A and B, so <code>categories: 2</code>.

@@ -26,6 +26,19 @@ checks:
       - {ts: "2026-01-01 09:12:00", category: A, amount: 30}
       - {ts: "2026-01-01 09:18:00", category: A, amount: 5}
       - {ts: "2026-01-01 09:25:00", category: B, amount: 15}
+    hints:
+      - >-
+        The input carries a bogus event at 09:26 with an <code>amount</code> of
+        -99, but the expected output has five rows, not six. Which events should
+        a cleaning stage refuse to let through?
+      - >-
+        Filter out non-positive amounts before anything downstream sees them:
+        the predicate is <code>F.col("amount") &gt; 0</code>. Keep only the
+        <code>ts</code>, <code>category</code> and <code>amount</code> columns.
+      - >-
+        <code>events.filter(F.col("amount") &gt; 0).select("ts", "category", "amount")</code>
+        drops the 09:26 row with amount -99 and leaves exactly the five valid
+        events.
   - type: spark
     name: "stage 2 — windowed revenue"
     entry: windowed_revenue
@@ -40,6 +53,19 @@ checks:
       - {window_start: "2026-01-01 09:00:00", revenue: 30}
       - {window_start: "2026-01-01 09:10:00", revenue: 35}
       - {window_start: "2026-01-01 09:20:00", revenue: 15}
+    hints:
+      - >-
+        The expected buckets begin at 09:00, 09:10 and 09:20 — ten minutes
+        apart. What window duration over the event-time <code>ts</code> produces
+        those boundaries, and what do you sum inside each bucket?
+      - >-
+        Cast <code>ts</code> to a timestamp, then group by a 10-minute
+        event-time window: <code>F.window("ts", "10 minutes")</code>, summing
+        <code>amount</code> per bucket.
+      - >-
+        <code>.groupBy(F.window("ts", "10 minutes")).agg(F.sum("amount").alias("revenue"))</code>,
+        then select <code>window.start</code> as <code>window_start</code>. That
+        gives 09:00 → 30, 09:10 → 35, 09:20 → 15.
   - type: spark
     name: "stage 3 — busiest-window alert"
     entry: busiest_window
@@ -52,6 +78,19 @@ checks:
         - {ts: "2026-01-01 09:25:00", category: B, amount: 15}
     expect:
       - {window_start: "2026-01-01 09:10:00", revenue: 35}
+    hints:
+      - >-
+        This stage is the alert — it should return the <em>single</em> busiest
+        window (09:10 at 35), not every window. Once you have per-window
+        revenue, how do you isolate just the largest?
+      - >-
+        Order the per-window revenues descending and take only the top row:
+        <code>.orderBy(F.col("revenue").desc())</code> then
+        <code>.limit(1)</code>.
+      - >-
+        After the 10-minute windowed <code>F.sum("amount").alias("revenue")</code>,
+        chain <code>.orderBy(F.col("revenue").desc()).limit(1)</code>. The result
+        is 09:10 → 35.
 
 # On pass, emit a portfolio artifact (chart omitted — this pipeline runs on
 # Spark, not the warehouse; the PORTFOLIO.md still captures the build + checks).

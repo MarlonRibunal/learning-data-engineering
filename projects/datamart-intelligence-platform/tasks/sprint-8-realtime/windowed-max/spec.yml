@@ -20,3 +20,17 @@ checks:
       - {window_start: "2026-01-01 09:00:00", max_amount: 20}
       - {window_start: "2026-01-01 09:10:00", max_amount: 30}
       - {window_start: "2026-01-01 09:20:00", max_amount: 15}
+    hints:
+      - >-
+        The biggest order per window isn't a sum or a count — it's the single
+        largest <code>amount</code> in each bucket. Which aggregate returns the
+        maximum value of a column?
+      - >-
+        Inside <code>.agg(...)</code>, use
+        <code>F.max("amount").alias("max_amount")</code> after grouping by
+        <code>F.window("ts", "10 minutes")</code>.
+      - >-
+        Use
+        <code>.agg(F.max("amount").alias("max_amount"))</code> and select
+        <code>window.start</code> as <code>window_start</code>. The 09:00 window
+        holds amounts 10 and 20, so <code>max_amount: 20</code>.

@@ -19,3 +19,17 @@ checks:
       - {category: Electronics, order_count: 2, revenue: 140, avg_amount: 70.0}
       - {category: Books, order_count: 1, revenue: 20, avg_amount: 20.0}
       - {category: Home, order_count: 1, revenue: 60, avg_amount: 60.0}
+    hints:
+      - >-
+        One <code>category</code> should yield three numbers at once: a row
+        count, a revenue total, and an average amount. Can a single
+        <code>.agg(...)</code> hold more than one expression?
+      - >-
+        <code>.agg(...)</code> takes several comma-separated expressions, each
+        with its own <code>.alias(...)</code>. Use <code>F.count("*")</code>,
+        <code>F.sum("amount")</code>, and <code>F.avg("amount")</code> — wrap the
+        average in <code>F.round(..., 2)</code> to match <code>70.0</code>.
+      - >-
+        Put it together:
+        <code>orders.groupBy("category").agg(F.count("*").alias("order_count"), F.sum("amount").alias("revenue"), F.round(F.avg("amount"), 2).alias("avg_amount"))</code>.
+        Electronics gives 2, 140, 70.0.

@@ -44,6 +44,36 @@ def test_scan_cost_ships_a_full_hint_ladder():
     assert "10.0" not in hints[0]
 
 
+TASKS = REPO / "projects/datamart-intelligence-platform/tasks"
+# Sprints whose rungs are high-friction enough that every one ships a hint
+# ladder. Guards against a new rung landing here without one.
+HINTED_SPRINTS = ["sprint-4-spark", "sprint-8-realtime", "streaming"]
+LOGIC_TYPES = {"spark", "spark_streaming", "redpanda", "pyfunc"}
+
+
+def _hinted_specs():
+    specs = []
+    for sprint in HINTED_SPRINTS:
+        specs += sorted((TASKS / sprint).glob("*/spec.yml"))
+    specs += [
+        TASKS / "capstone/stateful-streaming/spec.yml",
+        TASKS / "capstone/realtime-monitor/spec.yml",
+    ]
+    return specs
+
+
+@pytest.mark.parametrize("spec_file", _hinted_specs(), ids=lambda p: f"{p.parent.parent.name}/{p.parent.name}")
+def test_spark_and_streaming_rungs_ship_a_hint_ladder(spec_file):
+    spec = yaml.safe_load(spec_file.read_text())
+    logic = [c for c in spec["checks"] if c["type"] in LOGIC_TYPES]
+    assert logic, f"{spec_file} has no logic check"
+    # Every logic check (capstones have several) must carry a full 3-step ladder.
+    for check in logic:
+        hints = check.get("hints")
+        assert hints and len(hints) == 3, f"{spec_file}: '{check.get('name')}' lacks a 3-hint ladder"
+        assert all(isinstance(h, str) and h.strip() for h in hints)
+
+
 def test_hint_selection_matches_the_failing_check():
     st = pytest.importorskip("streamlit")  # noqa: F841 - runner imports streamlit
     import sys

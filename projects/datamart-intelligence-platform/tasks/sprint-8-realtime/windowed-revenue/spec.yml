@@ -20,3 +20,19 @@ checks:
       - {window_start: "2026-01-01 09:00:00", revenue: 30}
       - {window_start: "2026-01-01 09:10:00", revenue: 35}
       - {window_start: "2026-01-01 09:20:00", revenue: 15}
+    hints:
+      - >-
+        Counting rows isn't the same as adding up money. You want the total
+        <code>amount</code> inside each 10-minute bucket. Which aggregation
+        turns many rows into one summed total?
+      - >-
+        After casting <code>ts</code> and grouping by
+        <code>F.window("ts", "10 minutes")</code>, aggregate with
+        <code>F.sum("amount").alias("revenue")</code> inside an
+        <code>.agg(...)</code> call.
+      - >-
+        Use
+        <code>.agg(F.sum("amount").alias("revenue"))</code>, then select
+        <code>F.col("window.start").cast("string").alias("window_start")</code>
+        and <code>revenue</code>. The 09:00 window sums 10 + 20 =
+        <code>revenue: 30</code>.

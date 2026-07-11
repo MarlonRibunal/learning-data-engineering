@@ -24,3 +24,16 @@ checks:
       - {order_id: 2, name: Ben, amount: 20}
       - {order_id: 3, name: Ana, amount: 40}
       - {order_id: 4, name: Cy, amount: 60}
+    hints:
+      - >-
+        Each order carries a <code>customer_id</code> but not the customer's
+        <code>name</code> — that lives in the <code>customers</code> frame. What
+        column do the two frames share that you can match on?
+      - >-
+        Join the two DataFrames on their shared key with
+        <code>orders.join(customers, on="customer_id")</code>, then use
+        <code>.select(...)</code> to keep just the columns you want.
+      - >-
+        Put it together:
+        <code>orders.join(customers, on="customer_id").select("order_id", "name", "amount")</code>.
+        Order 1 matches customer 10 → <code>Ana</code>, order 4 → <code>Cy</code>.

@@ -15,3 +15,18 @@ checks:
         - {customer_id: 14}
       - 4
     expect: [2, 3, 2]
+    hints:
+      - >-
+        Every event from the same customer must stay on <em>one</em> partition,
+        so the partition has to come from the <code>customer_id</code>, not the
+        event's position in the list. And you return one partition per event —
+        how do you map each customer into the partition range?
+      - >-
+        For each event, pull <code>event["customer_id"]</code> and take it modulo
+        the partition count, <code>customer_id % num_partitions</code>, which
+        keeps a given customer on the same partition every time.
+      - >-
+        Return a list comprehension:
+        <code>[event["customer_id"] % num_partitions for event in events]</code>.
+        For customers <code>10, 11, 14</code> over <code>4</code> partitions that's
+        <code>[2, 3, 2]</code>.

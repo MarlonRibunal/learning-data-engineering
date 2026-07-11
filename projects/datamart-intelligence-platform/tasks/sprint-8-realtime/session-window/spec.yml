@@ -20,3 +20,19 @@ checks:
       - {session_start: "2026-01-01 09:03:00", count: 3}
       - {session_start: "2026-01-01 09:18:00", count: 1}
       - {session_start: "2026-01-01 09:25:00", count: 1}
+    hints:
+      - >-
+        Sessions aren't fixed clock buckets — they grow as long as events keep
+        arriving and close after a gap of inactivity. Which window function
+        opens and closes on <em>gaps</em> instead of a fixed grid?
+      - >-
+        Use <code>F.session_window("ts", "5 minutes")</code>: it keeps a session
+        alive while events are within 5 minutes of each other. Its start/end live
+        under <code>session_window</code>, not <code>window</code>.
+      - >-
+        Group by
+        <code>F.session_window("ts", "5 minutes")</code>, call
+        <code>.count()</code>, then select
+        <code>F.col("session_window.start").cast("string").alias("session_start")</code>
+        and <code>count</code>. The 09:03, 09:07, and 09:12 events are each
+        within 5 minutes, forming one session of <code>count: 3</code>.

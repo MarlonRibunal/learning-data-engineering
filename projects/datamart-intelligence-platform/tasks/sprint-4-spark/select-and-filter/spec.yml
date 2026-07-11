@@ -18,3 +18,17 @@ checks:
     expect:
       - {order_id: 1, amount: 100}
       - {order_id: 4, amount: 60}
+    hints:
+      - >-
+        You need two things here: only the orders whose <code>amount</code> is
+        at least 50, and only the <code>order_id</code> and <code>amount</code>
+        columns. Are you both <em>filtering rows</em> and <em>narrowing
+        columns</em>?
+      - >-
+        <code>.filter(...)</code> keeps rows that match a condition, while
+        <code>.select(...)</code> picks which columns survive. Write the
+        condition against a column, e.g. <code>orders.amount >= 50</code>.
+      - >-
+        Put it together:
+        <code>orders.filter(orders.amount >= 50).select("order_id", "amount")</code>.
+        Only orders 1 (100) and 4 (60) clear the threshold; 20 and 40 drop out.

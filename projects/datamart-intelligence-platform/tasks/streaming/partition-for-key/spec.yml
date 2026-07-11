@@ -11,3 +11,15 @@ checks:
     entry: partition_for
     args: [105, 4]
     expect: 1
+    hints:
+      - >-
+        A given key must always land on the <em>same</em> partition, and the
+        index has to stay inside <code>0..num_partitions-1</code>. What single
+        operation maps any integer deterministically into that fixed range?
+      - >-
+        Kafka picks a partition by taking the key modulo the partition count. The
+        modulo operator, <code>key % num_partitions</code>, always yields a value
+        in <code>0..num_partitions-1</code> and is fully deterministic.
+      - >-
+        Return <code>key % num_partitions</code>. For key <code>105</code> across
+        <code>4</code> partitions that's <code>105 % 4 = 1</code>.

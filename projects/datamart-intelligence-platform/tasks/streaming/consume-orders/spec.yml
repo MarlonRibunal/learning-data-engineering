@@ -9,3 +9,18 @@ checks:
   - type: redpanda
     name: you read all the events back
     mode: consume
+    hints:
+      - >-
+        You need <em>every</em> event already sitting on the topic, but a fresh
+        consumer starts at the <em>end</em> of the log by default — it won't see
+        messages produced before it joined. Where should it start reading?
+      - >-
+        Build a <code>KafkaConsumer(topic, ...)</code> with
+        <code>auto_offset_reset="earliest"</code> so it reads from the beginning,
+        plus a <code>value_deserializer</code> that parses the JSON bytes back
+        into a dict, e.g. <code>value_deserializer=lambda b: json.loads(b)</code>.
+      - >-
+        Iterate the consumer and collect each record's value:
+        <code>messages = [record.value for record in consumer]</code>. Give it a
+        <code>consumer_timeout_ms</code> (e.g. <code>6000</code>) so the loop ends
+        once the topic is drained, then return the list.

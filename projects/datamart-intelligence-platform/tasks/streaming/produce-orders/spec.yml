@@ -9,3 +9,19 @@ checks:
   - type: redpanda
     name: your events reach the topic
     mode: produce
+    hints:
+      - >-
+        You looped over <code>events</code> and sent them, but did the grader
+        ever actually see them? A <code>KafkaProducer</code> buffers sends in the
+        background — the loop can finish before a single message leaves your
+        process. What has to happen before <code>produce()</code> returns?
+      - >-
+        Build the producer with a <code>value_serializer</code> that turns each
+        dict into JSON bytes, e.g.
+        <code>value_serializer=lambda v: json.dumps(v).encode()</code>, then send
+        inside the loop with <code>producer.send(topic, event)</code>. Without
+        serialization the bytes never make it onto <code>topic</code> cleanly.
+      - >-
+        After sending every event, call <code>producer.flush()</code> to force
+        the buffered messages out to <code>topic</code> before returning —
+        <em>without it the grader consumes an empty topic</em>.
