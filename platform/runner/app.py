@@ -289,6 +289,44 @@ _CSS = """
   --r:12px; --r-sm:8px;
   --sh:0 1px 2px rgba(20,21,26,.04), 0 1px 3px rgba(20,21,26,.05);
 }
+/* Dark mode — follow the viewer's OS. The palette is monochrome, so this is a
+   token flip: dark surfaces, light ink, colour reserved for status. */
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0f1011; --panel:#17181a; --panel-2:#1d1e21;
+    --line:#282a2f; --line-2:#212327;
+    --ink:#e7e8ea; --muted:#9a9ea6; --faint:#70747c;
+    --accent:#e7e8ea; --accent-h:#c9cbcf; --accent-soft:#282a2f;
+    --green:#4cb782; --green-soft:#16241d; --green-ink:#79d3a2;
+    --amber:#d6a441; --amber-soft:#271f12; --amber-ink:#e2ba6c;
+    --red:#e0575d; --red-soft:#291518; --red-ink:#ef8b90;
+    --sh:0 1px 2px rgba(0,0,0,.3), 0 1px 3px rgba(0,0,0,.28);
+    color-scheme:dark;
+  }
+  .stApp{background:var(--bg);}
+  /* the primary CTA inverts: a light button with dark text (ink flipped) */
+  [data-testid="stBaseButton-primary"]{color:#16171a!important;}
+  [data-testid="stBaseButton-primary"] *{color:#16171a!important;}
+  /* Streamlit paints these from its static light theme — repaint them dark. */
+  [data-testid="stVerticalBlockBorderWrapper"],
+  [data-testid="stExpander"]{background:var(--panel)!important;}
+  [data-testid="stAlert"]{background:var(--panel-2)!important;}
+  [data-testid="stAlert"] *{color:var(--ink)!important;}
+  pre, code, .stCode, [data-testid="stCode"], [data-testid="stCode"] *{
+    background:var(--panel-2)!important;}
+  [data-testid="stCode"] code, [data-testid="stCode"] span{background:transparent!important;}
+  [data-baseweb="textarea"], textarea{background:var(--panel-2)!important; color:var(--ink)!important;}
+  /* Streamlit hard-codes a dark textColor — force our light ink on text nodes
+     (targeted, so button/pill/chip colours are left alone). */
+  [data-testid="stMarkdownContainer"] p, [data-testid="stMarkdownContainer"] li,
+  [data-testid="stMarkdownContainer"] h1, [data-testid="stMarkdownContainer"] h2,
+  [data-testid="stMarkdownContainer"] h3, [data-testid="stMarkdownContainer"] strong,
+  [data-testid="stMarkdownContainer"] em, [data-testid="stMarkdownContainer"] td,
+  [data-testid="stMarkdownContainer"] th, .task-title, .hero-title, .hero-sub,
+  [data-testid="stExpander"] summary, [data-testid="stCaptionContainer"]{
+    color:var(--ink)!important;}
+  [data-testid="stMarkdownContainer"] code, code{color:var(--green-ink)!important;}
+}
 /* Strip the deploy/menu chrome — but keep the toolbar so the collapsed
    sidebar's re-open control stays reachable. */
 header[data-testid="stHeader"]{background:transparent; box-shadow:none;}
