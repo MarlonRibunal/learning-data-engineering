@@ -1,0 +1,13 @@
+title: "Test: order dates are plausible"
+order: 6
+submission_path: submissions/data-quality/plausible_dates.sql
+scaffold: scaffold/plausible_dates.sql
+solution: solution/plausible_dates.sql
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: data_test
+    name: catches an implausible date, ignores real ones
+    clean_seed: projects/datamart-intelligence-platform/seeds/raw_seed.sql
+    dirty_seed: projects/datamart-intelligence-platform/seeds/dq/dirty_future_date.sql
+    hint: "return orders whose order_date is before 2020 or after 2030"

@@ -1,0 +1,24 @@
+title: "Architecture: slowly changing dimension (type 2)"
+order: 3
+submission_path: submissions/architecture/scd_type_2.sql
+scaffold: scaffold/scd_type_2.sql
+solution: solution/scd_type_2.sql
+reseed: projects/datamart-intelligence-platform/seeds/architecture_scd_seed.sql
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: sql_ingest
+    name: history preserved with valid ranges and a current flag
+    asserts:
+      - query: "SELECT COUNT(*)::int FROM analytics.dim_customer_scd"
+        equals: 3
+        hint: "one row per version — history is kept, not overwritten"
+      - query: "SELECT COUNT(*)::int FROM analytics.dim_customer_scd WHERE is_current"
+        equals: 2
+        hint: "exactly one current row per customer (2 customers)"
+      - query: "SELECT customer_name FROM analytics.dim_customer_scd WHERE customer_id = 1 AND is_current"
+        equals: "Ada Lovelace"
+        hint: "customer 1's current row is her latest version"
+      - query: "SELECT valid_to::text FROM analytics.dim_customer_scd WHERE customer_id = 1 AND NOT is_current"
+        equals: "2026-06-01"
+        hint: "the old row's valid_to = the next version's valid_from"

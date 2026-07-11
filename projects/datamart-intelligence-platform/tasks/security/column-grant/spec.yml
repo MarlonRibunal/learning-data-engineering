@@ -1,0 +1,20 @@
+title: "Security: column-level grants"
+order: 3
+submission_path: submissions/security/column_grant.sql
+scaffold: scaffold/column_grant.sql
+solution: solution/column_grant.sql
+reseed: projects/datamart-intelligence-platform/seeds/security_seed.sql
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: sql_ingest
+    name: analyst reads safe columns but not the SSN
+    asserts:
+      - query: "SELECT has_column_privilege('analyst', 'analytics.customer_pii', 'customer_name', 'SELECT')::int"
+        equals: 1
+        hint: "grant column-level SELECT including customer_name"
+      - query: "SELECT has_column_privilege('analyst', 'analytics.customer_pii', 'email', 'SELECT')::int"
+        equals: 1
+      - query: "SELECT has_column_privilege('analyst', 'analytics.customer_pii', 'ssn', 'SELECT')::int"
+        equals: 0
+        hint: "the analyst must NOT read ssn — grant specific COLUMNS, not the whole table"

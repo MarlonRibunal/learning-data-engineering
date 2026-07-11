@@ -1,0 +1,12 @@
+title: Average order value by status
+order: 6
+submission_path: submissions/serving/avg_order_by_status.sql
+scaffold: scaffold/avg_order_by_status.sql
+solution: solution/avg_order_by_status.sql
+preview: [orders]
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: sql_result
+    name: averages order value per status
+    ordered: false

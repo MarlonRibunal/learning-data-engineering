@@ -1,0 +1,18 @@
+title: "Security: row-level security"
+order: 4
+submission_path: submissions/security/row_level_security.sql
+scaffold: scaffold/row_level_security.sql
+solution: solution/row_level_security.sql
+reseed: projects/datamart-intelligence-platform/seeds/security_seed.sql
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: sql_ingest
+    name: RLS is enabled and a policy exists
+    asserts:
+      - query: "SELECT relrowsecurity::int FROM pg_class WHERE relname = 'customer_pii'"
+        equals: 1
+        hint: "ALTER TABLE analytics.customer_pii ENABLE ROW LEVEL SECURITY"
+      - query: "SELECT COUNT(*)::int FROM pg_policies WHERE tablename = 'customer_pii'"
+        equals: 1
+        hint: "RLS with no policy denies everyone — you also need CREATE POLICY ..."
