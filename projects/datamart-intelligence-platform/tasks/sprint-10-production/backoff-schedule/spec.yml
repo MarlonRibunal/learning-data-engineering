@@ -13,3 +13,16 @@ checks:
       - 4
       - 1
     expect: [1, 2, 4, 8]
+    hints:
+      - >-
+        Retrying a flaky dependency immediately just hammers it again — the wait
+        should <em>grow</em> after each failed attempt so you back off. If the
+        first delay is <code>base</code>, what should the next one be?
+      - >-
+        Exponential backoff doubles the wait each attempt: attempt <code>i</code>
+        waits <code>base * 2 ** i</code>. You want one entry per retry, so build
+        <code>retries</code> of them starting from <code>i = 0</code>.
+      - >-
+        Return <code>[base * 2 ** i for i in range(retries)]</code>; with
+        <code>retries=4</code> and <code>base=1</code> that grows as
+        <code>[1, 2, 4, 8]</code>.

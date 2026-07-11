@@ -17,3 +17,17 @@ checks:
     expect:
       - {id: 1, version: 2, v: b}
       - {id: 2, version: 1, v: c}
+    hints:
+      - >-
+        For id 1 the input has version 1 <em>then</em> version 2 — trace which
+        one your function keeps. Look hard at the condition that decides when to
+        store into <code>best[e[key]]</code>.
+      - >-
+        The guard only stores an event when the key is <em>unseen</em>, so once
+        version 1 lands, a later higher version can never replace it; you also
+        need to overwrite when <code>e["version"] &gt;
+        best[e[key]]["version"]</code>.
+      - >-
+        Change the condition to <code>if e[key] not in best or e["version"] &gt;
+        best[e[key]]["version"]:</code>; then id 1 keeps version 2 (v: b), as
+        <code>expect</code> shows.

@@ -11,3 +11,15 @@ checks:
     entry: sla_met
     args: [120, 200]
     expect: true
+    hints:
+      - >-
+        An SLA is <em>met</em> when the observed latency stays within the target
+        budget — smaller is better. If <code>actual_ms</code> exactly equals
+        <code>target_ms</code>, should that still pass?
+      - >-
+        Compare <code>actual_ms</code> against <code>target_ms</code>: it's met
+        when actual is at or under target, so use <code>&lt;=</code> (the boundary
+        counts as met), not <code>&lt;</code>.
+      - >-
+        Return <code>actual_ms &lt;= target_ms</code>; 120ms against a 200ms target
+        is within budget, so <code>true</code>.

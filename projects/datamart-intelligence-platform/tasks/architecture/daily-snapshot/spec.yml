@@ -19,3 +19,17 @@ checks:
       - query: "SELECT MIN(snapshot_date)::text FROM analytics.orders_snapshot"
         equals: "2026-03-01"
         hint: "use DATE '2026-03-01' as the snapshot_date"
+    hints:
+      - >-
+        A snapshot freezes the <em>entire</em> picture as of a date, not a
+        filtered slice. The stub keeps only shipped orders — what happens to the
+        pending and other orders in your as-of view?
+      - >-
+        Every row gets the same literal date and you must include all orders, so
+        drop the filter: stamp each row with <code>DATE '2026-03-01'</code> and
+        remove the <code>WHERE status = 'shipped'</code>.
+      - >-
+        Write <code>INSERT INTO analytics.orders_snapshot (snapshot_date,
+        order_id, status, total_amount) SELECT DATE '2026-03-01', order_id,
+        status, total_amount FROM raw.orders</code> — all 5 orders under one
+        snapshot_date.

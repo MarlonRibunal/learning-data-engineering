@@ -17,3 +17,17 @@ checks:
     expect:
       - {id: 1, v: c}
       - {id: 2, v: b}
+    hints:
+      - >-
+        Re-processing the same batch shouldn't leave duplicates — rows that share
+        a key should collapse to one. When two rows share the same key value,
+        which one should win, the first seen or the last?
+      - >-
+        Idempotent de-duplication maps each row's <code>key</code> value to the row
+        and overwrites as you go, so the <em>last</em> write wins; then emit the
+        surviving rows in sorted key order.
+      - >-
+        Build <code>last = {}</code>, do <code>last[e[key]] = e</code> for each
+        event, then return <code>[last[k] for k in sorted(last)]</code>; id 1
+        keeps <code>{id: 1, v: c}</code>, giving
+        <code>[{id: 1, v: c}, {id: 2, v: b}]</code>.

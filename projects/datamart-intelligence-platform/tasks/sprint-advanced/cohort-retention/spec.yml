@@ -13,3 +13,15 @@ checks:
       - [1, 2, 3]
       - {1: [1, 2, 3], 2: [1, 3], 3: [1]}
     expect: {1: 3, 2: 2, 3: 1}
+    hints:
+      - >-
+        On each day you count only the users who belong to the original
+        <code>cohort</code> <em>and</em> were active that day — not everyone in the
+        activity log. How do you find the overlap between two groups?
+      - >-
+        Turn <code>cohort</code> into a set and, for each day, take the size of its
+        intersection with that day's users: <code>len(cohort &amp; set(users))</code>.
+      - >-
+        Return <code>{day: len(cohort &amp; set(users)) for day, users in
+        activity.items()}</code> (with cohort as a set); for cohort
+        <code>[1, 2, 3]</code> that yields <code>{1: 3, 2: 2, 3: 1}</code>.

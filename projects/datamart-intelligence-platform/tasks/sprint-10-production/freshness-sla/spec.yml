@@ -15,3 +15,17 @@ checks:
         - {name: events, age_min: 120}
       - 60
     expect: [events]
+    hints:
+      - >-
+        A table is <em>stale</em> when it hasn't refreshed within its SLA window —
+        you compare each table's age against the allowed maximum. Is a table whose
+        age exactly equals the SLA stale, or only one that is past it?
+      - >-
+        Freshness is <code>now - last_load</code>, and here that age is already
+        given as <code>age_min</code>, so keep tables where
+        <code>age_min &gt; max_age_min</code> — strictly greater, since the
+        boundary still counts as fresh. Then return the names sorted.
+      - >-
+        Return <code>sorted(t["name"] for t in tables if t["age_min"] &gt; max_age_min)</code>;
+        with an SLA of <code>60</code> only events (age 120) exceeds it, giving
+        <code>[events]</code>.

@@ -13,3 +13,17 @@ checks:
       - [0, 3, 7, 20, 22]
       - 5
     expect: 2
+    hints:
+      - >-
+        Once the events are in order, a new session begins only when the pause
+        between two consecutive events is <em>longer</em> than <code>gap</code> —
+        a pause exactly equal to the threshold stays in the same session. What
+        should an empty list return?
+      - >-
+        After sorting, start at 1 session and scan adjacent pairs, incrementing
+        whenever <code>curr - prev &gt; gap</code>. Note the strict
+        <code>&gt;</code>: a gap equal to <code>gap</code> does not split.
+      - >-
+        With <code>times = [0, 3, 7, 20, 22]</code> and <code>gap = 5</code>, only
+        the 7→20 jump exceeds 5, so <code>count_sessions</code> returns
+        <code>2</code>; return <code>0</code> for an empty list.

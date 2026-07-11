@@ -11,3 +11,16 @@ checks:
     entry: backfill_dates
     args: ["2026-03-01", "2026-03-04"]
     expect: ["2026-03-02", "2026-03-03", "2026-03-04"]
+    hints:
+      - >-
+        The <code>last_success</code> day was already processed, so it should
+        <em>not</em> be reprocessed — but <code>today</code> still needs to run.
+        Which end of the window do you skip, and which do you include?
+      - >-
+        Start the day <em>after</em> last_success with
+        <code>date.fromisoformat(last_success) + timedelta(days=1)</code>, then
+        step forward while the day is <code>&lt;=</code> today.
+      - >-
+        From <code>"2026-03-01"</code> begin at 2026-03-02 and loop while
+        <code>d &lt;= 2026-03-04</code>, collecting <code>d.isoformat()</code> —
+        yielding <code>["2026-03-02", "2026-03-03", "2026-03-04"]</code>.

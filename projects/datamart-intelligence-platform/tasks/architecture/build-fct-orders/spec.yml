@@ -19,3 +19,17 @@ checks:
       - query: "SELECT COUNT(*)::int FROM analytics.fct_orders f LEFT JOIN analytics.dim_customers d ON f.customer_id = d.customer_id WHERE d.customer_id IS NULL"
         equals: 0
         hint: "every fact row must key to a real customer in the dimension"
+    hints:
+      - >-
+        A fact table records events at a precise grain — here one row per order,
+        each carrying the foreign key to a customer. What is the grain, and which
+        raw table holds those order events?
+      - >-
+        Load the facts by selecting the event rows from <code>raw.orders</code>,
+        keeping the <code>customer_id</code> foreign key. Note the measure lands
+        in <code>amount</code> but the source column is <code>total_amount</code>.
+      - >-
+        Write <code>INSERT INTO analytics.fct_orders (order_id, customer_id,
+        order_date, amount) SELECT order_id, customer_id, order_date,
+        total_amount FROM raw.orders</code> — 5 orders, each keyed to a real
+        customer.

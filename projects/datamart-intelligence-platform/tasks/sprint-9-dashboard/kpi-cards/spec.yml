@@ -16,3 +16,17 @@ checks:
         - {order_id: 4, day: "2026-01-02", category: A, amount: 5}
         - {order_id: 5, day: "2026-01-03", category: B, amount: 15}
     expect: {total_revenue: 170, order_count: 5, avg_order_value: 34.0}
+    hints:
+      - >-
+        <code>kpi_cards</code> rolls the rows up into three summaries: the sum of
+        every <em>amount</em>, how many rows there are, and their average. Which
+        built-ins give you a total and a count over a list?
+      - >-
+        Total the amounts with <code>sum(r["amount"] for r in rows)</code> and
+        count them with <code>len(rows)</code>; the average is total divided by
+        count. Guard the divide so an empty <code>rows</code> doesn't blow up.
+      - >-
+        Return <code>{"total_revenue": total, "order_count": count,
+        "avg_order_value": round(total / count, 2)}</code>; for these 5 rows that
+        is total_revenue <code>170</code>, order_count <code>5</code>, and
+        <code>34.0</code>.

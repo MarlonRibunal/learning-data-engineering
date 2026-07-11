@@ -12,3 +12,20 @@ checks:
     args:
       - [PENDING, RUNNING, SUCCESS, FAILED]
     expect: [false, false, true, true]
+    hints:
+      - >-
+        A run state is <em>terminal</em> when it can no longer change
+        (<code>SUCCESS</code>, <code>FAILED</code>, <code>CANCELED</code>)
+        versus in-flight ones like <code>PENDING</code> or <code>RUNNING</code>.
+        You need one boolean per input status — what does that tell you about
+        the output length?
+      - >-
+        Define the terminal states once as a set and test membership for each
+        status, mapping the input list to a list of booleans:
+        <code>[s in TERMINAL for s in statuses]</code>. A set makes the
+        <code>in</code> check clean and O(1).
+      - >-
+        With <code>TERMINAL = {"SUCCESS", "FAILED", "CANCELED"}</code>, return
+        <code>[s in TERMINAL for s in statuses]</code>; for
+        <code>[PENDING, RUNNING, SUCCESS, FAILED]</code> that yields
+        <code>[false, false, true, true]</code>.

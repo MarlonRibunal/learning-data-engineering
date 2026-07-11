@@ -10,3 +10,16 @@ checks:
   - type: sql_result
     name: returns daily revenue in date order
     ordered: true
+    hints:
+      - >-
+        A line chart needs one row per day, earliest to latest. How do you
+        collapse many orders on the same <code>order_date</code> into a single
+        daily total, and then force the rows into date order?
+      - >-
+        Group by the date and total each day:
+        <code>SUM(total_amount)</code> with <code>GROUP BY order_date</code>,
+        then add <code>ORDER BY order_date</code> so the days come out in
+        sequence.
+      - >-
+        Use
+        <code>SELECT order_date, SUM(total_amount) AS revenue FROM orders GROUP BY order_date ORDER BY order_date</code>.

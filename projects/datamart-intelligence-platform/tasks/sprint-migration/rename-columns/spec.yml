@@ -14,3 +14,16 @@ checks:
       - {cust: customer_id, amt: amount}
     expect:
       - {customer_id: 1, amount: 100}
+    hints:
+      - >-
+        It's the dictionary <em>keys</em> that change, not the values. For each
+        row, what does <code>mapping</code> say the new name of each old key
+        should be — and what should happen to a key that isn't in the mapping?
+      - >-
+        Rebuild each row with a dict comprehension, looking up every key in the
+        mapping and falling back to the key itself: <code>mapping.get(k, k)</code>.
+        That keeps unmapped keys intact instead of dropping them.
+      - >-
+        Return <code>[{mapping.get(k, k): v for k, v in row.items()} for row in
+        rows]</code>; here <code>cust</code>→<code>customer_id</code> and
+        <code>amt</code>→<code>amount</code>, giving <code>[{customer_id: 1, amount: 100}]</code>.

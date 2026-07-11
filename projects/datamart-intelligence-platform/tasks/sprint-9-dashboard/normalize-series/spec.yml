@@ -12,3 +12,16 @@ checks:
     args:
       - [10, 20, 30]
     expect: [0.0, 0.5, 1.0]
+    hints:
+      - >-
+        <code>normalize_series</code> rescales the values so the smallest lands at
+        0 and the largest at 1. Which value must you subtract from each, and what
+        do you divide by?
+      - >-
+        Min-max scaling is <code>(v - lo) / (hi - lo)</code> with
+        <code>lo = min(values)</code> and <code>hi = max(values)</code>. Watch the
+        case where every value is equal and <code>hi - lo</code> is 0.
+      - >-
+        Return <code>[round((v - lo) / (hi - lo), 2) for v in values]</code>; for
+        <code>[10, 20, 30]</code>, lo is 10 and hi is 30, so the middle is
+        <code>(20 - 10) / 20 = 0.5</code>, giving <code>[0.0, 0.5, 1.0]</code>.

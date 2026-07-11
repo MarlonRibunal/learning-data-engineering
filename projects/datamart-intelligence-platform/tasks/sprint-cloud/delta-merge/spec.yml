@@ -19,3 +19,18 @@ checks:
       - {id: 1, v: a}
       - {id: 2, v: B}
       - {id: 3, v: c}
+    hints:
+      - >-
+        A MERGE is an <em>upsert</em>: rows in <code>updates</code> that match an
+        existing <code>key</code> should overwrite, and new keys should be added.
+        What data structure lets you look a row up by its key so a later write
+        replaces an earlier one?
+      - >-
+        Index the target by key into a dict — <code>by_key = {row[key]: row for
+        row in target}</code> — then loop <code>updates</code> and assign
+        <code>by_key[update[key]] = update</code> so matches overwrite and new
+        keys insert.
+      - >-
+        Return the rows sorted by key: <code>[by_key[k] for k in
+        sorted(by_key)]</code>. For the sample, id 2 becomes <code>B</code> and
+        id 3 is inserted, giving <code>expect</code>.

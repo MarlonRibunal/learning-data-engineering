@@ -18,3 +18,16 @@ checks:
       - query: "SELECT has_column_privilege('analyst', 'analytics.customer_pii', 'ssn', 'SELECT')::int"
         equals: 0
         hint: "the analyst must NOT read ssn — grant specific COLUMNS, not the whole table"
+    hints:
+      - >-
+        A table-wide <code>GRANT SELECT</code> exposes every column, ssn
+        included. How can you let the analyst read only the safe columns of
+        <code>analytics.customer_pii</code>?
+      - >-
+        Postgres supports column-level privileges — list the columns in
+        parentheses after SELECT. <code>GRANT SELECT (col1, col2) ON ... TO
+        analyst</code> grants only those, leaving ssn ungranted.
+      - >-
+        Replace the whole-table grant with <code>GRANT SELECT (customer_id,
+        customer_name, email) ON analytics.customer_pii TO analyst</code> so
+        customer_name and email are readable but ssn is not.

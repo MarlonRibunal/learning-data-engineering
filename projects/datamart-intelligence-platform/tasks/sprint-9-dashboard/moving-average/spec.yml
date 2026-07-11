@@ -13,3 +13,18 @@ checks:
       - [10, 20, 30, 40]
       - 2
     expect: [10.0, 15.0, 25.0, 35.0]
+    hints:
+      - >-
+        Each output point is the mean of a window that <em>ends</em> at that index
+        and reaches back up to <code>w</code> values. What happens at index 0,
+        where there aren't <code>w-1</code> earlier values to include?
+      - >-
+        A trailing slice <code>values[max(0, i - w + 1) : i + 1]</code> grabs the
+        current value plus up to <code>w-1</code> before it. Averaging with
+        <code>sum(window) / len(window)</code> — dividing by the window's actual
+        length, not <code>w</code> — is what keeps the short first window right.
+      - >-
+        Append <code>round(sum(window) / len(window), 2)</code> per index; for
+        <code>[10, 20, 30, 40]</code> with <code>w=2</code> the second point is
+        <code>(10 + 20) / 2 = 15.0</code>, giving
+        <code>[10.0, 15.0, 25.0, 35.0]</code>.

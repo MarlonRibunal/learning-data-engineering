@@ -13,3 +13,19 @@ checks:
       - [RUNNING, SUCCESS, FAILED]
       - 5
     expect: SUCCESS
+    hints:
+      - >-
+        You poll a sequence of statuses but must stop at the <em>first</em>
+        terminal one — and give up once you've spent your <code>max_polls</code>
+        budget. Why would returning the last status be wrong here?
+      - >-
+        Walk the statuses in order, bounded by <code>max_polls</code>, and
+        return as soon as one is terminal:
+        <code>if status in TERMINAL: return status</code>. If you exhaust the
+        budget without hitting a terminal state, that's a timeout.
+      - >-
+        Guard the loop with <code>if i &gt;= max_polls: break</code>, return
+        <code>status</code> on the first <code>status in TERMINAL</code>, else
+        return <code>"TIMEOUT"</code>; for <code>[RUNNING, SUCCESS, FAILED]</code>
+        with 5 polls the first terminal state is <code>SUCCESS</code> (FAILED is
+        never reached).

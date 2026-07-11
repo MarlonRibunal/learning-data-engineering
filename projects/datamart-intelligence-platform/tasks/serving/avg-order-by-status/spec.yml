@@ -10,3 +10,16 @@ checks:
   - type: sql_result
     name: averages order value per status
     ordered: false
+    hints:
+      - >-
+        The scaffold <em>sums</em> <code>total_amount</code> for each status,
+        which gives the combined revenue, not the typical order. Which aggregate
+        returns the mean instead of the total?
+      - >-
+        Swap the sum for an average: <code>AVG(total_amount)</code> computes the
+        mean per group, and you still wrap it in <code>ROUND(..., 2)</code> to
+        keep two decimals.
+      - >-
+        Use <code>ROUND(AVG(total_amount), 2) AS avg_order_value</code> while
+        keeping <code>GROUP BY status</code> so you get one averaged row per
+        status.

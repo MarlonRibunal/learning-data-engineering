@@ -19,3 +19,17 @@ checks:
     expect:
       - {category: A, revenue: 135}
       - {category: B, revenue: 35}
+    hints:
+      - >-
+        First roll the rows up into one revenue total per <em>category</em>, then
+        keep only the <code>n</code> biggest. How do you sort a mapping by its
+        values from largest to smallest?
+      - >-
+        Aggregate into a dict, then <code>sorted(totals.items(), key=lambda kv:
+        kv[1], reverse=True)[:n]</code> orders categories by revenue descending and
+        keeps the top <code>n</code>.
+      - >-
+        Return <code>[{"category": c, "revenue": v} for c, v in ranked[:n]]</code>;
+        A's three rows sum to 135 and B's to 35, so with <code>n=2</code> you get
+        <code>[{"category": "A", "revenue": 135}, {"category": "B", "revenue":
+        35}]</code>.

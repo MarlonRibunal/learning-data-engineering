@@ -11,3 +11,18 @@ checks:
     entry: partition_path
     args: [orders, "2026-03-01"]
     expect: "orders/year=2026/month=03/day=01"
+    hints:
+      - >-
+        Partition paths must be <em>deterministic</em> so the same date always
+        lands in the same directory — the ISO <code>date</code> packs the year,
+        month, and day you need as separate pieces. What character separates them?
+      - >-
+        Split <code>date</code> on <code>-</code> to get year, month, and day,
+        then assemble a Hive-style path like
+        <code>table/year=YYYY/month=MM/day=DD</code> — keep the input's
+        zero-padding so March stays <code>03</code>.
+      - >-
+        Do <code>year, month, day = date.split("-")</code> and return
+        <code>f"{table}/year={year}/month={month}/day={day}"</code>; for
+        <code>orders</code> and <code>2026-03-01</code> that's
+        <code>orders/year=2026/month=03/day=01</code>.

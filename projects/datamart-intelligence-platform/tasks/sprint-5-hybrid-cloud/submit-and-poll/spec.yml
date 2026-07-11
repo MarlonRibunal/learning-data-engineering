@@ -10,3 +10,20 @@ checks:
     name: submits the job and waits for it to finish
     entry: run_and_wait
     mode: success
+    hints:
+      - >-
+        A remote job doesn't finish instantly — after you submit it you have to
+        keep asking the service for its status until it reaches a terminal
+        state, and only then read the result. What do you do with the run id
+        <code>client.submit</code> hands back?
+      - >-
+        Capture the run id, then loop calling
+        <code>client.get_status(run_id)</code> until it leaves the in-flight
+        state, e.g. <code>while status not in ("SUCCESS", "FAILED"):</code> keep
+        polling. Once it's terminal, fetch the result with
+        <code>client.get_result(run_id)</code>.
+      - >-
+        <code>run_id = client.submit(job_id)</code>, poll in a
+        <code>while True</code> loop and <code>break</code> when
+        <code>status in ("SUCCESS", "FAILED")</code>, then
+        <code>return client.get_result(run_id)</code>.

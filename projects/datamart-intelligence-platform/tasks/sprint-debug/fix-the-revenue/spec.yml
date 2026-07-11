@@ -14,3 +14,16 @@ checks:
         - {amount: 50, status: paid}
         - {amount: 30, status: refunded}
     expect: 150
+    hints:
+      - >-
+        The total adds up <em>every</em> order, including the one whose
+        <code>status</code> is refunded — should money that was handed back
+        count as revenue? Look at what the sum does (and doesn't) filter.
+      - >-
+        The generator sums <code>o["amount"]</code> with no condition attached;
+        skip the refunds by guarding with <code>if o["status"] !=
+        "refunded"</code>.
+      - >-
+        Return <code>sum(o["amount"] for o in orders if o["status"] !=
+        "refunded")</code>; the refunded 30 drops out, leaving <code>100 + 50 =
+        150</code>.

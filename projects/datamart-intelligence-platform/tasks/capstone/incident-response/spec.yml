@@ -17,6 +17,20 @@ checks:
         - {name: users, age_min: 200}
       - 60
     expect: [payments, users]
+    hints:
+      - >-
+        Detection is a freshness filter: a table breaches when its
+        <code>age_min</code> is <em>past</em> the SLA, not merely at it. With an
+        <code>sla_minutes</code> of 60, which of the three tables are stale — and
+        does 60 itself count?
+      - >-
+        Keep only tables strictly older than the SLA — <code>t["age_min"] &gt;
+        sla_minutes</code> — and collect their <code>name</code>. The
+        <code>expect</code> order is alphabetical, so the result must be sorted.
+      - >-
+        Return <code>sorted(t["name"] for t in tables if t["age_min"] &gt;
+        sla_minutes)</code>; here orders at 5 min is fresh, leaving
+        <code>[payments, users]</code>.
   - type: pyfunc
     name: "diagnose — the root-cause job"
     entry: root_cause

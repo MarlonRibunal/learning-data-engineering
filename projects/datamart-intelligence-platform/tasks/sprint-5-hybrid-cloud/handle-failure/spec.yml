@@ -10,3 +10,20 @@ checks:
     name: returns on success AND raises on failure
     entry: run_and_wait
     mode: both
+    hints:
+      - >-
+        Your poll loop stops on both <code>SUCCESS</code> and
+        <code>FAILED</code>, but a failed run shouldn't quietly return a result
+        — it should surface the failure to the caller. How should a
+        <code>FAILED</code> run propagate differently from a successful one?
+      - >-
+        Branch on the terminal status <em>inside</em> the loop instead of
+        lumping them together: on <code>SUCCESS</code> return
+        <code>client.get_result(run_id)</code>, but on <code>FAILED</code>
+        <code>raise</code> instead of returning. A silent break-then-return
+        hides the failure.
+      - >-
+        In the <code>while</code> loop, <code>if status == "SUCCESS": return
+        client.get_result(run_id)</code> and <code>if status == "FAILED": raise
+        RuntimeError(f"job {job_id} failed")</code>; that returns on success and
+        raises on failure, satisfying <code>mode: both</code>.
