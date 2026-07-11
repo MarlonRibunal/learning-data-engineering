@@ -1,0 +1,13 @@
+title: "Test: every order has a customer"
+order: 5
+submission_path: submissions/data-quality/not_null_customer.sql
+scaffold: scaffold/not_null_customer.sql
+solution: solution/not_null_customer.sql
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: data_test
+    name: catches an order with no customer_id
+    clean_seed: projects/datamart-intelligence-platform/seeds/raw_seed.sql
+    dirty_seed: projects/datamart-intelligence-platform/seeds/dq/dirty_null_customer.sql
+    hint: "return the orders whose customer_id IS NULL"

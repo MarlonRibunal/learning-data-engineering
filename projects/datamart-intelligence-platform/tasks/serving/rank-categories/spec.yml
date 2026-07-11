@@ -1,0 +1,12 @@
+title: Rank categories by revenue
+order: 5
+submission_path: submissions/serving/rank_categories.sql
+scaffold: scaffold/rank_categories.sql
+solution: solution/rank_categories.sql
+preview: [orders]
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: sql_result
+    name: ranks categories by total revenue
+    ordered: false

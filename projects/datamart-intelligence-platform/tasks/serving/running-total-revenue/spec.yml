@@ -1,0 +1,12 @@
+title: Running total of revenue
+order: 4
+submission_path: submissions/serving/running_total_revenue.sql
+scaffold: scaffold/running_total_revenue.sql
+solution: solution/running_total_revenue.sql
+preview: [orders]
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: sql_result
+    name: returns the cumulative revenue by date
+    ordered: true

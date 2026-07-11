@@ -1,0 +1,21 @@
+title: "Architecture: daily snapshot table"
+order: 4
+submission_path: submissions/architecture/daily_snapshot.sql
+scaffold: scaffold/daily_snapshot.sql
+solution: solution/daily_snapshot.sql
+reseed: projects/datamart-intelligence-platform/seeds/architecture_snapshot_seed.sql
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: sql_ingest
+    name: captures every order under one snapshot date
+    asserts:
+      - query: "SELECT COUNT(*)::int FROM analytics.orders_snapshot"
+        equals: 5
+        hint: "a snapshot captures ALL rows as of the date, not a filtered subset"
+      - query: "SELECT COUNT(DISTINCT snapshot_date)::int FROM analytics.orders_snapshot"
+        equals: 1
+        hint: "stamp every row with the same snapshot_date"
+      - query: "SELECT MIN(snapshot_date)::text FROM analytics.orders_snapshot"
+        equals: "2026-03-01"
+        hint: "use DATE '2026-03-01' as the snapshot_date"
