@@ -133,6 +133,28 @@ A handful of tool-specific levels (a real dbt build, live Airflow DAGs, the
 Redpanda streaming broker) still need the full multi-service stack — use
 `./platform.sh up` for those. Everything else works in the single container.
 
+### When you get stuck
+
+Every level ships a built-in **hint ladder**: fail a check and a *Stuck? Show a
+hint* button reveals author-written hints one at a time — a nudge, then the
+concept, then a near-answer — matched to the exact check you failed. It's fully
+offline and your place in the ladder is saved with the rest of your progress.
+
+Want a **personal, code-aware nudge**? Export an [Anthropic API
+key](https://console.anthropic.com/) as `LDE_TUTOR_KEY` and an *Ask the tutor*
+button appears on a failed check. It sends *your* code and the exact failure to
+Claude and returns one Socratic hint — **never the answer**. It's strictly
+opt-in: with no key set, nothing changes and the offline hints are the whole
+story.
+
+```bash
+docker run -d -p 8501:8501 -v learn-data-engineering-state:/app/state \
+  -e LDE_TUTOR_KEY=sk-ant-...    # optional — unlocks the AI tutor
+  --name learn-data-engineering learn-data-engineering
+```
+
+Set `LDE_TUTOR_MODEL` to override the model (defaults to a current Claude model).
+
 
 ## Complete Learning Path
 

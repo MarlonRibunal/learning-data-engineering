@@ -469,6 +469,11 @@ code{font-family:'SF Mono',ui-monospace,Menlo,monospace;}
 .hintbox .hint-txt{color:var(--ink); font-size:.9rem; line-height:1.5;}
 .hintbox .hint-txt code{background:var(--panel-2); border:1px solid var(--line);
   border-radius:5px; padding:1px 5px; font-size:.85em;}
+/* ---- AI tutor (opt-in) — a personalized nudge, visually its own thing ---- */
+.tutor-lbl{font-size:.64rem; font-weight:650; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--faint); display:flex; align-items:center;
+  gap:6px; margin-bottom:2px;}
+.tutor-lbl .icon{width:14px; height:14px; color:var(--accent-h);}
 </style>
 """
 
@@ -482,6 +487,7 @@ _ICON = {
     "book": _ic('<path d="M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h12"/>'),
     "reading": _ic('<path d="M12 6c-2-1.5-5-1.5-7 0v12c2-1.5 5-1.5 7 0 2-1.5 5-1.5 7 0V6c-2-1.5-5-1.5-7 0z"/><path d="M12 6v12"/>'),
     "bulb": _ic('<path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.6.6 1 1.4 1 2.5h6c0-1.1.4-1.9 1-2.5A6 6 0 0 0 12 3z"/>'),
+    "tutor": _ic('<path d="M12 4 2 9l10 5 10-5-10-5z"/><path d="M6 11v5c0 1 3 2.5 6 2.5s6-1.5 6-2.5v-5"/>'),
     "code": _ic('<path d="M8 9l-3 3 3 3M16 9l3 3-3 3"/>'),
     "check": _ic('<path d="M20 6L9 17l-5-5"/>'),
     "arrow": _ic('<path d="M5 12h14M13 6l6 6-6 6"/>'),
@@ -714,6 +720,7 @@ def _render_task(sprint, task, progress, tasks) -> None:
                     result = run_check(sprint, task, REPO_ROOT, make_proof=True)
                     st.session_state[_res_key(sprint, task)] = result
                     st.session_state["_just_checked"] = (sprint, task)
+                    st.session_state.pop(f"tutor-{sprint}-{task}", None)  # fresh run, fresh nudge
                     st.rerun()
 
                 # Everything else is secondary and quiet — one row, no shouting.
@@ -827,6 +834,52 @@ def _render_hints(spec, result, sprint, task) -> None:
                    "then come back and rebuild it from memory.")
 
 
+def _render_tutor(spec, result, sprint, task) -> None:
+    """Opt-in AI tutor — a code-aware nudge layered ON TOP of the offline ladder.
+
+    Only appears when the learner has exported LDE_TUTOR_KEY; with no key the
+    offline hints are the whole story. It sends their actual code and the exact
+    failure to Claude and shows one Socratic nudge — never the answer. Any
+    failure (no network, bad key, package missing) degrades quietly to the
+    offline hints above.
+    """
+    from grader.tutor import tutor_available
+
+    if not tutor_available():
+        return
+    tkey = f"tutor-{sprint}-{task}"
+    if st.button("Ask the tutor", icon=":material/school:", key=f"btn-{tkey}",
+                 help="A personal, code-aware nudge from Claude — never the answer."):
+        from grader.tutor import TutorRequest, TutorUnavailable, ask_tutor
+
+        submission = REPO_ROOT / spec.submission_path
+        lesson_file = spec.task_dir / "lesson.md"
+        failed = [c for c in result.checks if c.status is Status.FAIL]
+        req = TutorRequest(
+            title=spec.title,
+            lesson=lesson_file.read_text() if lesson_file.is_file() else "",
+            code=submission.read_text() if submission.exists() else "",
+            check_name=failed[0].name if failed else "",
+            grader_hint=failed[0].hint if failed else "",
+            author_hints=_failing_hints(spec, result),
+        )
+        try:
+            with st.spinner("The tutor is reading your code…"):
+                st.session_state[tkey] = ask_tutor(req)
+        except TutorUnavailable as exc:
+            st.session_state.pop(tkey, None)
+            st.warning(f"The tutor isn't available right now ({exc}) — your offline "
+                       "hints above still have you covered.")
+
+    answer = st.session_state.get(tkey)
+    if answer:
+        with st.container(border=True):
+            st.markdown(f'<div class="tutor-lbl">{_ICON["tutor"]} Tutor</div>',
+                        unsafe_allow_html=True)
+            st.markdown(answer)  # markdown, not raw HTML — model output stays sandboxed
+            st.caption("A nudge, not the answer — the tutor won't hand you the solution.")
+
+
 def _render_result(result, sprint, task, tasks, spec=None, celebrate=False) -> None:
     _dot_cls = {"pass": "done", "fail": "fail", "error": "wip"}
     for check in result.checks:
@@ -854,6 +907,7 @@ def _render_result(result, sprint, task, tasks, spec=None, celebrate=False) -> N
         st.error("Not yet — fix the items above and check again.")
         if spec is not None:
             _render_hints(spec, result, sprint, task)
+            _render_tutor(spec, result, sprint, task)
 
 
 def _render_cleared(sprint, task, tasks, celebrate) -> None:
