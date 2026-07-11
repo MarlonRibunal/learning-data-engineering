@@ -103,6 +103,37 @@ you edit it, and the grader checks correctness (not just that it runs). A task i
 stack is down (start it with `./platform.sh up`), never that your answer was wrong.
 
 
+## Study in a Single Container (Docker)
+
+Want it *ready whenever you feel like studying*, with zero local setup and your
+progress saved between sessions? Build the self-contained study image once and run it:
+
+```bash
+docker build -t learn-de .
+docker run -d -p 8501:8501 -v learn-de-state:/app/state --name learn-de learn-de
+# open http://localhost:8501
+```
+
+One image bundles the learning app, an **embedded Postgres warehouse**, and a
+**Java 17 + PySpark** runtime — so the SQL, ingestion, data-quality, serving,
+security, architecture, Spark, real-time, and all pure-Python levels grade right
+inside the container. No `docker compose`, no venv.
+
+**Your progress persists.** Everything that matters — the levels you've cleared
+(`.progress.json`), your submitted code (`submissions/`), and the warehouse data —
+lives on the `learn-de-state` **named volume**. Stop the container, reboot your
+laptop, come back next week — the levels you finished stay finished:
+
+```bash
+docker stop learn-de     # done for now — progress is safe on the volume
+docker start learn-de    # pick up exactly where you left off
+```
+
+A handful of tool-specific levels (a real dbt build, live Airflow DAGs, the
+Redpanda streaming broker) still need the full multi-service stack — use
+`./platform.sh up` for those. Everything else works in the single container.
+
+
 ## Complete Learning Path
 
 **Learning Cadence: By Sprint**  
