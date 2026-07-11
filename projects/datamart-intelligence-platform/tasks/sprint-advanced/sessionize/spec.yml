@@ -1,0 +1,15 @@
+title: "Advanced: sessionize an event stream"
+order: 2
+submission_path: submissions/advanced/sessionize.py
+scaffold: scaffold/sessionize.py
+solution: solution/sessionize.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: counts sessions split by an inactivity gap
+    entry: count_sessions
+    args:
+      - [0, 3, 7, 20, 22]
+      - 5
+    expect: 2

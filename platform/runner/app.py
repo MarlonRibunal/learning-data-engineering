@@ -50,6 +50,7 @@ _SPRINT_LABELS = {
     "sprint-oncall": "On-Call Incident",
     "sprint-debug": "Debug the Pipeline",
     "sprint-migration": "Schema Migration",
+    "sprint-advanced": "Advanced Challenges",
     "security": "Security",
     "architecture": "Architecture",
     "capstone": "Capstone",
@@ -154,6 +155,7 @@ _JOURNEY = [
     ("sprint-oncall", "On-Call"),
     ("sprint-debug", "Debug"),
     ("sprint-migration", "Migrate"),
+    ("sprint-advanced", "Advanced"),
     ("capstone", "Capstone"),
 ]
 
