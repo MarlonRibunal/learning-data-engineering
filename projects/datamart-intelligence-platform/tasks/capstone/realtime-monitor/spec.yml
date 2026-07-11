@@ -1,0 +1,66 @@
+title: "Capstone: the Real-Time Revenue Monitor"
+submission_path: submissions/capstone/realtime_pipeline.py
+scaffold: scaffold/realtime_pipeline.py
+solution: solution/realtime_pipeline.py
+
+# Composite: one PySpark deliverable, three pipeline stages, each verified on a
+# real Spark session — clean the stream, aggregate into event-time windows, and
+# fire on the peak-revenue window.
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: spark
+    name: "stage 1 — clean drops invalid events"
+    entry: clean
+    inputs:
+      events:
+        - {ts: "2026-01-01 09:03:00", category: A, amount: 10}
+        - {ts: "2026-01-01 09:07:00", category: B, amount: 20}
+        - {ts: "2026-01-01 09:12:00", category: A, amount: 30}
+        - {ts: "2026-01-01 09:18:00", category: A, amount: 5}
+        - {ts: "2026-01-01 09:25:00", category: B, amount: 15}
+        - {ts: "2026-01-01 09:26:00", category: A, amount: -99}
+    expect:
+      - {ts: "2026-01-01 09:03:00", category: A, amount: 10}
+      - {ts: "2026-01-01 09:07:00", category: B, amount: 20}
+      - {ts: "2026-01-01 09:12:00", category: A, amount: 30}
+      - {ts: "2026-01-01 09:18:00", category: A, amount: 5}
+      - {ts: "2026-01-01 09:25:00", category: B, amount: 15}
+  - type: spark
+    name: "stage 2 — windowed revenue"
+    entry: windowed_revenue
+    inputs:
+      events:
+        - {ts: "2026-01-01 09:03:00", category: A, amount: 10}
+        - {ts: "2026-01-01 09:07:00", category: B, amount: 20}
+        - {ts: "2026-01-01 09:12:00", category: A, amount: 30}
+        - {ts: "2026-01-01 09:18:00", category: A, amount: 5}
+        - {ts: "2026-01-01 09:25:00", category: B, amount: 15}
+    expect:
+      - {window_start: "2026-01-01 09:00:00", revenue: 30}
+      - {window_start: "2026-01-01 09:10:00", revenue: 35}
+      - {window_start: "2026-01-01 09:20:00", revenue: 15}
+  - type: spark
+    name: "stage 3 — busiest-window alert"
+    entry: busiest_window
+    inputs:
+      events:
+        - {ts: "2026-01-01 09:03:00", category: A, amount: 10}
+        - {ts: "2026-01-01 09:07:00", category: B, amount: 20}
+        - {ts: "2026-01-01 09:12:00", category: A, amount: 30}
+        - {ts: "2026-01-01 09:18:00", category: A, amount: 5}
+        - {ts: "2026-01-01 09:25:00", category: B, amount: 15}
+    expect:
+      - {window_start: "2026-01-01 09:10:00", revenue: 35}
+
+# On pass, emit a portfolio artifact (chart omitted — this pipeline runs on
+# Spark, not the warehouse; the PORTFOLIO.md still captures the build + checks).
+proof:
+  title: "Real-Time Revenue Monitor"
+  summary: >
+    A streaming-style analytics pipeline built in PySpark: raw events are
+    cleaned, aggregated into event-time windows, and scanned for the
+    peak-revenue window — the alert a real-time monitor fires on. Every stage is
+    verified on a real Spark session, not a simulation.
+  pipeline: |
+    raw events ──clean──▶ valid events ──window + sum──▶ per-window revenue ──max──▶ 🔔 busiest window
