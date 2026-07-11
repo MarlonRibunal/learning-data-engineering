@@ -1,0 +1,22 @@
+title: "Real-time: a real Structured Streaming query"
+order: 9
+submission_path: submissions/realtime/structured_streaming.py
+scaffold: scaffold/transform.py
+solution: solution/transform.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: spark_streaming
+    name: streams events into watermarked 10-minute windows
+    entry: stream_transform
+    inputs:
+      events:
+        - {ts: "2026-01-01 09:03:00", amount: 10}
+        - {ts: "2026-01-01 09:07:00", amount: 20}
+        - {ts: "2026-01-01 09:12:00", amount: 30}
+        - {ts: "2026-01-01 09:18:00", amount: 5}
+        - {ts: "2026-01-01 09:25:00", amount: 15}
+    expect:
+      - {window_start: "2026-01-01 09:00:00", count: 2}
+      - {window_start: "2026-01-01 09:10:00", count: 2}
+      - {window_start: "2026-01-01 09:20:00", count: 1}

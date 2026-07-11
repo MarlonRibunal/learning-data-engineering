@@ -12,6 +12,7 @@ from . import (  # noqa: F401  (import for side effects: registers check types)
     pyfunc,
     redpanda_check,
     spark_check,
+    spark_streaming,
     sql_check,
     sql_ingest,
     sql_result,
