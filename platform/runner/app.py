@@ -34,6 +34,11 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 GLOSSARY = REPO_ROOT / "docs" / "cheatsheets" / "glossary.md"
 HOME = ("__home__", None)
 SETTINGS = ("__settings__", None)
+GLOSSARY_NAV = ("__glossary__", None)
+
+
+def _sprint_page(sprint: str):
+    return ("__sprint__", sprint)
 
 _REAL_INFRA_CHECKS = {"sql_assert", "dbt_test", "airflow"}
 _SPRINT_LABELS = {
@@ -293,9 +298,11 @@ _CSS = """
   --r:12px; --r-sm:8px;
   --sh:0 1px 2px rgba(20,21,26,.04), 0 1px 3px rgba(20,21,26,.05);
 }
-/* Dark mode — follow the viewer's OS. The palette is monochrome, so this is a
+/* Dark mode. The wrapper is swapped at inject time by the theme toggle:
+   Auto → `@media (prefers-color-scheme: dark)`, Dark → applied always,
+   Light → a never-matching query. The palette is monochrome, so this is a
    token flip: dark surfaces, light ink, colour reserved for status. */
-@media (prefers-color-scheme: dark){
+/*__DARK_OPEN__*/
   :root{
     --bg:#0f1011; --panel:#17181a; --panel-2:#1d1e21;
     --line:#282a2f; --line-2:#212327;
@@ -330,7 +337,7 @@ _CSS = """
   [data-testid="stExpander"] summary, [data-testid="stCaptionContainer"]{
     color:var(--ink)!important;}
   [data-testid="stMarkdownContainer"] code, code{color:var(--green-ink)!important;}
-}
+/*__DARK_CLOSE__*/
 /* Strip the deploy/menu chrome — but keep the toolbar so the collapsed
    sidebar's re-open control stays reachable. */
 header[data-testid="stHeader"]{background:transparent; box-shadow:none;}
@@ -392,8 +399,8 @@ a{color:var(--accent); text-decoration:none;}
 [data-testid="stSidebar"] .stButton>button:hover{background:var(--panel-2); color:var(--ink);}
 [data-testid="stSidebar"] .stButton>button:disabled{color:var(--faint); opacity:.6;}
 [data-testid="stSidebar"] [data-testid="stBaseButton-primary"]{background:var(--accent-soft)!important;
-  color:var(--accent-h)!important; font-weight:600!important;}
-[data-testid="stSidebar"] [data-testid="stBaseButton-primary"]:hover{background:#e4e7fb!important;}
+  color:var(--ink)!important; font-weight:600!important; box-shadow:inset 2px 0 0 var(--accent)!important;}
+[data-testid="stSidebar"] [data-testid="stBaseButton-primary"]:hover{background:var(--line)!important;}
 [data-testid="stSidebar"] [data-testid="stExpander"]{border:none; background:transparent;}
 [data-testid="stSidebar"] [data-testid="stExpander"] summary{padding:6px 8px; border-radius:7px;}
 [data-testid="stSidebar"] [data-testid="stExpander"] summary:hover{background:var(--panel-2);}
@@ -476,6 +483,35 @@ code{font-family:'SF Mono',ui-monospace,Menlo,monospace;}
   text-transform:uppercase; color:var(--faint); display:flex; align-items:center;
   gap:6px; margin-bottom:2px;}
 .tutor-lbl .icon{width:14px; height:14px; color:var(--accent-h);}
+
+/* ---- modern nav (Learnify-inspired, monochrome) ---- */
+[data-testid="stSidebar"] .navcap{font-size:.6rem; font-weight:650; letter-spacing:.09em;
+  text-transform:uppercase; color:var(--faint); margin:16px 8px 5px;}
+/* bottom progress card, like Learnify's plan card */
+[data-testid="stSidebar"] .sidecard{background:var(--panel-2); border:1px solid var(--line);
+  border-radius:12px; padding:12px 13px; margin:8px 4px 6px;}
+[data-testid="stSidebar"] .sidecard .sc-top{display:flex; justify-content:space-between;
+  align-items:baseline; margin-bottom:8px;}
+[data-testid="stSidebar"] .sidecard .sc-lbl{font-size:.72rem; font-weight:600; color:var(--ink);}
+[data-testid="stSidebar"] .sidecard .sc-pct{font-size:.68rem; color:var(--faint); font-weight:600;}
+[data-testid="stSidebar"] .sidecard .sc-bar{height:5px; background:var(--line-2); border-radius:999px; overflow:hidden;}
+[data-testid="stSidebar"] .sidecard .sc-bar span{display:block; height:100%; background:var(--green); border-radius:999px;}
+/* a right-aligned count chip baked into a sidebar button label */
+[data-testid="stSidebar"] .stButton>button p{display:flex; align-items:center; width:100%;}
+
+/* ---- sprint page (main area) task cards ---- */
+.sprint-head{background:var(--panel); border:1px solid var(--line); border-radius:16px;
+  padding:20px 22px; margin-bottom:16px; box-shadow:var(--sh);}
+.sprint-role{font-size:.62rem; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--faint);}
+.sprint-name{font-size:1.5rem; font-weight:680; letter-spacing:-.025em; color:var(--ink); margin-top:3px;}
+.sprint-meta{color:var(--muted); font-size:.85rem; margin-top:6px;}
+.sprint-bar{height:6px; background:var(--line-2); border-radius:999px; margin-top:14px; overflow:hidden;}
+.sprint-bar span{display:block; height:100%; background:var(--green); border-radius:999px;}
+.tcard-h{display:flex; align-items:center; gap:9px; margin-bottom:2px;}
+.tcard-h .dot{width:9px; height:9px; border-radius:999px; flex:0 0 auto;}
+.tcard-lvl{font-size:.64rem; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--faint);}
+.tcard-title{font-size:.98rem; font-weight:620; color:var(--ink); letter-spacing:-.01em; margin:1px 0 2px;}
+.tcard-sub{font-size:.8rem; color:var(--muted); line-height:1.4; min-height:2.2em;}
 </style>
 """
 
@@ -498,8 +534,17 @@ _ICON = {
 }
 
 
-def _inject_css() -> None:
-    st.markdown(_CSS, unsafe_allow_html=True)
+_DARK_WRAP = {
+    "auto": ("@media (prefers-color-scheme: dark){", "}"),
+    "dark": ("", ""),               # dark rules apply unconditionally
+    "light": ("@media not all{", "}"),  # a query that never matches → pure light
+}
+
+
+def _inject_css(theme: str = "auto") -> None:
+    open_, close_ = _DARK_WRAP.get(theme, _DARK_WRAP["auto"])
+    css = _CSS.replace("/*__DARK_OPEN__*/", open_).replace("/*__DARK_CLOSE__*/", close_)
+    st.markdown(css, unsafe_allow_html=True)
 
 
 def _to_records(res) -> list[dict]:
@@ -535,7 +580,8 @@ def _safe_preview(table: str, seed: bool):
 # ---------- main ----------
 def main() -> None:
     st.set_page_config(page_title="Learn Data Engineering", page_icon="🧪", layout="wide")
-    _inject_css()
+    theme = st.session_state.get("theme_choice", "Auto").lower()
+    _inject_css(theme)
     if "sel" not in st.session_state:
         st.session_state.sel = HOME
 
@@ -552,63 +598,80 @@ def main() -> None:
         return
 
     done = sum(1 for s, t in tasks if progress.get(s, {}).get(t, {}).get("status") == "pass")
+    total = len(tasks)
+    on_sprint = _current_sprint(tasks, progress)
+    nxt = next_task(REPO_ROOT)  # the single "you are here" task
+    active_sprint = sel[1] if sel[0] == "__sprint__" else (sel[0] if sel not in
+                    (HOME, SETTINGS, GLOSSARY_NAV) else None)
 
     if st.sidebar.button("Home", icon=":material/home:", use_container_width=True,
                          type="primary" if sel == HOME else "secondary"):
         st.session_state.sel = HOME
-    st.sidebar.progress(done / len(tasks), text=f"{done}/{len(tasks)} passed")
+        st.rerun()
 
-    # A calm map: completed sprints collapse to a checkmark, the sprint you're
-    # on is open, upcoming ones stay tucked away — so the whole 34-task
-    # curriculum never shouts at once.
-    on_sprint = _current_sprint(tasks, progress)
-    nxt = next_task(REPO_ROOT)  # the single "you are here" task
-    sel_sprint_now = sel[0] if sel != HOME else None
+    # Curriculum: a clean, single-level list of sprints (not a wall of 112
+    # tasks). Each row shows a status glyph + its X/Y. Clicking opens the
+    # sprint's levels as cards in the main area.
+    st.sidebar.markdown('<div class="navcap">Curriculum</div>', unsafe_allow_html=True)
     for sprint, sprint_tasks in _grouped_by_sprint(tasks):
         c_done = sum(1 for t in sprint_tasks
                      if progress.get(sprint, {}).get(t, {}).get("status") == "pass")
         c_total = len(sprint_tasks)
-        complete = c_done == c_total
-        # A whole sprint is locked when even its first level is out of reach.
-        sprint_locked = _is_locked(tasks, progress, sprint, sprint_tasks[0])
-        if complete:
-            badge = ":material/check_circle:"        # every level cleared
+        if c_done == c_total:
+            micon = ":material/check_circle:"
         elif sprint == on_sprint:
-            badge = ":material/adjust:"              # the sprint you're on
+            micon = ":material/adjust:"
         elif c_done:
-            badge = ":material/pending:"             # partway in — momentum
-        elif sprint_locked:
-            badge = ":material/lock:"                # finish the levels ahead first
+            micon = ":material/pending:"
+        elif _is_locked(tasks, progress, sprint, sprint_tasks[0]):
+            micon = ":material/lock:"
         else:
-            badge = ":material/radio_button_unchecked:"  # not started
-        header = f"{_sprint_label(sprint)} · {c_done}/{c_total}"
-        # Open the sprint you're on, or one you've navigated into.
-        expanded = sprint in (on_sprint, sel_sprint_now)
-        with st.sidebar.expander(header, expanded=expanded, icon=badge):
-            for task in sprint_tasks:
-                locked = _is_locked(tasks, progress, sprint, task)
-                micon = ":material/lock:" if locked \
-                    else _STATE_MICON[_task_state(sprint, task, progress)]
-                here = "  ‹" if (sprint, task) == nxt else ""
-                if st.button(f"{task}{here}", key=f"nav-{sprint}-{task}", icon=micon,
-                             use_container_width=True, disabled=locked,
-                             help="Locked — finish the levels ahead first" if locked else None,
-                             type="primary" if sel == (sprint, task) else "secondary"):
-                    st.session_state.sel = (sprint, task)
+            micon = ":material/radio_button_unchecked:"
+        if st.sidebar.button(f"{_sprint_label(sprint)}   ·   {c_done}/{c_total}",
+                             key=f"nav-{sprint}", icon=micon, use_container_width=True,
+                             type="primary" if sprint == active_sprint else "secondary"):
+            st.session_state.sel = _sprint_page(sprint)
+            st.rerun()
 
-    st.sidebar.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+    st.sidebar.markdown('<div class="navcap">More</div>', unsafe_allow_html=True)
+    if st.sidebar.button("Glossary", icon=":material/book_2:", use_container_width=True,
+                         type="primary" if sel == GLOSSARY_NAV else "secondary"):
+        st.session_state.sel = GLOSSARY_NAV
+        st.rerun()
     if st.sidebar.button("Settings", icon=":material/settings:", use_container_width=True,
                          type="primary" if sel == SETTINGS else "secondary"):
         st.session_state.sel = SETTINGS
+        st.rerun()
 
-    if st.session_state.sel == SETTINGS:
+    # Progress card (Learnify-style), with a one-tap Continue to the frontier.
+    pct = round(done / total * 100)
+    st.sidebar.markdown(
+        f'<div class="sidecard"><div class="sc-top">'
+        f'<span class="sc-lbl">Your progress</span><span class="sc-pct">{pct}%</span></div>'
+        f'<div class="sc-bar"><span style="width:{pct}%"></span></div>'
+        f'<div class="sc-pct" style="margin-top:7px">{done} of {total} levels cleared</div>'
+        f'</div>', unsafe_allow_html=True)
+    if nxt and st.sidebar.button("Continue", icon=":material/play_arrow:",
+                                 use_container_width=True, type="primary"):
+        st.session_state.sel = nxt
+        st.rerun()
+
+    st.sidebar.markdown('<div class="navcap">Appearance</div>', unsafe_allow_html=True)
+    st.sidebar.segmented_control("Theme", ["Auto", "Light", "Dark"], default="Auto",
+                                 key="theme_choice", label_visibility="collapsed")
+
+    # ---- route ----
+    sel = st.session_state.sel
+    if sel == SETTINGS:
         _render_settings()
-        return
-    sel_sprint, sel_task = st.session_state.sel
-    if sel_sprint == HOME[0]:
+    elif sel == GLOSSARY_NAV:
+        _render_glossary()
+    elif sel[0] == "__sprint__":
+        _render_sprint(sel[1], tasks, progress)
+    elif sel == HOME:
         _render_home(tasks, progress, done)
     else:
-        _render_task(sel_sprint, sel_task, progress, tasks)
+        _render_task(sel[0], sel[1], progress, tasks)
 
 
 def _render_home(tasks, progress, done) -> None:
@@ -634,9 +697,70 @@ def _render_home(tasks, progress, done) -> None:
         st.warning("The data stack looks **down**. Real-infra tasks need it — start with "
                    "`./platform.sh up` (or `docker compose up -d`).")
 
+
+def _render_sprint(sprint, tasks, progress) -> None:
+    """A sprint's levels as cards in the main area — the modern nav's detail view.
+
+    Replaces the old sidebar wall-of-tasks: pick a sprint in the rail, its levels
+    show here as scannable cards you open from.
+    """
+    sprint_tasks = [t for s, t in tasks if s == sprint]
+    if not sprint_tasks:
+        st.info("No levels in this sprint yet.")
+        return
+    c_done = sum(1 for t in sprint_tasks
+                 if progress.get(sprint, {}).get(t, {}).get("status") == "pass")
+    total = len(sprint_tasks)
+    pct = round(c_done / total * 100) if total else 0
+    role = dict(_JOURNEY).get(sprint, "Sprint")
+    st.markdown(
+        f'<div class="sprint-head"><div class="sprint-role">{role}</div>'
+        f'<div class="sprint-name">{_sprint_label(sprint)}</div>'
+        f'<div class="sprint-meta">{c_done} of {total} levels cleared · {pct}%</div>'
+        f'<div class="sprint-bar"><span style="width:{pct}%"></span></div></div>',
+        unsafe_allow_html=True)
+
+    intro = _load_sprint_intro(sprint)
+    if intro:
+        with st.expander("About this sprint", icon=":material/info:"):
+            st.markdown(intro)
+
+    _dot = {"pass": "done", "fail": "fail", "error": "wip", "in-progress": "wip", "new": "new"}
+    nxt = next_task(REPO_ROOT)
+    cols = st.columns(2, gap="medium")
+    for i, task in enumerate(sprint_tasks):
+        state = _task_state(sprint, task, progress)
+        locked = _is_locked(tasks, progress, sprint, task)
+        level = _level_of(tasks, sprint, task)
+        lvl_txt = f"Level {level}" + (" · locked" if locked else
+                                      "  ·  you are here" if (sprint, task) == nxt else "")
+        with cols[i % 2]:
+            with st.container(border=True):
+                st.markdown(
+                    f'<div class="tcard-h"><span class="dot d-{_dot.get(state, "new")}"></span>'
+                    f'<span class="tcard-lvl">{lvl_txt}</span></div>'
+                    f'<div class="tcard-title">{task}</div>', unsafe_allow_html=True)
+                label = "Locked" if locked else ("Review" if state == "pass" else "Open")
+                icon = ":material/lock:" if locked else (
+                    ":material/replay:" if state == "pass" else ":material/arrow_forward:")
+                highlight = not locked and (sprint, task) == nxt
+                if st.button(label, key=f"open-{sprint}-{task}", use_container_width=True,
+                             disabled=locked, icon=icon,
+                             type="primary" if highlight else "secondary"):
+                    st.session_state.sel = (sprint, task)
+                    st.rerun()
+
+
+def _render_glossary() -> None:
+    """The glossary as a first-class page (Learnify's 'Library' equivalent)."""
+    st.markdown('<div class="hero"><div class="hero-title">Glossary</div>'
+                '<div class="hero-sub">Plain-English definitions for the data-engineering '
+                'terms you meet across the levels.</div></div>', unsafe_allow_html=True)
     if GLOSSARY.is_file():
-        with st.expander("Glossary — data engineering terms", icon=":material/book_2:"):
+        with st.container(border=True):
             st.markdown(GLOSSARY.read_text())
+    else:
+        st.info("No glossary found.")
 
 
 def _render_settings() -> None:
