@@ -84,19 +84,12 @@ services:
       postgres:
         condition: service_healthy
 
-  # ---- Streamlit dashboard ----
-  streamlit:
-    build:
-      context: ./containers/streamlit
-      dockerfile: Dockerfile
-    volumes:
-      - ./projects/datamart-intelligence-platform/streamlit:/app
-      - ./config:/app/config
-    ports: ["8501:8501"]
-    restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
+  # NOTE: port 8501 belongs to the learning app (the lesson-runner). It is
+  # host-run by `./platform.sh` (it imports the grader and drives these
+  # containers via `docker compose exec`), or bundled in the single study
+  # image — so it is deliberately NOT a compose service here. There used to be
+  # a placeholder "streamlit dashboard" on 8501; it was removed to end the
+  # double-occupancy of that port.
 
   # ---- PGAdmin: Postgres UI ----
   pgadmin:

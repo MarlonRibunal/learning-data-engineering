@@ -1,14 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
+#
+# One command to start the platform. Delegates to ./platform.sh, which sets up
+# the Python env, brings the full Docker stack up (Airflow, PGAdmin, Redpanda +
+# Console, Postgres, dbt), and opens the learning app at http://localhost:8501.
+#
+# Kept for muscle memory / older docs — ./platform.sh is the canonical entry.
+#
 set -e
-echo "🚀 Learning Data Engineering - Bootstrap"
-if ! docker system info > /dev/null 2>&1; then
-    echo "❌ Docker is not running. Please start Docker Desktop first."
-    exit 1
-fi
-echo "🐳 Building and starting services..."
-docker-compose up --build -d
-echo "⏳ Waiting for services..."
-sleep 30
-echo "🎉 Setup Complete!"
-echo "Airflow: http://localhost:8080"
-echo "Streamlit: http://localhost:8501"
+cd "$(dirname "${BASH_SOURCE[0]}")"
+exec ./platform.sh "$@"
