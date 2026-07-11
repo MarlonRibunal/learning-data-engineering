@@ -315,9 +315,11 @@ _CSS = """
     color-scheme:dark;
   }
   .stApp{background:var(--bg);}
-  /* the primary CTA inverts: a light button with dark text (ink flipped) */
-  [data-testid="stBaseButton-primary"]{color:#16171a!important;}
-  [data-testid="stBaseButton-primary"] *{color:#16171a!important;}
+  /* the primary CTA inverts: a light button with dark ink text. The `.stApp`
+     prefix raises specificity so this beats the later base `color:#fff` rule —
+     otherwise the label renders white on a light button (washed out). */
+  .stApp [data-testid="stBaseButton-primary"],
+  .stApp [data-testid="stBaseButton-primary"] *{color:#16171a!important;}
   /* Streamlit paints these from its static light theme — repaint them dark. */
   [data-testid="stVerticalBlockBorderWrapper"],
   [data-testid="stExpander"]{background:var(--panel)!important;}
