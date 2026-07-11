@@ -8,6 +8,18 @@ checks:
   - type: airflow
     name: the scheduled DAG runs successfully
     dag_id: scheduled_report
+    hints:
+      - >-
+        How often a DAG runs is set where the DAG itself is defined, not on the
+        individual tasks. Right now it only runs when you trigger it by hand —
+        which argument puts it on a cadence?
+      - >-
+        Set the cadence on the DAG with a preset or a cron string:
+        <code>schedule_interval="@daily"</code> instead of <code>None</code>.
+      - >-
+        In <code>with DAG(dag_id="scheduled_report", …) as dag:</code> replace
+        <code>schedule_interval=None</code> with a real value like
+        <code>schedule_interval="@daily"</code>.
   - type: file_contains
     name: sets a real schedule (not None)
     pattern: "(?is)schedule_interval\\s*=\\s*['\"]"

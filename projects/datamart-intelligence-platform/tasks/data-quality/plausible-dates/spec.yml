@@ -10,4 +10,18 @@ checks:
     name: catches an implausible date, ignores real ones
     clean_seed: projects/datamart-intelligence-platform/seeds/raw_seed.sql
     dirty_seed: projects/datamart-intelligence-platform/seeds/dq/dirty_future_date.sql
+    hints:
+      - >-
+        A data test is a query that returns the <em>offending</em> rows: zero
+        rows means the data is clean, any rows means a problem. A real
+        <code>order_date</code> falls in a sane window — which
+        <code>raw.orders</code> rows land outside it?
+      - >-
+        Bound the date on both sides and catch anything beyond it with
+        <code>WHERE order_date &lt; DATE '2020-01-01' OR order_date &gt; DATE
+        '2030-01-01'</code>.
+      - >-
+        <code>SELECT order_id FROM raw.orders WHERE order_date &lt; DATE
+        '2020-01-01' OR order_date &gt; DATE '2030-01-01'</code> returns nothing
+        on the clean seed and the implausible date on the dirty seed.
     hint: "return orders whose order_date is before 2020 or after 2030"

@@ -10,4 +10,18 @@ checks:
     name: catches the bad rows, ignores the good
     clean_seed: projects/datamart-intelligence-platform/seeds/raw_seed.sql
     dirty_seed: projects/datamart-intelligence-platform/seeds/dq/dirty_status.sql
+    hints:
+      - >-
+        A data test is a query that returns the <em>offending</em> rows: zero
+        rows means the data is clean, any rows means a problem. Only a fixed set
+        of <code>status</code> values is allowed, so which <code>orders</code>
+        should this query surface?
+      - >-
+        Compare each order's <code>status</code> against the allowed set and keep
+        the strays with <code>WHERE status NOT IN ('shipped', 'pending',
+        'cancelled')</code>.
+      - >-
+        <code>SELECT * FROM orders WHERE status NOT IN ('shipped', 'pending',
+        'cancelled')</code> returns nothing on the clean seed and the bad-status
+        order on the dirty seed.
     hint: "return orders whose status is outside the allowed set"

@@ -9,3 +9,15 @@ checks:
   - type: sql_result
     name: returns the correct rows
     ordered: false
+    hints:
+      - >-
+        You only want three specific columns, not the whole table. Instead of
+        grabbing everything with a star, how do you tell SQL exactly which
+        columns to return, and in what order?
+      - >-
+        List the column names right after <code>SELECT</code>, separated by
+        commas, then say which table they come from with
+        <code>FROM orders</code>.
+      - >-
+        Write <code>SELECT order_id, status, total_amount FROM orders</code> so
+        each row shows just those three fields in that order.

@@ -10,4 +10,19 @@ checks:
     name: catches the bad rows, ignores the good
     clean_seed: projects/datamart-intelligence-platform/seeds/raw_seed.sql
     dirty_seed: projects/datamart-intelligence-platform/seeds/dq/dirty_orphan.sql
+    hints:
+      - >-
+        A data test is a query that returns the <em>offending</em> rows: zero
+        rows means the data is clean, any rows means a problem. An orphan is an
+        order pointing at a <code>customer_id</code> that no customer row owns —
+        how do you surface those?
+      - >-
+        Attach each order to its customer with a
+        <code>LEFT JOIN customers c ON o.customer_id = c.customer_id</code>, then
+        keep the rows where the match failed with <code>WHERE c.customer_id IS
+        NULL</code>.
+      - >-
+        <code>SELECT o.* FROM orders o LEFT JOIN customers c ON o.customer_id =
+        c.customer_id WHERE c.customer_id IS NULL</code> returns nothing on the
+        clean seed and the orphan order on the dirty seed.
     hint: "return orders whose customer_id has no matching customer"

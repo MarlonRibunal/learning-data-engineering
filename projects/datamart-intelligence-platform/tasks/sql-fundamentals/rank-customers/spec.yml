@@ -9,3 +9,16 @@ checks:
   - type: sql_result
     name: returns the correct rows
     ordered: true
+    hints:
+      - >-
+        You want each customer's total spend <em>and</em> a rank column next to
+        it, with 1 being the highest. Which kind of function can add a ranking
+        based on ordering without throwing away your grouped rows?
+      - >-
+        First get each total with <code>GROUP BY customer_id</code> and
+        <code>SUM(total_amount) AS total_spend</code>, then add a window
+        function <code>RANK() OVER (ORDER BY ...)</code>.
+      - >-
+        Rank the totals highest-first using
+        <code>RANK() OVER (ORDER BY SUM(total_amount) DESC) AS spend_rank</code>
+        so the top spender gets rank 1.

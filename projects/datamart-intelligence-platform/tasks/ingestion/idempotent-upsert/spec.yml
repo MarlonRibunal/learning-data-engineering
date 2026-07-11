@@ -16,3 +16,17 @@ checks:
         hint: "after two runs there should still be 3 rows, not 6"
       - query: "SELECT name FROM raw.products WHERE sku = 'SKU1'"
         equals: "Widget Pro"
+    hints:
+      - >-
+        The grader runs your load <em>twice</em>. The second run collides on the
+        <code>sku</code> primary key and errors — a re-run should <em>update</em>
+        the existing row, not try to insert a duplicate. What clause tells
+        Postgres what to do on a key collision?
+      - >-
+        Append <code>ON CONFLICT (sku) DO UPDATE</code> to the insert so a
+        repeat load overwrites in place, referencing the incoming row via
+        <code>EXCLUDED</code>.
+      - >-
+        End with <code>ON CONFLICT (sku) DO UPDATE SET name = EXCLUDED.name,
+        price = EXCLUDED.price</code> — two runs still leave 3 rows with SKU1 as
+        <em>Widget Pro</em>.

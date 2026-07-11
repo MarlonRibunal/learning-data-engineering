@@ -18,3 +18,15 @@ checks:
       - query: "SELECT ROUND(price * 100)::int FROM raw.products WHERE sku = 'SKU1'"
         equals: 1199
         hint: "keep the LATEST SKU1 (Widget Pro, 11.99) by loaded_at"
+    hints:
+      - >-
+        The feed <code>landing.products_raw</code> has a <em>duplicate</em> SKU1,
+        but <code>raw.products</code> should hold one row per product. A plain
+        <code>INSERT … SELECT</code> would load both — how do you keep just one
+        row per <code>sku</code>?
+      - >-
+        Postgres <code>DISTINCT ON (sku)</code> keeps the first row it sees per
+        SKU, and you decide <em>which</em> one wins through the sort order.
+      - >-
+        Use <code>SELECT DISTINCT ON (sku) …  ORDER BY sku, loaded_at DESC</code>
+        so the newest SKU1 (Widget Pro, 11.99) survives — leaving 3 clean rows.

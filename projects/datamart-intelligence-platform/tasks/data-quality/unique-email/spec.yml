@@ -10,4 +10,17 @@ checks:
     name: catches a duplicate email, ignores unique ones
     clean_seed: projects/datamart-intelligence-platform/seeds/raw_seed.sql
     dirty_seed: projects/datamart-intelligence-platform/seeds/dq/dirty_dup_email.sql
+    hints:
+      - >-
+        A data test is a query that returns the <em>offending</em> rows: zero
+        rows means the data is clean, any rows means a problem. So which
+        <code>email</code> values in <code>raw.customers</code> should this query
+        surface?
+      - >-
+        Group the customers by <code>email</code> and keep only the groups that
+        appear more than once with <code>HAVING COUNT(*) &gt; 1</code>.
+      - >-
+        <code>SELECT email FROM raw.customers GROUP BY email HAVING COUNT(*)
+        &gt; 1</code> returns nothing on the clean seed and the duplicated email
+        on the dirty seed.
     hint: "return the email(s) that appear more than once"

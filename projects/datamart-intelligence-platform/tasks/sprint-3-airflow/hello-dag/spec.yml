@@ -10,6 +10,20 @@ checks:
   - type: airflow
     name: hello_grader DAG runs successfully
     dag_id: hello_grader
+    hints:
+      - >-
+        A DAG only ends in state 'success' when every task finishes without
+        raising. The grader triggers your DAG by its id and waits for it to
+        complete — is your <em>say_hello</em> task returning normally instead of
+        blowing up?
+      - >-
+        The task is a <code>PythonOperator(task_id="say_hello", python_callable=run)</code>,
+        so it runs your <code>run</code> function; make that function
+        <em>return</em> a value instead of raising an exception.
+      - >-
+        Replace the body of <code>run</code> so it returns something (for example
+        <code>return "ok"</code>), inside the DAG declared as
+        <code>with DAG(dag_id="hello_grader", …) as dag:</code>.
     hint: >
       The DAG's task is raising instead of finishing. Make `run` return normally
       (no exception) so the DAG run ends in state 'success'.

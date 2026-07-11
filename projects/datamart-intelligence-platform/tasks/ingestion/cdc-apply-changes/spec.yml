@@ -22,3 +22,19 @@ checks:
       - query: "SELECT is_deleted::int FROM raw.customers_cdc WHERE customer_id = 11"
         equals: 1
         hint: "mark customer 11 is_deleted = true (the 'D' row)"
+    hints:
+      - >-
+        The change feed <code>landing.customer_changes</code> carries three
+        <code>op</code> kinds — <em>I</em>nsert, <em>U</em>pdate, <em>D</em>elete
+        — and the scaffold only handles <em>I</em>. A soft delete keeps the row
+        but flags it, so how do you apply all three?
+      - >-
+        Upsert the <code>I</code> and <code>U</code> rows together with
+        <code>… WHERE op IN ('I','U') ON CONFLICT (customer_id) DO UPDATE SET
+        name = EXCLUDED.name, is_deleted = false</code>, then a separate
+        <code>UPDATE … SET is_deleted = true</code> for the <code>D</code> rows.
+      - >-
+        First insert/upsert the <code>op IN ('I','U')</code> rows, then run
+        <code>UPDATE raw.customers_cdc SET is_deleted = true WHERE customer_id IN
+        (SELECT customer_id FROM landing.customer_changes WHERE op = 'D')</code>
+        — leaving 3 rows, customer 10 as <em>Ana Smith</em>, and 11 flagged.

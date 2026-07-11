@@ -8,6 +8,20 @@ checks:
   - type: airflow
     name: the parallel DAG runs successfully
     dag_id: parallel_pipeline
+    hints:
+      - >-
+        A DAG defines the order its tasks run in; to run work in parallel you
+        point one upstream task at several downstream tasks at once. After
+        <em>start</em> finishes, how do you launch <em>left</em> and
+        <em>right</em> together?
+      - >-
+        Inside <code>with DAG(dag_id="parallel_pipeline", …) as dag:</code>, fan
+        out by putting the downstream tasks in a list:
+        <code>a &gt;&gt; [b, c]</code>.
+      - >-
+        Wire <code>start_task &gt;&gt; [left_task, right_task]</code> so both run
+        after start, under the DAG declared as
+        <code>dag_id="parallel_pipeline"</code>.
   - type: file_contains
     name: fans out with a list dependency
     pattern: "(?is)>>\\s*\\["

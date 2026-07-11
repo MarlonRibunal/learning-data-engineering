@@ -21,3 +21,17 @@ checks:
       - query: "SELECT ROUND(SUM(amount))::int FROM raw.orders_all"
         equals: 210
         hint: "map store's `total` column onto the conformed `amount`"
+    hints:
+      - >-
+        Only the web feed lands right now — the store orders never make it into
+        <code>raw.orders_all</code>. How do you stack a <em>second</em> source
+        onto the same target in one statement, tagging each row's origin?
+      - >-
+        <code>UNION ALL</code> concatenates two <code>SELECT</code>s of matching
+        shape. The store feed has no <code>source</code> column and calls its
+        money <code>total</code>, so select literals: <code>SELECT order_id,
+        total, 'store' FROM landing.store_orders</code>.
+      - >-
+        Pair <code>SELECT order_id, amount, 'web' FROM landing.web_orders</code>
+        with <code>UNION ALL SELECT order_id, total, 'store' FROM
+        landing.store_orders</code> — 4 rows, 2 per source, summing to 210.

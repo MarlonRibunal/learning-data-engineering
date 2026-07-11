@@ -19,3 +19,19 @@ checks:
       - query: "SELECT ROUND(SUM(amount))::int FROM raw.orders_clean"
         equals: 130
         hint: "clean total is 100 + 30"
+    hints:
+      - >-
+        The scaffold dumps <em>every</em> row into <code>raw.orders_clean</code>,
+        including a null-customer row and a negative-amount row. A quarantine
+        pattern splits the feed two ways — good rows one place, bad rows another
+        with a reason. What predicate separates them?
+      - >-
+        Load the valid rows with <code>WHERE customer_id IS NOT NULL AND amount
+        &gt;= 0</code>, then insert the <em>inverse</em> into
+        <code>raw.orders_quarantine</code>, using a <code>CASE</code> to label
+        each row's <code>reason</code>.
+      - >-
+        Clean gets <code>WHERE customer_id IS NOT NULL AND amount &gt;= 0</code>
+        (2 rows, summing to 130); quarantine gets <code>WHERE customer_id IS NULL
+        OR amount &lt; 0</code> with <code>CASE WHEN customer_id IS NULL THEN
+        'missing customer_id' WHEN amount &lt; 0 THEN 'negative amount' END</code>.

@@ -16,3 +16,17 @@ checks:
       - query: "SELECT COUNT(*)::int FROM raw.events WHERE loaded_at = '2026-03-01'"
         equals: 3
         hint: "day-1 events must not be duplicated"
+    hints:
+      - >-
+        Day-1's 3 events are already in <code>raw.events</code>; reloading the
+        whole feed duplicates them. An incremental load should append only rows
+        <em>newer</em> than what you already have — what value marks that
+        boundary?
+      - >-
+        Compute a <em>watermark</em> — the latest <code>loaded_at</code> already
+        stored — and filter the source against it: <code>WHERE loaded_at &gt;
+        (SELECT MAX(loaded_at) FROM raw.events)</code>.
+      - >-
+        Add <code>WHERE loaded_at &gt; (SELECT MAX(loaded_at) FROM
+        raw.events)</code> to the insert so only day-2's 2 events append —
+        totalling 5, with day-1 untouched at 3.

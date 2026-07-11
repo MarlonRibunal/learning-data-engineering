@@ -9,3 +9,17 @@ checks:
   - type: sql_result
     name: returns the correct rows
     ordered: true
+    hints:
+      - >-
+        The spending lives in <code>orders</code> but the names live in
+        <code>customers</code>, so you need to combine the two tables and then
+        add up each customer's orders. Which clause links two tables by a
+        shared column?
+      - >-
+        Use <code>JOIN customers c ON o.customer_id = c.customer_id</code> to
+        pair each order with its customer, then <code>GROUP BY
+        c.customer_name</code> and <code>SUM(o.total_amount)</code> for each
+        one's total.
+      - >-
+        Sort with <code>ORDER BY total_spend DESC</code> and cap it using
+        <code>LIMIT 3</code> to return just the three biggest spenders.

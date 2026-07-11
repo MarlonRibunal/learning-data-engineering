@@ -9,3 +9,15 @@ checks:
   - type: sql_result
     name: returns the correct rows
     ordered: false
+    hints:
+      - >-
+        For each order you need to show a word that depends on its amount —
+        <em>large</em> or <em>small</em>. Which SQL expression lets you pick a
+        value based on an if/else style condition?
+      - >-
+        A <code>CASE WHEN ... THEN ... ELSE ... END</code> expression checks a
+        condition per row; test whether <code>total_amount &gt;= 100</code>.
+      - >-
+        Select <code>order_id</code> alongside
+        <code>CASE WHEN total_amount &gt;= 100 THEN 'large' ELSE 'small' END AS
+        order_size</code> so each order gets its label.

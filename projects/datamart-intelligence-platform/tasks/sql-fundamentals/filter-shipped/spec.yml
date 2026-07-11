@@ -9,3 +9,15 @@ checks:
   - type: sql_result
     name: returns the correct rows
     ordered: false
+    hints:
+      - >-
+        You want to keep only the orders that were shipped, not every order.
+        Which clause lets you filter rows so only the ones matching a condition
+        come back?
+      - >-
+        Add a <code>WHERE</code> clause that compares the <code>status</code>
+        column to the text value you care about — remember text goes in single
+        quotes.
+      - >-
+        Use <code>SELECT * FROM orders WHERE status = 'shipped'</code> so only
+        rows whose status equals <em>shipped</em> are returned.

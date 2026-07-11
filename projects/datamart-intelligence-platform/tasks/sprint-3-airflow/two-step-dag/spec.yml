@@ -8,6 +8,21 @@ checks:
   - type: airflow
     name: the two-step DAG runs successfully
     dag_id: two_step_pipeline
+    hints:
+      - >-
+        A DAG is a set of tasks plus the order they run in, and the run only
+        succeeds when every task finishes. The grader runs your DAG by its id —
+        do both tasks complete, and does <em>load</em> run <em>after</em>
+        <em>extract</em>?
+      - >-
+        Both tasks are <code>PythonOperator</code>s inside
+        <code>with DAG(dag_id="two_step_pipeline", …) as dag:</code>; make
+        <code>load</code> return instead of raising, and set the run order with
+        <code>a &gt;&gt; b</code>.
+      - >-
+        Have <code>load</code> return a value, then wire
+        <code>extract_task &gt;&gt; load_task</code> so load runs after extract,
+        all under <code>dag_id="two_step_pipeline"</code>.
   - type: file_contains
     name: wires the task dependency (>>)
     pattern: "(?is)\\w+\\s*>>\\s*\\w+"
