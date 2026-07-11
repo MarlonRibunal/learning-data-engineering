@@ -1,0 +1,62 @@
+title: "Capstone: the Stateful Streaming Monitor"
+submission_path: submissions/capstone/streaming_pipeline.py
+scaffold: scaffold/streaming_pipeline.py
+solution: solution/streaming_pipeline.py
+
+# Composite: one deliverable, three REAL Spark Structured Streaming queries.
+# Each is a watermarked, stateful windowed aggregation — the grader opens a
+# streaming source, runs your query with trigger(availableNow), and checks the
+# streamed result.
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: spark_streaming
+    name: "stage 1 — windowed revenue (stateful sum)"
+    entry: windowed_revenue
+    inputs:
+      events:
+        - {ts: "2026-01-01 09:03:00", user: a, amount: 10}
+        - {ts: "2026-01-01 09:07:00", user: b, amount: 20}
+        - {ts: "2026-01-01 09:12:00", user: a, amount: 30}
+        - {ts: "2026-01-01 09:18:00", user: a, amount: 5}
+        - {ts: "2026-01-01 09:25:00", user: b, amount: 15}
+    expect:
+      - {window_start: "2026-01-01 09:00:00", revenue: 30}
+      - {window_start: "2026-01-01 09:10:00", revenue: 35}
+      - {window_start: "2026-01-01 09:20:00", revenue: 15}
+  - type: spark_streaming
+    name: "stage 2 — active users per window (stateful distinct)"
+    entry: active_users
+    inputs:
+      events:
+        - {ts: "2026-01-01 09:03:00", user: a, amount: 10}
+        - {ts: "2026-01-01 09:07:00", user: b, amount: 20}
+        - {ts: "2026-01-01 09:12:00", user: a, amount: 30}
+        - {ts: "2026-01-01 09:18:00", user: a, amount: 5}
+        - {ts: "2026-01-01 09:25:00", user: b, amount: 15}
+    expect:
+      - {window_start: "2026-01-01 09:00:00", active_users: 2}
+      - {window_start: "2026-01-01 09:10:00", active_users: 1}
+      - {window_start: "2026-01-01 09:20:00", active_users: 1}
+  - type: spark_streaming
+    name: "stage 3 — peak-revenue window (alert)"
+    entry: peak_window
+    inputs:
+      events:
+        - {ts: "2026-01-01 09:03:00", user: a, amount: 10}
+        - {ts: "2026-01-01 09:07:00", user: b, amount: 20}
+        - {ts: "2026-01-01 09:12:00", user: a, amount: 30}
+        - {ts: "2026-01-01 09:18:00", user: a, amount: 5}
+        - {ts: "2026-01-01 09:25:00", user: b, amount: 15}
+    expect:
+      - {window_start: "2026-01-01 09:10:00", revenue: 35}
+
+proof:
+  title: "Stateful Streaming Monitor"
+  summary: >
+    A real Spark Structured Streaming pipeline: an unbounded event stream is
+    aggregated into watermarked, stateful windows — revenue and active users
+    per window — and scanned for the peak-revenue window. Every stage runs as
+    an actual streaming query (readStream → writeStream), not a batch.
+  pipeline: |
+    event stream ──readStream──▶ watermark + window ──▶ revenue / active-users per window ──max──▶ 🔔 peak window
