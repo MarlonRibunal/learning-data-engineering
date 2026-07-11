@@ -1,0 +1,13 @@
+title: "Streaming: which partition does a key go to?"
+order: 3
+submission_path: submissions/streaming/partition_for.py
+scaffold: scaffold/partition_for.py
+solution: solution/partition_for.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: maps a key to a partition deterministically
+    entry: partition_for
+    args: [105, 4]
+    expect: 1
