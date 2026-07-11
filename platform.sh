@@ -16,8 +16,12 @@ cd "$ROOT"
 VENV="$ROOT/.venv"
 PY="${PYTHON:-python3}"
 
-# Services the grader actually needs (the host-run web app is separate).
-STACK_SERVICES="postgres dbt-service airflow-init airflow-scheduler redpanda"
+# The full platform stack: the warehouse + dbt + the Airflow UI & scheduler +
+# the Redpanda broker & console + PGAdmin. The lesson-runner web app is host-run
+# (below) on 8501, so we don't start the compose `streamlit` service here.
+# Students reach every UI from the app's "Platform" page.
+STACK_SERVICES="postgres dbt-service airflow-init airflow-webserver airflow-scheduler \
+redpanda redpanda-console pgadmin"
 
 say() { printf '\033[36m▸ %s\033[0m\n' "$*"; }
 die() { printf '\033[31m✗ %s\033[0m\n' "$*" >&2; exit 1; }
@@ -40,7 +44,12 @@ stack_up() {
   say "waiting for Postgres to be ready"
   for _ in $(seq 1 60); do
     if docker compose exec -T postgres pg_isready -U airflow >/dev/null 2>&1; then
-      printf '\033[32m✓ stack is up\033[0m\n'; return 0
+      printf '\033[32m✓ stack is up\033[0m\n'
+      printf '  the platform surfaces (also linked in the app):\n'
+      printf '    Airflow          http://localhost:8080  (admin / admin)\n'
+      printf '    PGAdmin          http://localhost:8081  (admin@datamart.com / admin)\n'
+      printf '    Redpanda Console http://localhost:8082\n'
+      return 0
     fi
     sleep 2
   done

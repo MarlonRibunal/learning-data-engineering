@@ -300,6 +300,48 @@ _SPRINT_PREVIEW = {
     "ingestion": ["landing.products_raw", "raw.products"],
 }
 
+# The real, open-source services that make up the platform (the Docker Compose
+# stack). The Platform page surfaces them with live status + open links so
+# students get first-hand experience of each tool.
+_SERVICES = [
+    {"name": "Learning app", "port": 8501, "creds": None, "here": True,
+     "desc": "The graded lesson-runner you're in right now — write code, get graded, get hints.",
+     "used": "Every sprint"},
+    {"name": "Airflow", "port": 8080, "creds": "admin / admin",
+     "desc": "Orchestrate and monitor pipelines — trigger your DAGs, watch task runs and logs.",
+     "used": "Sprint 4 · Workflow Orchestration"},
+    {"name": "PGAdmin", "port": 8081, "creds": "admin@datamart.com / admin",
+     "desc": "Browse and query the warehouse visually — inspect the tables your SQL builds.",
+     "used": "Sprints 1–9 · explore the warehouse"},
+    {"name": "Redpanda Console", "port": 8082, "creds": None,
+     "desc": "Watch events flow across Kafka topics in real time as your producers run.",
+     "used": "Sprint 10 · Streaming Data"},
+]
+
+# Paid/cloud services the curriculum teaches — simulated locally so nobody needs
+# an account or a credit card. Each links to the levels where you use it.
+_SIMULATED = [
+    {"name": "BigQuery", "vendor": "Google Cloud",
+     "desc": "Serverless warehouse & pay-per-byte cost model — simulated as local pyfunc levels.",
+     "sprint": "sprint-cloud", "used": "Sprint 6 · scan-cost, partition-prune"},
+    {"name": "Databricks / Delta Lake", "vendor": "Databricks",
+     "desc": "Lakehouse: medallion refinement, MERGE upserts, time travel — simulated locally.",
+     "sprint": "sprint-cloud", "used": "Sprint 6 · medallion-silver, delta-merge, time-travel"},
+    {"name": "Cloud Job API", "vendor": "AWS/GCP/Azure",
+     "desc": "Submit/poll remote batch jobs with timeouts and retries — simulated locally.",
+     "sprint": "sprint-5-hybrid-cloud", "used": "Sprint 7 · Hybrid Pipelines"},
+]
+
+
+def _svc_up(port: int) -> bool:
+    """Best-effort liveness probe for a local service port (short timeout)."""
+    import socket
+    try:
+        with socket.create_connection(("127.0.0.1", port), timeout=0.4):
+            return True
+    except OSError:
+        return False
+
 
 def _sprint_counts(tasks, progress) -> dict[str, list[int]]:
     counts: dict[str, list[int]] = {}
@@ -720,6 +762,13 @@ code{font-family:'SF Mono',ui-monospace,Menlo,monospace;}
 .sprint-intro{font-size:.88rem; color:var(--muted); line-height:1.55; max-width:680px; margin-bottom:13px;}
 .sprint-skills{display:flex; align-items:center; gap:9px; flex-wrap:wrap; margin-bottom:15px;}
 .sprint-skills-lbl{font-size:.6rem; font-weight:650; letter-spacing:.08em; text-transform:uppercase; color:var(--faint);}
+/* Platform page service cards */
+.scard.svc{cursor:default;}
+.svc-foot{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:2px;}
+.svc-open{margin-left:auto; font-size:.78rem; font-weight:600; color:var(--accent-h)!important;
+  border:1px solid var(--line); border-radius:7px; padding:3px 11px; text-decoration:none!important;}
+.svc-open:hover{background:var(--panel-2); border-color:var(--accent-h);}
+.svc-here{margin-left:auto; font-size:.7rem; font-weight:600; color:var(--green-ink);}
 </style>
 """
 
@@ -736,6 +785,7 @@ _ICON = {
     "tutor": _ic('<path d="M12 4 2 9l10 5 10-5-10-5z"/><path d="M6 11v5c0 1 3 2.5 6 2.5s6-1.5 6-2.5v-5"/>'),
     "gear": _ic('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>'),
     "caret": _ic('<path d="M6 9l6 6 6-6"/>'),
+    "platform": _ic('<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>'),
     "code": _ic('<path d="M8 9l-3 3 3 3M16 9l3 3-3 3"/>'),
     "check": _ic('<path d="M20 6L9 17l-5-5"/>'),
     "arrow": _ic('<path d="M5 12h14M13 6l6 6-6 6"/>'),
@@ -841,6 +891,7 @@ def _sidebar_html(tasks, progress, view, f, done, inprog, total) -> str:
         + sub("all", "All levels", total)
         + '</div>'
         + '<div class="lf-cap">More</div>'
+        + _nav("platform", "platform", "Platform", view == "platform")
         + _nav("glossary", "reading", "Glossary", view == "glossary")
         + _nav("settings", "gear", "Settings", view == "settings")
         + f'<div class="lf-card"><div class="lf-card-top">'
@@ -885,6 +936,8 @@ def main() -> None:
     # ---- route on the URL ----
     if view == "settings":
         _render_settings()
+    elif view == "platform":
+        _render_services()
     elif view == "glossary":
         _render_glossary()
     elif view == "curriculum":
@@ -979,6 +1032,57 @@ def _render_sprint(sprint, tasks, progress) -> None:
                              disabled=locked, icon=icon,
                              type="primary" if highlight else "secondary"):
                     _goto("task", s=sprint, t=task)
+
+
+def _render_services() -> None:
+    """The Platform page: a surface onto every service in the stack, plus the
+    simulated cloud services — so students experience each tool first-hand."""
+    st.markdown('<div class="hero"><div class="hero-title">Platform</div>'
+                '<div class="hero-sub">The data platform you\'re learning on — reach every service '
+                'here. Bring the full stack up with <code>./platform.sh</code>; the paid cloud tools '
+                'are simulated locally, so you never need an account or a credit card.</div></div>',
+                unsafe_allow_html=True)
+
+    st.markdown('<div class="phase-head"><span class="phase-title">Live services</span>'
+                '<span class="phase-rule"></span></div>', unsafe_allow_html=True)
+    any_down = False
+    cards = []
+    for s in _SERVICES:
+        up = True if s.get("here") else _svc_up(s["port"])
+        any_down = any_down or (not up and not s.get("here"))
+        dot = "done" if up else "new"
+        status = "Running" if up else "Not started"
+        creds = f'<span class="chip">🔑 {s["creds"]}</span>' if s.get("creds") else ""
+        link = ('<span class="svc-here">You are here</span>' if s.get("here")
+                else f'<a class="svc-open" href="http://localhost:{s["port"]}" '
+                     f'target="_blank" rel="noopener">Open ↗</a>')
+        cards.append(
+            f'<div class="scard svc">'
+            f'<div class="scard-role"><span class="dot d-{dot}"></span>'
+            f'{status} · localhost:{s["port"]}</div>'
+            f'<div class="scard-name">{s["name"]}</div>'
+            f'<div class="scard-focus">{s["desc"]}</div>'
+            f'<div class="svc-foot"><span class="chip">{s["used"]}</span>{creds}{link}</div>'
+            f'</div>')
+    st.markdown(f'<div class="sc-grid">{"".join(cards)}</div>', unsafe_allow_html=True)
+    if any_down:
+        st.caption("Some services are dark — bring the full stack up with `./platform.sh up` "
+                   "(needs Docker). The learning app and pure-Python levels work without it.")
+
+    st.markdown('<div class="phase-head"><span class="phase-title">Cloud services — simulated</span>'
+                '<span class="phase-rule"></span></div>'
+                '<div class="phase-intro">Paid cloud tools are taught as faithful local simulations — '
+                'the concepts and APIs, none of the accounts or bills. Open one to jump to its '
+                'levels.</div>', unsafe_allow_html=True)
+    cards = []
+    for s in _SIMULATED:
+        cards.append(
+            f'<a class="scard" href="?v=sprint&amp;s={s["sprint"]}" target="_self">'
+            f'<div class="scard-role"><span class="dot d-wip"></span>{s["vendor"]} · simulated</div>'
+            f'<div class="scard-name">{s["name"]}</div>'
+            f'<div class="scard-focus">{s["desc"]}</div>'
+            f'<div class="svc-foot"><span class="chip">{s["used"]}</span></div></a>')
+    st.markdown(f'<div class="sc-grid">{"".join(cards)}</div>', unsafe_allow_html=True)
 
 
 def _render_glossary() -> None:
