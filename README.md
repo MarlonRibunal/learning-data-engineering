@@ -9,7 +9,7 @@
 ![Platform](https://img.shields.io/badge/Platform-Mac%20%7C%20Linux%20%7C%20Windows-green)
 
 **A complete, containerized data engineering learning platform**  
-*Master modern data engineering in 6 months • Zero local installations • Production-ready projects*
+*112 hands-on levels graded against a real stack — not a simulation • offline hint ladders + an optional AI tutor • learn by doing in one Docker container*
 
 [**Quick Start**](#one-command-setup) • 
 [**Learning Path**](#complete-learning-path) • 
@@ -41,12 +41,12 @@ We've built the platform we wish existed when we started our data engineering jo
 
 | Traditional Learning | This Platform |
 |---------------------|---------------|
-| Scattered tutorials | **Structured 6-month blueprint** |
-| Local installations | **100% containerized** |
+| Passive video courses | **Graded exercises — you write real code, the stack checks it** |
+| Stuck with nowhere to turn | **Progressive hint ladders (offline) + an optional AI tutor** |
+| Scattered tutorials | **Structured 5-phase, 20-sprint curriculum** |
+| Local installations | **One self-contained container, progress persists** |
 | Theoretical concepts | **Real portfolio projects** |
-| Solo learning | **Community-driven** |
 | Hello-world examples | **Production-grade code** |
-| Static content | **Active development** |
 
 
 ## One-Command Setup
@@ -244,13 +244,20 @@ over the env vars.
 
 ```
 learning-data-engineering/
-├── 🐳 Complete Containerized Environment
-├── 📚 12 Detailed Sprint Guides
-├── 🛠️ Production-Ready Projects
+├── 🐳 One self-contained study container — progress persists across power-downs
+├── 🧭 112 graded levels · 20 sprints · 5 phases (Foundations → Capstone)
+├── ✅ A real grader — 13 check types (SQL, dbt, Airflow, Spark, streaming, pyfunc…)
+├── 💡 Progressive hint ladders on every level (offline) + an optional AI tutor
+├── 🎨 Learnify-style Curriculum browser · light / dark theme (persists)
 ├── 📊 Example Data Pipeline (Datamart Intelligence Platform)
-├── 📖 Comprehensive Documentation
-└── 🎯 Interview Preparation Materials
+└── 📖 Blueprint, sprint guides & a data-engineering glossary
 ```
+
+### Learning features
+
+- **Learn by doing, graded for real.** Each level ships an incomplete scaffold; you edit it and hit **Check my work**. The grader runs your code against the live stack (or a fast in-process check) and only passes when it's *correct* — not just when it runs.
+- **Never stuck.** Fail a check and a **hint ladder** reveals author-written nudges one at a time (nudge → concept → near-answer), fully offline. Want a personal, code-aware hint? Turn on the **AI tutor** in Settings (bring your own Anthropic or OpenAI key — it never gives the answer, and it's off until you enable it).
+- **Yours, saved.** Your progress, submissions, hint state, theme, and tutor settings live on the container's state volume, so studying survives a restart. A **light/dark theme** toggle (Auto/Light/Dark) persists across sessions.
 
 ### Featured Project: Datamart Intelligence Platform
 
