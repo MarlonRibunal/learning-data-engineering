@@ -9,3 +9,16 @@ checks:
   - type: sql_result
     name: returns the correct rows
     ordered: false
+    hints:
+      - >-
+        You want each customer with how many orders they placed, but only those
+        who ordered more than once. Counting per customer means grouping their
+        rows first — but you can't use a plain row filter on a count. Why not?
+      - >-
+        Group with <code>GROUP BY customer_id</code> and count each customer's
+        rows using <code>COUNT(*) AS order_count</code>. A <code>WHERE</code>
+        clause runs before grouping, so it can't see the count.
+      - >-
+        Filter the groups after counting with
+        <code>HAVING COUNT(*) &gt; 1</code> so only customers with more than one
+        order remain.

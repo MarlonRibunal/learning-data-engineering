@@ -10,4 +10,17 @@ checks:
     name: catches the bad rows, ignores the good
     clean_seed: projects/datamart-intelligence-platform/seeds/raw_seed.sql
     dirty_seed: projects/datamart-intelligence-platform/seeds/dq/dirty_negative.sql
+    hints:
+      - >-
+        A data test is a query that returns the <em>offending</em> rows: zero
+        rows means the data is clean, any rows means a problem. Which
+        <code>orders</code> should this query surface — the healthy ones, or the
+        ones whose money went the wrong way?
+      - >-
+        A charge can never be below zero, so filter the orders with
+        <code>WHERE total_amount &lt; 0</code> to keep only the impossible ones.
+      - >-
+        <code>SELECT * FROM orders WHERE total_amount &lt; 0</code> returns
+        nothing on the clean seed and the planted negative order on the dirty
+        seed.
     hint: "return the orders whose total_amount is negative"

@@ -8,6 +8,20 @@ checks:
   - type: dbt_test
     name: high_value_orders builds and passes its tests
     select: high_value_orders
+    hints:
+      - >-
+        The model must return the individual orders worth more than 100 —
+        <em>order_id</em> and <em>total_amount</em>, one row per qualifying
+        order. Selecting every order keeps all five; how do you drop the cheap
+        ones?
+      - >-
+        Read from <code>{{ source('raw', 'orders') }}</code> and add a
+        <code>WHERE total_amount &gt; 100</code> clause — you're filtering rows
+        here, not collapsing them, so no <code>GROUP BY</code> is needed.
+      - >-
+        <code>SELECT order_id, total_amount FROM {{ source('raw', 'orders') }}
+        WHERE total_amount &gt; 100</code> — 3 rows (250.00, 120.50, 500.00),
+        with the two orders at or below 100 dropped.
   - type: sql_assert
     name: keeps only the orders over 100
     query: "SELECT COUNT(*)::int FROM analytics_analytics.high_value_orders"

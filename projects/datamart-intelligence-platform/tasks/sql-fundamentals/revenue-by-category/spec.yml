@@ -9,3 +9,16 @@ checks:
   - type: sql_result
     name: returns the correct rows
     ordered: true
+    hints:
+      - >-
+        You need one row per category with all of that category's revenue added
+        up — so many order rows have to collapse into a single total per
+        category. Which clause groups rows that share the same category?
+      - >-
+        Use <code>GROUP BY category</code> and add up the money with
+        <code>SUM(total_amount)</code>, giving that total a name like
+        <code>AS revenue</code>.
+      - >-
+        Finish by sorting highest-first with
+        <code>ORDER BY revenue DESC</code> so the biggest category appears at
+        the top.

@@ -10,4 +10,18 @@ checks:
     name: catches an order with no customer_id
     clean_seed: projects/datamart-intelligence-platform/seeds/raw_seed.sql
     dirty_seed: projects/datamart-intelligence-platform/seeds/dq/dirty_null_customer.sql
+    hints:
+      - >-
+        A data test is a query that returns the <em>offending</em> rows: zero
+        rows means the data is clean, any rows means a problem. Every order is
+        supposed to belong to a customer, so which <code>raw.orders</code> rows
+        should this query surface?
+      - >-
+        A missing customer shows up as a null, and nulls are matched with
+        <code>IS NULL</code>, not <code>=</code>: filter with
+        <code>WHERE customer_id IS NULL</code>.
+      - >-
+        <code>SELECT order_id FROM raw.orders WHERE customer_id IS NULL</code>
+        returns nothing on the clean seed and the customer-less order on the
+        dirty seed.
     hint: "return the orders whose customer_id IS NULL"

@@ -8,6 +8,21 @@ checks:
   - type: dbt_test
     name: revenue_by_customer builds and passes its tests
     select: revenue_by_customer
+    hints:
+      - >-
+        The model needs one row per <em>customer name</em> with that customer's
+        total revenue. Orders only store a <em>customer_id</em>, not a name —
+        where does the name have to come from?
+      - >-
+        Join <code>{{ source('raw', 'orders') }}</code> to
+        <code>{{ source('raw', 'customers') }}</code> on <code>customer_id</code>,
+        then <code>GROUP BY customer_name</code> and
+        <code>SUM(total_amount) AS revenue</code>.
+      - >-
+        <code>SELECT c.customer_name, SUM(o.total_amount) AS revenue FROM {{
+        source('raw', 'orders') }} o JOIN {{ source('raw', 'customers') }} c ON
+        o.customer_id = c.customer_id GROUP BY c.customer_name</code> — 4 rows
+        totalling 986.
   - type: sql_assert
     name: one row per customer
     query: "SELECT COUNT(*)::int FROM analytics_analytics.revenue_by_customer"

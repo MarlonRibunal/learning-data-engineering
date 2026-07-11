@@ -17,6 +17,19 @@ checks:
     hint: >
       Your model must return one row per status with total revenue.
       Read from source('raw','orders') and SUM(total_amount) grouped by status.
+    hints:
+      - >-
+        The model needs one row per order <em>status</em> with that status's
+        total revenue. A raw <code>SELECT *</code> from orders won't collapse to
+        one row per status — what has to change?
+      - >-
+        Read from <code>{{ source('raw', 'orders') }}</code>, then
+        <code>GROUP BY status</code> and <code>SUM(total_amount) AS revenue</code>
+        so each status becomes a single row.
+      - >-
+        <code>SELECT status, SUM(total_amount) AS revenue FROM {{ source('raw',
+        'orders') }} GROUP BY status</code> — 3 rows (shipped, pending,
+        cancelled) totalling 986.
   # Correctness, not just structure: a stub that returns a fake row passes the
   # not_null/unique tests, so we also assert the numbers are right.
   - type: sql_assert

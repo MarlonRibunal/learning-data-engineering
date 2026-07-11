@@ -9,3 +9,16 @@ checks:
   - type: sql_result
     name: returns the correct rows
     ordered: false
+    hints:
+      - >-
+        You can't compare each order to the average until you know the average —
+        and that itself takes a query. How can you run one query to get the
+        average and use its result inside another?
+      - >-
+        Compute the average in a subquery in parentheses:
+        <code>(SELECT AVG(total_amount) FROM orders)</code>, then compare each
+        order's <code>total_amount</code> against it.
+      - >-
+        Use <code>SELECT * FROM orders WHERE total_amount &gt; (SELECT
+        AVG(total_amount) FROM orders)</code> to keep only the above-average
+        orders.

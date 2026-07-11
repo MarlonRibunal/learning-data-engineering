@@ -74,6 +74,32 @@ def test_spark_and_streaming_rungs_ship_a_hint_ladder(spec_file):
         assert all(isinstance(h, str) and h.strip() for h in hints)
 
 
+# The foundational sprints beginners hit first. Each rung has the learner editing
+# ONE file, so a single ladder rides the PRIMARY (first non-file_exists) check;
+# secondary sql_assert/file_contains checks keep their own inline hint: one-liner.
+FUNDAMENTALS_SPRINTS = [
+    "sql-fundamentals", "ingestion", "data-quality", "sprint-2-dbt", "sprint-3-airflow",
+]
+
+
+def _fundamentals_specs():
+    specs = []
+    for sprint in FUNDAMENTALS_SPRINTS:
+        specs += sorted((TASKS / sprint).glob("*/spec.yml"))
+    return specs
+
+
+@pytest.mark.parametrize("spec_file", _fundamentals_specs(), ids=lambda p: f"{p.parent.parent.name}/{p.parent.name}")
+def test_fundamentals_rungs_ship_a_hint_ladder(spec_file):
+    spec = yaml.safe_load(spec_file.read_text())
+    logic = [c for c in spec["checks"] if c["type"] != "file_exists"]
+    assert logic, f"{spec_file} has no logic check"
+    primary = logic[0]
+    hints = primary.get("hints")
+    assert hints and len(hints) == 3, f"{spec_file}: primary '{primary.get('name')}' lacks a 3-hint ladder"
+    assert all(isinstance(h, str) and h.strip() for h in hints)
+
+
 def test_hint_selection_matches_the_failing_check():
     st = pytest.importorskip("streamlit")  # noqa: F841 - runner imports streamlit
     import sys

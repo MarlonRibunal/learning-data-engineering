@@ -8,6 +8,20 @@ checks:
   - type: airflow
     name: the retry DAG runs successfully
     dag_id: retry_pipeline
+    hints:
+      - >-
+        Resilience settings like how many times a task retries live on the task
+        (the operator) or in the DAG's <code>default_args</code>, not in the
+        function body. How do you tell the <em>work</em> task to try again on a
+        transient failure?
+      - >-
+        Pass a retry count to the operator:
+        <code>PythonOperator(task_id="work", python_callable=do_work, retries=2)</code>
+        (optionally with a <code>retry_delay</code>).
+      - >-
+        Add <code>retries=2</code> to the <code>work</code>
+        <code>PythonOperator</code> inside the DAG declared as
+        <code>dag_id="retry_pipeline"</code>.
   - type: file_contains
     name: configures retries (>= 1)
     pattern: "(?is)retries\\s*=\\s*[1-9]"

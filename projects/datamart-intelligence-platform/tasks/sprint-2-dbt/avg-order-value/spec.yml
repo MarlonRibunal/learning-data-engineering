@@ -8,6 +8,21 @@ checks:
   - type: dbt_test
     name: avg_order_value builds and passes its tests
     select: avg_order_value
+    hints:
+      - >-
+        The model needs one row per order <em>status</em> with the
+        <em>average</em> order value for that status, rounded to 2 places. The
+        raw orders don't collapse to one row per status on their own — what has
+        to change?
+      - >-
+        Read from <code>{{ source('raw', 'orders') }}</code>, then
+        <code>GROUP BY status</code> and
+        <code>ROUND(AVG(total_amount), 2) AS avg_amount</code> so each status
+        becomes a single averaged row.
+      - >-
+        <code>SELECT status, ROUND(AVG(total_amount), 2) AS avg_amount FROM {{
+        source('raw', 'orders') }} GROUP BY status</code> — 3 rows; shipped
+        averages 870.50 / 3 = 290.
   - type: sql_assert
     name: one row per status
     query: "SELECT COUNT(*)::int FROM analytics_analytics.avg_order_value"

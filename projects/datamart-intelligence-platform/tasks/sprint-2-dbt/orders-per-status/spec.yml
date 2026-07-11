@@ -8,6 +8,19 @@ checks:
   - type: dbt_test
     name: orders_per_status builds and passes its tests
     select: orders_per_status
+    hints:
+      - >-
+        The model needs one row per order <em>status</em> with the number of
+        orders in that status. A plain select of the orders rows gives you five
+        rows, not one per status — what has to change?
+      - >-
+        Read from <code>{{ source('raw', 'orders') }}</code>, then
+        <code>GROUP BY status</code> and <code>COUNT(*) AS order_count</code> so
+        each status collapses to a single row.
+      - >-
+        <code>SELECT status, COUNT(*) AS order_count FROM {{ source('raw',
+        'orders') }} GROUP BY status</code> — 3 rows (shipped 3, pending 1,
+        cancelled 1) summing to 5 orders.
   - type: sql_assert
     name: one row per status
     query: "SELECT COUNT(*)::int FROM analytics_analytics.orders_per_status"
