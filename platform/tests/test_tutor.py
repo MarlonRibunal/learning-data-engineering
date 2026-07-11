@@ -109,6 +109,15 @@ def test_corrupt_settings_never_raise(tmp_path):
     assert settings.load(tmp_path) == {}
 
 
+def test_prefs_theme_persists_separately_from_tutor(tmp_path):
+    # theme prefs live in their own file, not the (0600, key-bearing) tutor file
+    settings.save(tmp_path, {"theme": "Dark"}, settings.PREFS_FILENAME)
+    settings.save(tmp_path, {"api_key": "sk-x"})  # tutor file, default name
+    assert settings.load(tmp_path, settings.PREFS_FILENAME)["theme"] == "Dark"
+    assert "theme" not in settings.load(tmp_path)          # not in the tutor file
+    assert (tmp_path / settings.PREFS_FILENAME).is_file()  # survives a "restart" (fresh read)
+
+
 def test_env_only_setup_enables_tutor(tmp_path, monkeypatch):
     monkeypatch.setenv(tutor.KEY_ENV, "sk-ant-env")
     cfg = resolve_config(tmp_path)

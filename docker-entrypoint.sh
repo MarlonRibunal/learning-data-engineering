@@ -23,9 +23,10 @@ mkdir -p "$STATE/submissions"
 # --- persistence: keep progress + submitted code on the volume, symlinked in ---
 [ -f "$STATE/.progress.json" ] || echo '{}' > "$STATE/.progress.json"
 ln -sfn "$STATE/.progress.json" /app/.progress.json
-# Tutor settings (provider/model/key). Written through the symlink onto the
-# volume when the user saves them in the app, so they survive a power-down.
+# Tutor settings (provider/model/key) and UI prefs (theme). Written through the
+# symlink onto the volume when saved in the app, so they survive a power-down.
 ln -sfn "$STATE/.tutor.json" /app/.tutor.json
+ln -sfn "$STATE/.prefs.json" /app/.prefs.json
 [ -L /app/submissions ] || rm -rf /app/submissions
 ln -sfn "$STATE/submissions" /app/submissions
 

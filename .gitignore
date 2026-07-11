@@ -11,6 +11,7 @@ __pycache__/
 # (inline comments are not supported in .gitignore — keep patterns on their own line)
 .progress.json
 .tutor.json
+.prefs.json
 submissions/
 portfolio/
 .venv/
@@ -21,3 +22,4 @@ projects/**/dbt/target/
 projects/**/dbt/logs/
 projects/**/dbt/dbt_packages/
 config/.user.yml
+.gstack/
