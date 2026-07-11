@@ -140,12 +140,20 @@ hint* button reveals author-written hints one at a time — a nudge, then the
 concept, then a near-answer — matched to the exact check you failed. It's fully
 offline and your place in the ladder is saved with the rest of your progress.
 
-Want a **personal, code-aware nudge**? Export an [Anthropic API
-key](https://console.anthropic.com/) as `LDE_TUTOR_KEY` and an *Ask the tutor*
-button appears on a failed check. It sends *your* code and the exact failure to
-Claude and returns one Socratic hint — **never the answer**. It's strictly
-opt-in: with no key set, nothing changes and the offline hints are the whole
+Want a **personal, code-aware nudge**? Open **Settings** in the sidebar and turn
+on the AI tutor. Pick your provider — **Anthropic (Claude)** or **OpenAI (GPT)** —
+paste an API key, and an *Ask the tutor* button appears on a failed check. It
+sends *your* code and the exact failure to your chosen model and returns one
+Socratic hint — **never the answer**.
+
+It's strictly opt-in and private: the tutor is **off until you turn it on**, your
+key is stored locally on the state volume (`.tutor.json`, gitignored, owner-only)
+and persists across restarts, and nothing leaves the machine except the tutor
+requests you trigger. With the tutor off, the offline hint ladders are the whole
 story.
+
+Prefer env vars (e.g. for a headless run)? Set `LDE_TUTOR_KEY` — it acts as a
+fallback key and enables the tutor automatically:
 
 ```bash
 docker run -d -p 8501:8501 -v learn-data-engineering-state:/app/state \
@@ -153,7 +161,8 @@ docker run -d -p 8501:8501 -v learn-data-engineering-state:/app/state \
   --name learn-data-engineering learn-data-engineering
 ```
 
-Set `LDE_TUTOR_MODEL` to override the model (defaults to a current Claude model).
+`LDE_TUTOR_MODEL` overrides the model. In-app Settings always take precedence
+over the env vars.
 
 
 ## Complete Learning Path

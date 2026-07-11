@@ -13,6 +13,7 @@ no hosting, no login.
 
 from __future__ import annotations
 
+import os
 import socket
 import sys
 from pathlib import Path
@@ -32,6 +33,7 @@ from grader.spec import SpecError, TaskSpec, load_spec  # noqa: E402
 REPO_ROOT = Path(__file__).resolve().parents[2]
 GLOSSARY = REPO_ROOT / "docs" / "cheatsheets" / "glossary.md"
 HOME = ("__home__", None)
+SETTINGS = ("__settings__", None)
 
 _REAL_INFRA_CHECKS = {"sql_assert", "dbt_test", "airflow"}
 _SPRINT_LABELS = {
@@ -594,6 +596,14 @@ def main() -> None:
                              type="primary" if sel == (sprint, task) else "secondary"):
                     st.session_state.sel = (sprint, task)
 
+    st.sidebar.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+    if st.sidebar.button("Settings", icon=":material/settings:", use_container_width=True,
+                         type="primary" if sel == SETTINGS else "secondary"):
+        st.session_state.sel = SETTINGS
+
+    if st.session_state.sel == SETTINGS:
+        _render_settings()
+        return
     sel_sprint, sel_task = st.session_state.sel
     if sel_sprint == HOME[0]:
         _render_home(tasks, progress, done)
@@ -627,6 +637,78 @@ def _render_home(tasks, progress, done) -> None:
     if GLOSSARY.is_file():
         with st.expander("Glossary — data engineering terms", icon=":material/book_2:"):
             st.markdown(GLOSSARY.read_text())
+
+
+def _render_settings() -> None:
+    """Admin surface: turn the AI tutor on/off and save the LLM of your choice.
+
+    The key lives on your state volume (gitignored, owner-only) — never
+    committed, never sent anywhere except the LLM calls you opt into.
+    """
+    from grader import settings as tsettings
+    from grader.tutor import KEY_ENV, PROVIDERS, resolve_config
+
+    st.markdown('<div class="hero"><div class="hero-title">Settings</div>'
+                '<div class="hero-sub">Optional AI tutor — a personal, code-aware nudge '
+                'when you fail a check. It never gives the answer, and it is off until '
+                'you turn it on. Bring your own model and key; everything stays on this '
+                'machine.</div></div>', unsafe_allow_html=True)
+
+    cfg = resolve_config(REPO_ROOT)
+    saved = tsettings.load(REPO_ROOT)
+    has_saved_key = bool((saved.get("api_key") or "").strip())
+    provider_keys = list(PROVIDERS)
+
+    with st.container(border=True):
+        st.markdown(f'<div class="sec">{_ICON["tutor"]} AI Tutor</div>',
+                    unsafe_allow_html=True)
+        enabled = st.toggle("Enable the AI tutor", value=cfg.enabled,
+                            help="When off, the offline hint ladders are the whole story.")
+        provider = st.selectbox(
+            "Provider", provider_keys,
+            index=provider_keys.index(cfg.provider) if cfg.provider in provider_keys else 0,
+            format_func=lambda k: PROVIDERS[k]["label"])
+        model = st.text_input("Model", value=cfg.model,
+                              help=f"Default for this provider: {PROVIDERS[provider]['default_model']}")
+        key_input = st.text_input(
+            "API key", type="password",
+            placeholder="•••••••• (saved)" if has_saved_key else f"{PROVIDERS[provider]['key_prefix']}…",
+            help="Stored locally in .tutor.json on your state volume (gitignored, chmod 600). "
+                 "Leave blank to keep the key you already saved.")
+
+        c1, c2 = st.columns(2)
+        if c1.button("Save", type="primary", use_container_width=True, icon=":material/save:"):
+            api_key = key_input.strip() or (saved.get("api_key") or "")
+            tsettings.save(REPO_ROOT, {
+                "enabled": bool(enabled),
+                "provider": provider,
+                "model": model.strip(),
+                "api_key": api_key,
+            })
+            st.success("Saved — persists across restarts on your state volume.")
+            st.rerun()
+        if c2.button("Clear key & disable", use_container_width=True,
+                     icon=":material/delete:", disabled=not has_saved_key):
+            tsettings.save(REPO_ROOT, {
+                "enabled": False, "provider": provider,
+                "model": model.strip(), "api_key": "",
+            })
+            st.success("Key cleared and tutor disabled.")
+            st.rerun()
+
+    now = resolve_config(REPO_ROOT)
+    if now.ready:
+        status = f'<span class="dot d-done"></span> Ready — {PROVIDERS[now.provider]["label"]} · {now.model}'
+    elif now.enabled:
+        status = '<span class="dot d-wip"></span> On, but no key yet — add one above'
+    else:
+        status = '<span class="dot d-new"></span> Off — offline hints only'
+    st.markdown(f'<div class="chk">{status}</div>', unsafe_allow_html=True)
+    if os.environ.get(KEY_ENV):
+        st.caption(f"The `{KEY_ENV}` environment variable is also set and is used as a "
+                   "fallback key when none is saved here.")
+    st.caption("Privacy: your key and code never leave this machine except in the tutor "
+               "requests you trigger. No key? The offline hint ladders cover every level.")
 
 
 def _render_task(sprint, task, progress, tasks) -> None:
@@ -845,11 +927,11 @@ def _render_tutor(spec, result, sprint, task) -> None:
     """
     from grader.tutor import tutor_available
 
-    if not tutor_available():
+    if not tutor_available(REPO_ROOT):
         return
     tkey = f"tutor-{sprint}-{task}"
     if st.button("Ask the tutor", icon=":material/school:", key=f"btn-{tkey}",
-                 help="A personal, code-aware nudge from Claude — never the answer."):
+                 help="A personal, code-aware nudge from your LLM — never the answer."):
         from grader.tutor import TutorRequest, TutorUnavailable, ask_tutor
 
         submission = REPO_ROOT / spec.submission_path
@@ -865,7 +947,7 @@ def _render_tutor(spec, result, sprint, task) -> None:
         )
         try:
             with st.spinner("The tutor is reading your code…"):
-                st.session_state[tkey] = ask_tutor(req)
+                st.session_state[tkey] = ask_tutor(req, repo_root=REPO_ROOT)
         except TutorUnavailable as exc:
             st.session_state.pop(tkey, None)
             st.warning(f"The tutor isn't available right now ({exc}) — your offline "
