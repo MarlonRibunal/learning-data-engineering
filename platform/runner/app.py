@@ -458,6 +458,17 @@ code{font-family:'SF Mono',ui-monospace,Menlo,monospace;}
 .chk .dot{width:8px; height:8px; border-radius:999px; margin-top:6px; flex:0 0 auto;}
 .d-done{background:var(--green);} .d-fail{background:var(--red);}
 .d-wip{background:var(--amber);} .d-new{background:var(--faint);}
+
+/* ---- progressive hints (the stuck-buster) — turn a FAIL into a step ---- */
+.hintbox{background:var(--amber-soft); border:1px solid var(--line);
+  border-left:3px solid var(--amber); border-radius:8px; padding:11px 14px; margin:8px 0;}
+.hintbox .hint-lbl{font-size:.64rem; font-weight:650; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--amber-ink); display:flex; align-items:center;
+  gap:6px; margin-bottom:4px;}
+.hintbox .hint-lbl .icon{width:14px; height:14px; color:var(--amber);}
+.hintbox .hint-txt{color:var(--ink); font-size:.9rem; line-height:1.5;}
+.hintbox .hint-txt code{background:var(--panel-2); border:1px solid var(--line);
+  border-radius:5px; padding:1px 5px; font-size:.85em;}
 </style>
 """
 
@@ -470,6 +481,7 @@ _ICON = {
     "home": _ic('<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>'),
     "book": _ic('<path d="M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h12"/>'),
     "reading": _ic('<path d="M12 6c-2-1.5-5-1.5-7 0v12c2-1.5 5-1.5 7 0 2-1.5 5-1.5 7 0V6c-2-1.5-5-1.5-7 0z"/><path d="M12 6v12"/>'),
+    "bulb": _ic('<path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.6.6 1 1.4 1 2.5h6c0-1.1.4-1.9 1-2.5A6 6 0 0 0 12 3z"/>'),
     "code": _ic('<path d="M8 9l-3 3 3 3M16 9l3 3-3 3"/>'),
     "check": _ic('<path d="M20 6L9 17l-5-5"/>'),
     "arrow": _ic('<path d="M5 12h14M13 6l6 6-6 6"/>'),
@@ -739,7 +751,7 @@ def _render_task(sprint, task, progress, tasks) -> None:
     stored = st.session_state.get(_res_key(sprint, task))
     if stored is not None:
         just = st.session_state.pop("_just_checked", None) == (sprint, task)
-        _render_result(stored, sprint, task, tasks, celebrate=just)
+        _render_result(stored, sprint, task, tasks, spec, celebrate=just)
 
 
 def _run_playground(sql: str) -> None:
@@ -761,7 +773,61 @@ def _run_playground(sql: str) -> None:
     st.caption(f"{len(res.rows)} row(s)" + (" (truncated)" if res.truncated else ""))
 
 
-def _render_result(result, sprint, task, tasks, celebrate=False) -> None:
+def _failing_hints(spec, result) -> list[str]:
+    """Author-written hints on the first failing check that carries any.
+
+    Hints live under a check's ``hints:`` list in spec.yml and are matched to
+    the check that actually failed, so a stuck learner gets a nudge about *their*
+    error — not a generic one. Offline, deterministic, no dependencies.
+    """
+    failed = {c.name for c in result.checks if c.status is Status.FAIL}
+    for chk in spec.checks:
+        name = chk.get("name") or chk.get("type")
+        if name in failed and chk.get("hints"):
+            return [str(h) for h in chk["hints"]]
+    return []
+
+
+def _render_hints(spec, result, sprint, task) -> None:
+    """A progressive, opt-in hint ladder shown under a failed check.
+
+    Nothing auto-spoils: the learner asks for the first hint, then escalates one
+    step at a time (nudge → concept → near-answer). The revealed count is
+    persisted, so the ladder survives a power-down and never resets its progress.
+    """
+    hints = _failing_hints(spec, result)
+    if not hints:
+        return
+    from grader.progress import hints_shown, reveal_hint
+
+    shown = min(hints_shown(REPO_ROOT, sprint, task), len(hints))
+    key = f"hint-{sprint}-{task}"
+
+    if shown == 0:
+        if st.button("Stuck? Show a hint", icon=":material/lightbulb:", key=key,
+                     help="A nudge about your specific error — try it before the worked solution."):
+            reveal_hint(REPO_ROOT, sprint, task)
+            st.rerun()
+        return
+
+    for i in range(shown):
+        st.markdown(
+            f'<div class="hintbox"><div class="hint-lbl">{_ICON["bulb"]}'
+            f'Hint {i + 1} of {len(hints)}</div>'
+            f'<div class="hint-txt">{hints[i]}</div></div>',
+            unsafe_allow_html=True,
+        )
+
+    if shown < len(hints):
+        if st.button("Show next hint", icon=":material/lightbulb:", key=key):
+            reveal_hint(REPO_ROOT, sprint, task)
+            st.rerun()
+    else:
+        st.caption("That's every hint. Still stuck? Open the worked solution above — "
+                   "then come back and rebuild it from memory.")
+
+
+def _render_result(result, sprint, task, tasks, spec=None, celebrate=False) -> None:
     _dot_cls = {"pass": "done", "fail": "fail", "error": "wip"}
     for check in result.checks:
         cls = _dot_cls.get(check.status.value, "new")
@@ -786,6 +852,8 @@ def _render_result(result, sprint, task, tasks, celebrate=False) -> None:
                    "Start it with `./platform.sh up` and try again.")
     else:
         st.error("Not yet — fix the items above and check again.")
+        if spec is not None:
+            _render_hints(spec, result, sprint, task)
 
 
 def _render_cleared(sprint, task, tasks, celebrate) -> None:

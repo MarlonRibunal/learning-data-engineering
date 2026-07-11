@@ -40,3 +40,21 @@ def record(repo_root: Path, sprint: str, task: str, status: str, *, now=None) ->
     task_state["last_run"] = stamp
     _path(repo_root).write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
     return data
+
+
+def hints_shown(repo_root: Path, sprint: str, task: str) -> int:
+    """How many progressive hints the learner has revealed for a task so far.
+
+    Persisted alongside progress so an escalating hint ladder survives a
+    power-down — the same promise as everything else in the container.
+    """
+    return int(load(repo_root).get(sprint, {}).get(task, {}).get("hints_shown", 0))
+
+
+def reveal_hint(repo_root: Path, sprint: str, task: str) -> int:
+    """Reveal one more hint for a task; return the new revealed count."""
+    data = load(repo_root)
+    task_state = data.setdefault(sprint, {}).setdefault(task, {"attempts": 0})
+    task_state["hints_shown"] = task_state.get("hints_shown", 0) + 1
+    _path(repo_root).write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
+    return task_state["hints_shown"]
