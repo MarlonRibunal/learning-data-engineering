@@ -320,6 +320,10 @@ _SERVICES = [
      "desc": "Build your own dashboards — write a read-only query, chart it with Plotly, "
              "and assemble a dashboard over the live warehouse.",
      "used": "Sprint 12 · Unified Dashboards"},
+    {"name": "dbt docs", "port": 8084, "creds": None,
+     "desc": "Explore the dbt project the open-source way — the model lineage graph, "
+             "compiled SQL, sources, and tests. Poke around freely.",
+     "used": "Sprint 3 · Modern Transformation"},
 ]
 
 # Paid/cloud services the curriculum teaches — simulated locally so nobody needs

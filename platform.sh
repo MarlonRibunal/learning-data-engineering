@@ -20,7 +20,7 @@ PY="${PYTHON:-python3}"
 # the Redpanda broker & console + PGAdmin. The lesson-runner web app is host-run
 # (below) on 8501, so we don't start the compose `streamlit` service here.
 # Students reach every UI from the app's "Platform" page.
-STACK_SERVICES="postgres dbt-service airflow-init airflow-webserver airflow-scheduler \
+STACK_SERVICES="postgres dbt-service dbt-docs airflow-init airflow-webserver airflow-scheduler \
 redpanda redpanda-console pgadmin dashboard"
 
 say() { printf '\033[36m▸ %s\033[0m\n' "$*"; }
