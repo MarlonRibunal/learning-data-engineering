@@ -20,3 +20,21 @@ checks:
       - {order_id: 1, category: Electronics, rank: 1}
       - {order_id: 3, category: Electronics, rank: 2}
       - {order_id: 4, category: Home, rank: 1}
+    hints:
+      - >-
+        You want each order's standing <em>within</em> its <code>category</code>,
+        biggest <code>amount</code> first — but every order row must survive. A
+        plain <code>groupBy</code> collapses rows; what kind of function ranks
+        without collapsing?
+      - >-
+        A <em>window function</em> ranks per group while keeping every row.
+        Build a window with
+        <code>Window.partitionBy("category").orderBy(F.col("amount").desc())</code>
+        and apply <code>F.rank().over(w)</code>. Descending so the largest is
+        rank 1.
+      - >-
+        Put it together:
+        <code>w = Window.partitionBy("category").orderBy(F.col("amount").desc())</code>,
+        then
+        <code>orders.withColumn("rank", F.rank().over(w)).select("order_id", "category", "rank")</code>.
+        In Electronics, 100 is rank 1 and 40 is rank 2.

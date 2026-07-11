@@ -20,3 +20,18 @@ checks:
       - {window_start: "2026-01-01 09:00:00", avg_amount: 15.0}
       - {window_start: "2026-01-01 09:10:00", avg_amount: 17.5}
       - {window_start: "2026-01-01 09:20:00", avg_amount: 15.0}
+    hints:
+      - >-
+        You need the mean <code>amount</code> per 10-minute window, reported to
+        two decimal places. Which aggregate gives an average, and how do you keep
+        the result from trailing off into extra digits?
+      - >-
+        Combine two functions inside <code>.agg(...)</code>:
+        <code>F.round(F.avg("amount"), 2)</code>, aliased as
+        <code>avg_amount</code>, after grouping by
+        <code>F.window("ts", "10 minutes")</code>.
+      - >-
+        Use
+        <code>.agg(F.round(F.avg("amount"), 2).alias("avg_amount"))</code> and
+        select <code>window.start</code> as <code>window_start</code>. The 09:00
+        window averages (10 + 20) / 2 = <code>avg_amount: 15.0</code>.

@@ -20,3 +20,19 @@ checks:
       - {window_start: "2026-01-01 09:00:00", count: 2}
       - {window_start: "2026-01-01 09:10:00", count: 2}
       - {window_start: "2026-01-01 09:20:00", count: 1}
+    hints:
+      - >-
+        The <code>ts</code> column arrives as a <em>string</em>, so Spark can't
+        bucket it by time yet. Before you can carve events into fixed 10-minute
+        buckets, what do you have to turn <code>ts</code> into?
+      - >-
+        Cast the event time first with
+        <code>F.to_timestamp("ts")</code>, then group by a tumbling window:
+        <code>F.window("ts", "10 minutes")</code>. A window with a single
+        duration (no slide) tumbles — each event lands in exactly one bucket.
+      - >-
+        Group by <code>F.window("ts", "10 minutes")</code>, call
+        <code>.count()</code>, then
+        <code>.select(F.col("window.start").cast("string").alias("window_start"), "count")</code>.
+        The 09:03 and 09:07 events both fall in the 09:00 window, giving
+        <code>count: 2</code>.

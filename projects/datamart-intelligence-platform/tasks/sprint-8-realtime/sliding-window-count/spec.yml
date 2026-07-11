@@ -24,3 +24,20 @@ checks:
       - {window_start: "2026-01-01 09:15:00", count: 1}
       - {window_start: "2026-01-01 09:20:00", count: 1}
       - {window_start: "2026-01-01 09:25:00", count: 1}
+    hints:
+      - >-
+        Notice the output has <em>overlapping</em> windows every 5 minutes, so a
+        single event can be counted in more than one window. What extra argument
+        to the window function controls how far each window slides?
+      - >-
+        A sliding window takes a third argument — the slide duration:
+        <code>F.window("ts", "10 minutes", "5 minutes")</code>. The window is 10
+        minutes wide but a new one starts every 5 minutes, so windows overlap.
+      - >-
+        Group by
+        <code>F.window("ts", "10 minutes", "5 minutes")</code>, call
+        <code>.count()</code>, and select
+        <code>F.col("window.start").cast("string").alias("window_start")</code>
+        with <code>count</code>. The first window begins at
+        <code>08:55:00</code> and the 09:03 event alone gives it
+        <code>count: 1</code>.

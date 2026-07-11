@@ -12,3 +12,15 @@ checks:
     args:
       - [3, 1, 2, 1, 3]
     expect: [1, 2, 3]
+    hints:
+      - >-
+        A replay can hand you the same offset more than once <em>and</em> out of
+        order, but you must return each offset exactly once in ascending order.
+        What two operations does that combine?
+      - >-
+        <code>set(offsets)</code> collapses the duplicates but throws away order;
+        <code>sorted(...)</code> puts them back in ascending order. Compose the
+        two so ordering is applied <em>after</em> deduping.
+      - >-
+        Return <code>sorted(set(offsets))</code>. For <code>[3, 1, 2, 1, 3]</code>
+        that yields <code>[1, 2, 3]</code>.

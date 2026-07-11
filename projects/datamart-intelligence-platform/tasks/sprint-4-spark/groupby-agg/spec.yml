@@ -19,3 +19,16 @@ checks:
       - {category: Electronics, revenue: 140}
       - {category: Books, revenue: 20}
       - {category: Home, revenue: 60}
+    hints:
+      - >-
+        You're collapsing many order rows into one total per
+        <code>category</code>. Which method groups rows by a key, and how do you
+        make the summed column come out named <code>revenue</code>?
+      - >-
+        Use <code>.groupBy("category").agg(...)</code> and sum inside the agg
+        with <code>F.sum("amount")</code>. That column defaults to the name
+        <code>sum(amount)</code> — rename it with <code>.alias("revenue")</code>.
+      - >-
+        Put it together:
+        <code>orders.groupBy("category").agg(F.sum("amount").alias("revenue"))</code>.
+        Electronics sums 100 + 40 = <code>140</code>, Books 20, Home 60.

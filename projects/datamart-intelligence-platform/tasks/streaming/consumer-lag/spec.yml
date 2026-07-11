@@ -11,3 +11,16 @@ checks:
     entry: consumer_lag
     args: [1000, 950]
     expect: 50
+    hints:
+      - >-
+        Lag is how many messages have been <em>produced but not yet consumed</em>.
+        You're given the latest offset (head of the log) and the committed offset
+        (how far the consumer got) — which direction is the gap?
+      - >-
+        <code>latest_offset</code> is the newest position in the log;
+        <code>committed_offset</code> is where the consumer has read up to. The
+        unread count is simply the difference,
+        <code>latest_offset - committed_offset</code>.
+      - >-
+        Return <code>latest_offset - committed_offset</code>. For
+        <code>1000</code> and <code>950</code> that's <code>50</code>.

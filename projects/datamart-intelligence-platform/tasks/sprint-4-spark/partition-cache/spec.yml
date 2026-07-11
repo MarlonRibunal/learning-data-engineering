@@ -21,3 +21,16 @@ checks:
       - {order_id: 2, amount: 20}
       - {order_id: 3, amount: 40}
       - {order_id: 4, amount: 60}
+    hints:
+      - >-
+        Return just <code>order_id</code> and <code>amount</code>, spread across
+        4 partitions, and cached so the frame isn't recomputed. Which call sets
+        the partition count, and which one marks it for caching?
+      - >-
+        <code>.repartition(4)</code> reshuffles the rows into 4 partitions, and
+        <code>.cache()</code> marks the frame to be kept in memory. Chain both
+        after a <code>.select(...)</code>.
+      - >-
+        Put it together:
+        <code>orders.select("order_id", "amount").repartition(4).cache()</code>.
+        Order matters — select the columns first, then repartition, then cache.

@@ -19,3 +19,17 @@ checks:
       - {customer_id: 10, Books: 0, Electronics: 140, Home: 0}
       - {customer_id: 11, Books: 20, Electronics: 0, Home: 0}
       - {customer_id: 12, Books: 0, Electronics: 0, Home: 60}
+    hints:
+      - >-
+        You want one row per <code>customer_id</code> with a separate column for
+        each <code>category</code>'s spend, and <code>0</code> where a customer
+        never bought that category. Which operation turns distinct row values
+        into columns?
+      - >-
+        Chain <code>.groupBy("customer_id").pivot("category").sum("amount")</code>
+        to spread categories across columns. Missing combinations come back as
+        <em>null</em> — replace them with <code>.fillna(0)</code>.
+      - >-
+        Put it together:
+        <code>orders.groupBy("customer_id").pivot("category").sum("amount").fillna(0)</code>.
+        Customer 10 lands Electronics 140, Books 0, Home 0.

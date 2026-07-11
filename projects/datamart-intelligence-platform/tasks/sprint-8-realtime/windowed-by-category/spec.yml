@@ -21,3 +21,19 @@ checks:
       - {window_start: "2026-01-01 09:00:00", category: B, revenue: 20}
       - {window_start: "2026-01-01 09:10:00", category: A, revenue: 35}
       - {window_start: "2026-01-01 09:20:00", category: B, revenue: 15}
+    hints:
+      - >-
+        The output splits each window by <code>category</code>, so grouping by
+        time alone would collapse A and B into one row. What are the <em>two</em>
+        things every group needs to be keyed on here?
+      - >-
+        <code>groupBy</code> accepts more than one key. Pass both the window and
+        the category:
+        <code>groupBy(F.window("ts", "10 minutes"), "category")</code>, then sum
+        the amount.
+      - >-
+        Use
+        <code>groupBy(F.window("ts", "10 minutes"), "category").agg(F.sum("amount").alias("revenue"))</code>,
+        then select <code>window.start</code> as <code>window_start</code>,
+        <code>category</code>, and <code>revenue</code>. The 09:00 window yields
+        a separate row for A (10) and B (20).

@@ -17,3 +17,20 @@ checks:
     expect:
       - {id: 1, v: b}
       - {id: 2, v: c}
+    hints:
+      - >-
+        For each <code>id</code> you want exactly one row — the most recent by
+        <code>ts</code>. How would you number the rows <em>within each id</em>,
+        newest first, and then keep only the top one?
+      - >-
+        Cast the string first with <code>F.to_timestamp("ts")</code>, then
+        number rows in a descending window:
+        <code>Window.partitionBy("id").orderBy(F.to_timestamp("ts").desc())</code>
+        with <code>F.row_number().over(w)</code>. Keep the rows where that number
+        is 1.
+      - >-
+        Put it together:
+        <code>w = Window.partitionBy("id").orderBy(F.to_timestamp("ts").desc())</code>,
+        then
+        <code>events.withColumn("rn", F.row_number().over(w)).filter(F.col("rn") == 1).select("id", "v")</code>.
+        Id 1's 10:00 row wins, so <code>v = b</code>.
