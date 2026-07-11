@@ -18,7 +18,8 @@ from grader.result import Status
 REPO = Path(__file__).resolve().parents[2]
 TASKS = REPO / "projects/datamart-intelligence-platform/tasks/sprint-8-realtime"
 ALL_TASKS = ["tumbling-window-count", "windowed-revenue", "sliding-window-count",
-             "windowed-by-category", "distinct-per-window", "session-window"]
+             "windowed-by-category", "distinct-per-window", "session-window",
+             "windowed-average", "windowed-max"]
 
 
 def _spark_spec(task: str) -> dict:
