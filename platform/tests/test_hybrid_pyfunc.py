@@ -16,6 +16,8 @@ TASKS = REPO / "projects/datamart-intelligence-platform/tasks/sprint-5-hybrid-cl
 ALL_TASKS = [
     ("terminal-states", "is_terminal.py"),
     ("poll-timeout", "poll_result.py"),
+    ("parallel-status", "overall_status.py"),
+    ("gate-on-success", "all_succeeded.py"),
 ]
 
 

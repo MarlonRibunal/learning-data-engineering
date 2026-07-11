@@ -1,0 +1,14 @@
+title: "Hybrid cloud: gate downstream on all successes"
+order: 6
+submission_path: submissions/hybrid/all_succeeded.py
+scaffold: scaffold/all_succeeded.py
+solution: solution/all_succeeded.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: proceeds only when every job succeeded
+    entry: all_succeeded
+    args:
+      - [SUCCESS, SUCCESS]
+    expect: true

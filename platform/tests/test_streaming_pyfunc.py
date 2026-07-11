@@ -16,6 +16,8 @@ TASKS = REPO / "projects/datamart-intelligence-platform/tasks/streaming"
 ALL_TASKS = [
     ("partition-for-key", "partition_for.py"),
     ("route-events", "route_events.py"),
+    ("consumer-lag", "consumer_lag.py"),
+    ("dedupe-offsets", "dedupe_offsets.py"),
 ]
 
 

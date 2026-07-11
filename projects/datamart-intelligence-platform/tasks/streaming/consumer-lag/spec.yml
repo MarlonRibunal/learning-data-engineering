@@ -1,0 +1,13 @@
+title: "Streaming: how far behind is the consumer?"
+order: 5
+submission_path: submissions/streaming/consumer_lag.py
+scaffold: scaffold/consumer_lag.py
+solution: solution/consumer_lag.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: computes consumer lag
+    entry: consumer_lag
+    args: [1000, 950]
+    expect: 50

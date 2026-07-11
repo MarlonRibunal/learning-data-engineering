@@ -1,0 +1,14 @@
+title: "Streaming: dedupe replayed offsets"
+order: 6
+submission_path: submissions/streaming/dedupe_offsets.py
+scaffold: scaffold/dedupe_offsets.py
+solution: solution/dedupe_offsets.py
+checks:
+  - type: file_exists
+    name: submission exists and is non-empty
+  - type: pyfunc
+    name: returns each offset once, in order
+    entry: dedupe_offsets
+    args:
+      - [3, 1, 2, 1, 3]
+    expect: [1, 2, 3]
