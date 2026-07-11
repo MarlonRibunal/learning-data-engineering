@@ -551,6 +551,11 @@ def _render_task(sprint, task, progress, tasks) -> None:
             else:
                 st.info("No lesson text for this task yet.")
 
+            reading_file = spec.task_dir / "reading.md"
+            if reading_file.is_file():
+                with st.expander("📚 Reading — the concept behind this level"):
+                    st.markdown(reading_file.read_text())
+
             intro = _load_sprint_intro(sprint)
             if intro:
                 with st.expander(f"About {_sprint_label(sprint)}"):
