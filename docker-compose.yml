@@ -123,6 +123,11 @@ services:
       PGUSER: airflow
       PGPASSWORD: airflow
       PGDATABASE: datamart
+      # Optional AI tutor: if you have an Anthropic key exported on the host,
+      # it's passed through and the tutor panel lights up. Absent = no tutor.
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      TUTOR_MODEL: ${TUTOR_MODEL:-claude-opus-4-8}
+      LEARNING_APP_URL: ${LEARNING_APP_URL:-http://localhost:8501}
     ports: ["8083:8501"]
     restart: unless-stopped
     depends_on:
