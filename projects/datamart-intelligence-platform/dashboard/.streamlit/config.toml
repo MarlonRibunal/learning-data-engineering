@@ -1,0 +1,15 @@
+[theme]
+# The dashboard container mounts only this folder to /app, so the repo-root
+# .streamlit/config.toml never reaches it. This copy makes Streamlit pick up
+# the platform's monochrome ink palette here too (primaryColor drives buttons,
+# metric accents, and selected states — without it they render Streamlit's
+# default coral red and clash with the rest of the learning app).
+base = "light"
+primaryColor = "#1d1e21"
+backgroundColor = "#f6f7f9"
+secondaryBackgroundColor = "#ffffff"
+textColor = "#17181b"
+font = "sans serif"
+
+[server]
+headless = true
