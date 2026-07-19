@@ -579,6 +579,53 @@ a{color:var(--accent); text-decoration:none;}
 .stage.wip{border-color:#ecdcb4;}
 .stage.wip .stage-bar span{background:var(--amber);}
 
+/* ---- milestones strip ---- */
+.mst{display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin:2px 2px 14px;}
+.mst-lbl{font-size:.62rem; font-weight:650; letter-spacing:.07em; text-transform:uppercase;
+  color:var(--faint); margin-right:2px;}
+.mst-badge{display:inline-flex; align-items:center; gap:6px; font-size:.76rem; font-weight:600;
+  color:var(--green-ink); background:var(--green-soft); border:1px solid #cfe8da;
+  border-radius:999px; padding:4px 11px 4px 9px;}
+.mst-badge .icon{width:14px; height:14px; color:var(--green);}
+.mst-next{display:inline-flex; align-items:center; gap:6px; font-size:.76rem; font-weight:500;
+  color:var(--muted); background:var(--panel-2); border:1px dashed var(--line);
+  border-radius:999px; padding:4px 11px;}
+.mst-next .icon{width:13px; height:13px; color:var(--faint);}
+.mst-count{font-size:.72rem; color:var(--faint); font-weight:600; margin-left:auto;}
+
+/* ---- mastery map (full-curriculum status matrix) ---- */
+.mm{background:var(--panel); border:1px solid var(--line); border-radius:16px;
+  padding:18px 20px 17px; margin-bottom:16px; box-shadow:var(--sh);}
+.mm-top{display:flex; align-items:baseline; justify-content:space-between; gap:12px;}
+.mm-title{font-size:1.02rem; font-weight:660; letter-spacing:-.02em; color:var(--ink);}
+.mm-sub{font-size:.75rem; color:var(--faint); font-weight:500; text-align:right;}
+.mm-legend{display:flex; flex-wrap:wrap; gap:14px; margin:11px 0 4px;}
+.mm-lg{display:flex; align-items:center; gap:6px; font-size:.72rem; color:var(--muted); font-weight:500;}
+.mm-phase{margin-top:16px;}
+.mm-phase-head{display:flex; align-items:center; gap:10px; margin-bottom:9px;}
+.mm-phase-name{font-size:.62rem; font-weight:650; letter-spacing:.07em; text-transform:uppercase; color:var(--faint);}
+.mm-phase-bar{flex:1; height:3px; background:var(--line-2); border-radius:999px; overflow:hidden; max-width:130px;}
+.mm-phase-bar span{display:block; height:100%; background:var(--accent); border-radius:999px;}
+.mm-phase-ct{font-size:.68rem; color:var(--faint); font-weight:600;}
+.mm-mastered{font-size:.58rem; font-weight:650; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--green-ink); background:var(--green-soft); border:1px solid #cfe8da;
+  border-radius:999px; padding:1px 8px; display:inline-flex; align-items:center; gap:3px;}
+.mm-mastered .icon{width:11px; height:11px; color:var(--green);}
+.mm-row{display:flex; align-items:center; gap:12px; padding:2.5px 0;}
+.mm-row-name{width:152px; flex:0 0 152px; font-size:.8rem; font-weight:550; color:var(--ink);
+  letter-spacing:-.01em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  display:flex; align-items:center; gap:5px;}
+.mm-row-name .icon{width:12px; height:12px; color:var(--green); flex:0 0 auto;}
+.mm-cells{display:flex; flex-wrap:wrap; gap:5px;}
+.mm-cell{width:23px; height:23px; border-radius:6px; display:inline-flex; align-items:center;
+  justify-content:center; border:1px solid transparent; transition:transform .1s, box-shadow .1s; cursor:default;}
+.mm-cell .icon{width:13px; height:13px;}
+.mm-cells .mm-cell:hover{transform:translateY(-1px); box-shadow:var(--sh);}
+.mm-done{background:var(--green-soft); border-color:#cfe8da;} .mm-done .icon{color:var(--green-ink);}
+.mm-wip{background:var(--amber-soft); border-color:#ecdcb4;} .mm-wip .icon{color:var(--amber-ink);}
+.mm-new{background:var(--panel-2); border-color:var(--line);} .mm-new .icon{color:var(--faint);}
+.mm-lock{background:transparent; border-color:var(--line-2);} .mm-lock .icon{color:var(--faint); opacity:.55;}
+
 /* ---- sidebar ---- */
 [data-testid="stSidebar"]{background:var(--panel); border-right:1px solid var(--line);}
 [data-testid="stSidebar"] .brand{font-weight:650; font-size:.98rem; letter-spacing:-.02em;
@@ -822,6 +869,110 @@ _ICON = {
     "lock": _ic('<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>'),
 }
 
+# ---- mastery map (home dashboard) ----------------------------------------
+# The full-curriculum status matrix: every level as a cell, grouped by phase.
+# Status is carried by a distinct SHAPE per state (never colour alone), so a
+# colour-blind or forced-colours reader reads it from the icon + legend.
+_MM_ICON = {
+    "done": _ic('<path d="M20 6L9 17l-5-5"/>'),                       # ✓ cleared
+    "wip":  _ic('<circle cx="6" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/>'
+                '<circle cx="18" cy="12" r="1.7"/>'),                 # … in progress
+    "new":  _ic('<circle cx="12" cy="12" r="3.4"/>'),                # ○ not started
+    "lock": _ic('<rect x="6" y="11" width="12" height="8" rx="1.8"/><path d="M9 11V8a3 3 0 0 1 6 0v3"/>'),
+}
+_MM_LABEL = {"done": "Cleared", "wip": "In progress", "new": "Not started", "lock": "Locked"}
+
+
+def _cell_state(tasks, progress, sprint, task) -> str:
+    """One cell's state: cleared, in progress (attempted), locked, or not started."""
+    st_ = progress.get(sprint, {}).get(task, {})
+    if st_.get("status") == "pass":
+        return "done"
+    if _is_locked(tasks, progress, sprint, task):
+        return "lock"
+    return "wip" if st_.get("attempts", 0) > 0 else "new"
+
+
+def _milestones_html(tasks, progress) -> str:
+    """Earned, data-derived milestones — a sprint mastered (every level cleared).
+
+    Only shows what's genuinely earned plus the nearest next target; no invented
+    thresholds, no wall of padlocks. Empty string when there's nothing to show.
+    """
+    earned, fracs = [], []
+    for sprint, tks in _grouped_by_sprint(tasks):
+        done = sum(1 for t in tks if progress.get(sprint, {}).get(t, {}).get("status") == "pass")
+        if not tks:
+            continue
+        if done == len(tks):
+            earned.append(_sprint_label(sprint))
+        elif done > 0:
+            fracs.append((done / len(tks), done, len(tks), sprint))
+    total_sprints = sum(1 for _, tks in _grouped_by_sprint(tasks) if tks)
+    badges = "".join(f'<span class="mst-badge">{_ICON["check"]}{n} · mastered</span>' for n in earned)
+    nxt = ""
+    if fracs:
+        _, d, n, sprint = max(fracs)
+        nxt = (f'<span class="mst-next">{_ICON["target"]}Next: '
+               f'{_sprint_label(sprint)} · {d}/{n}</span>')
+    if not badges and not nxt:
+        return ""
+    count = f'<span class="mst-count">{len(earned)} of {total_sprints} sprints mastered</span>'
+    return (f'<div class="mst"><span class="mst-lbl">Milestones</span>'
+            f'{badges}{nxt}{count}</div>')
+
+
+def _mastery_map_html(tasks, progress) -> str:
+    """Full-curriculum status matrix, grouped by phase → sprint → level cells."""
+    task_map = dict(_grouped_by_sprint(tasks))
+    total = len(tasks)
+    cleared = sum(1 for s, t in tasks if progress.get(s, {}).get(t, {}).get("status") == "pass")
+
+    legend = "".join(
+        f'<span class="mm-lg"><span class="mm-cell mm-{k}">{_MM_ICON[k]}</span>{_MM_LABEL[k]}</span>'
+        for k in ("done", "wip", "new", "lock"))
+
+    phases = []
+    for ph in _CURRICULUM:
+        ph_sprints = [(s["key"], s["name"]) for s in ph["sprints"] if s["key"] in task_map]
+        if not ph_sprints:
+            continue
+        ph_pairs = [(sp, tk) for sp, _ in ph_sprints for tk in task_map[sp]]
+        ph_done = sum(1 for sp, tk in ph_pairs if progress.get(sp, {}).get(tk, {}).get("status") == "pass")
+        ph_total = len(ph_pairs)
+        pct = int(round(100 * ph_done / ph_total)) if ph_total else 0
+        short = ph["title"].split("·", 1)[-1].strip() if "·" in ph["title"] else ph["title"]
+        tag = (f'<span class="mm-mastered">{_ICON["check"]}Mastered</span>'
+               if ph_done == ph_total else f'<span class="mm-phase-ct">{ph_done}/{ph_total}</span>')
+
+        rows = []
+        for sp, name in ph_sprints:
+            sp_tasks = task_map[sp]
+            sp_done = sum(1 for tk in sp_tasks if progress.get(sp, {}).get(tk, {}).get("status") == "pass")
+            check = _ICON["check"] if sp_done == len(sp_tasks) else ""
+            cells = []
+            for tk in sp_tasks:
+                state = _cell_state(tasks, progress, sp, tk)
+                att = progress.get(sp, {}).get(tk, {}).get("attempts", 0)
+                att_txt = f" · {att} attempt{'s' if att != 1 else ''}" if att else ""
+                title = f"{tk} · {_MM_LABEL[state]}{att_txt}"
+                cells.append(f'<span class="mm-cell mm-{state}" title="{title}">{_MM_ICON[state]}</span>')
+            rows.append(
+                f'<div class="mm-row"><div class="mm-row-name" title="{name}">{check}{name}</div>'
+                f'<div class="mm-cells">{"".join(cells)}</div></div>')
+
+        phases.append(
+            f'<div class="mm-phase"><div class="mm-phase-head">'
+            f'<span class="mm-phase-name">{short}</span>'
+            f'<div class="mm-phase-bar"><span style="width:{pct}%"></span></div>{tag}</div>'
+            f'{"".join(rows)}</div>')
+
+    return (
+        '<div class="mm"><div class="mm-top">'
+        '<span class="mm-title">Mastery map</span>'
+        f'<span class="mm-sub">{cleared}/{total} levels cleared · every level, grouped by phase</span>'
+        f'</div><div class="mm-legend">{legend}</div>{"".join(phases)}</div>')
+
 
 _DARK_WRAP = {
     "auto": ("@media (prefers-color-scheme: dark){", "}"),
@@ -985,6 +1136,13 @@ def _render_home(tasks, progress, done) -> None:
                 'Your journey through the data engineering lifecycle</div>',
                 unsafe_allow_html=True)
     st.markdown(_journey_html(tasks, progress), unsafe_allow_html=True)
+
+    st.markdown('<div class="grp" style="margin:20px 2px 8px">'
+                'Progress &amp; achievements</div>', unsafe_allow_html=True)
+    milestones = _milestones_html(tasks, progress)
+    if milestones:
+        st.markdown(milestones, unsafe_allow_html=True)
+    st.markdown(_mastery_map_html(tasks, progress), unsafe_allow_html=True)
 
     nxt = next_task(REPO_ROOT)
     if nxt:
